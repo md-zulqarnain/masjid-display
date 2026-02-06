@@ -5,7 +5,11 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const os = require("os");
-const VERSES_FILE = 'verses.json';
+const VERSES_FILE = path.join(__dirname, 'verses.json');
+const SHORT_VERSES_FILE = path.join(__dirname, 'short-verses.json');
+const CONTENT_DIR = path.join(__dirname, 'content');
+const GENERAL_SHORT_VERSES_FILE = path.join(CONTENT_DIR, 'general-short.json');
+const CONTENT_GROUPS = { general: null, month: 'months', day: 'days', occasion: 'occasions' };
 const SETTINGS_FILE = './data/settings.json';
 const CEC_CTL_PATH = process.env.CEC_CTL_PATH || '/usr/bin/cec-ctl';
 
@@ -85,6 +89,38 @@ function parseTimeToMinutes(value) {
   }
 
   return hours * 60 + minutes;
+}
+
+function getHijriDateParts(date = new Date(), offsetDays = 0) {
+  const adjustedDate = new Date(date);
+  adjustedDate.setDate(adjustedDate.getDate() + offsetDays);
+
+  const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
+    day: 'numeric',
+    month: 'numeric'
+  }).formatToParts(adjustedDate);
+  const day = Number(parts.find(part => part.type === 'day')?.value);
+  const month = Number(parts.find(part => part.type === 'month')?.value);
+
+  return Number.isInteger(day) && Number.isInteger(month) ? { day, month } : null;
+}
+
+function matchesContentSchedule(schedule, date = new Date(), hijriOffset = 0) {
+  if (!schedule) return true;
+
+  if (Array.isArray(schedule.weekdays) && !schedule.weekdays.includes(date.getDay())) {
+    return false;
+  }
+
+  const hasHijriRule = Number.isInteger(schedule.hijriMonth) || Array.isArray(schedule.daysOfMonth);
+  if (!hasHijriRule) return true;
+
+  const hijriDate = getHijriDateParts(date, hijriOffset);
+  if (!hijriDate) return false;
+  if (Number.isInteger(schedule.hijriMonth) && schedule.hijriMonth !== hijriDate.month) return false;
+  if (Array.isArray(schedule.daysOfMonth) && !schedule.daysOfMonth.includes(hijriDate.day)) return false;
+
+  return true;
 }
 
 function normalizeDisplayPowerSlots(slots) {
@@ -631,111 +667,207 @@ app.post("/api/timings", (req, res) => {
 
 
 
-function readVersesFile() {
+function parseJsonArray(filePath) {
   try {
-    if (!fs.existsSync(VERSES_FILE)) {
-      fs.writeFileSync(VERSES_FILE, JSON.stringify([], null, 2));
-      return [];
-    }
-
-    const data = fs.readFileSync(VERSES_FILE, "utf8");
-
-    if (!data.trim()) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(data);
-    } catch (parseError) {
-      console.error("Corrupted JSON. Resetting file.");
-      fs.writeFileSync(VERSES_FILE, JSON.stringify([], null, 2));
-      return [];
-    }
-
-  } catch (err) {
-    console.error("File read error:", err);
+    const data = fs.readFileSync(filePath, 'utf8');
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
     return [];
   }
 }
 
+function ensureContentStore() {
+  fs.mkdirSync(CONTENT_DIR, { recursive: true });
+  Object.values(CONTENT_GROUPS).filter(Boolean).forEach(directory => {
+    fs.mkdirSync(path.join(CONTENT_DIR, directory), { recursive: true });
+  });
+
+  const generalFile = path.join(CONTENT_DIR, 'general.json');
+  if (!fs.existsSync(generalFile)) {
+    fs.writeFileSync(generalFile, JSON.stringify(parseJsonArray(VERSES_FILE), null, 2));
+  }
+  if (!fs.existsSync(GENERAL_SHORT_VERSES_FILE)) {
+    fs.writeFileSync(GENERAL_SHORT_VERSES_FILE, JSON.stringify(parseJsonArray(SHORT_VERSES_FILE), null, 2));
+  }
+}
+
+function getTopicFilePath(topicType = 'general', topicKey = 'general') {
+  const directory = CONTENT_GROUPS[topicType];
+  if (directory === undefined) throw new Error('Invalid content group');
+  if (topicType === 'general') return path.join(CONTENT_DIR, 'general.json');
+
+  const slug = typeof topicKey === 'string' ? topicKey.trim().toLowerCase() : '';
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Topic must be a lowercase slug');
+  return path.join(CONTENT_DIR, directory, `${slug}.json`);
+}
+
+function readTopicEntries(topicType, topicKey) {
+  ensureContentStore();
+  return parseJsonArray(getTopicFilePath(topicType, topicKey));
+}
+
+function writeTopicEntries(topicType, topicKey, entries) {
+  const filePath = getTopicFilePath(topicType, topicKey);
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(entries, null, 2));
+}
+
+function readAllVerses() {
+  ensureContentStore();
+  const records = [];
+
+  Object.entries(CONTENT_GROUPS).forEach(([topicType, directory]) => {
+    const files = topicType === 'general'
+      ? [{ topicKey: 'general', filePath: getTopicFilePath('general', 'general') }]
+      : fs.readdirSync(path.join(CONTENT_DIR, directory))
+        .filter(file => file.endsWith('.json'))
+        .sort()
+        .map(file => ({ topicKey: path.basename(file, '.json'), filePath: path.join(CONTENT_DIR, directory, file) }));
+
+    files.forEach(({ topicKey, filePath }) => {
+      parseJsonArray(filePath).forEach((entry, topicIndex) => {
+        records.push({ ...entry, topicType, topicKey, _topicIndex: topicIndex });
+      });
+    });
+  });
+
+  return records;
+}
+
+function readActiveVerses(date = new Date(), hijriOffset = readSettings().hijriOffset) {
+  return readAllVerses()
+    .filter(verse => verse.topicType === 'general' || verse.schedule)
+    .filter(verse => matchesContentSchedule(verse.schedule, date, hijriOffset));
+}
+
+function normalizeVerseEntry(body, topicType = 'general', topicKey = 'general') {
+  const { reference, text, type } = body;
+  if (![reference, text, type].every(value => typeof value === 'string' && value.trim())) {
+    throw new Error('Reference, text, and type are required');
+  }
+
+  const entry = { reference: reference.trim(), text: text.trim(), type: type.trim() };
+  ['source', 'grading', 'shortText'].forEach(field => {
+    if (typeof body[field] === 'string' && body[field].trim()) entry[field] = body[field].trim();
+  });
+
+  const schedule = {};
+  if (body.schedule && typeof body.schedule === 'object') {
+    const month = Number(body.schedule.hijriMonth);
+    if (Number.isInteger(month) && month >= 1 && month <= 12) schedule.hijriMonth = month;
+    const daysOfMonth = Array.isArray(body.schedule.daysOfMonth)
+      ? body.schedule.daysOfMonth.map(Number).filter(day => Number.isInteger(day) && day >= 1 && day <= 30)
+      : [];
+    const weekdays = Array.isArray(body.schedule.weekdays)
+      ? body.schedule.weekdays.map(Number).filter(day => Number.isInteger(day) && day >= 0 && day <= 6)
+      : [];
+    if (daysOfMonth.length) schedule.daysOfMonth = [...new Set(daysOfMonth)];
+    if (weekdays.length) schedule.weekdays = [...new Set(weekdays)];
+  }
+
+  const hijriMonthByTopic = {
+    muharram: 1,
+    safar: 2,
+    'rabi-al-awwal': 3,
+    'rabi-al-thani': 4,
+    'jumada-al-awwal': 5,
+    'jumada-al-thani': 6,
+    rajab: 7,
+    shaban: 8,
+    ramadan: 9,
+    shawwal: 10,
+    'dhul-qadah': 11,
+    'dhul-hijjah': 12
+  };
+  if (topicType === 'month' && !schedule.hijriMonth && hijriMonthByTopic[topicKey]) {
+    schedule.hijriMonth = hijriMonthByTopic[topicKey];
+  }
+  if (Object.keys(schedule).length) entry.schedule = schedule;
+
+  return entry;
+}
+
+function getEntrySource(entry) {
+  return { topicType: entry.topicType || 'general', topicKey: entry.topicKey || 'general' };
+}
+
+function removeVerseAtIndex(index) {
+  const verse = readAllVerses()[index];
+  if (!verse) return null;
+  const { topicType, topicKey } = getEntrySource(verse);
+  const entries = readTopicEntries(topicType, topicKey);
+  entries.splice(verse._topicIndex, 1);
+  writeTopicEntries(topicType, topicKey, entries);
+  return verse;
+}
+
+app.get('/api/verses/active', (req, res) => {
+  res.json(readActiveVerses());
+});
+
 app.get('/api/verses', (req, res) => {
-  const verses = readVersesFile();
-  res.json(verses);
+  res.json(readAllVerses());
 });
 
 app.get('/api/short-verses', (req, res) => {
-  try {
-    const data = fs.readFileSync('short-verses.json', "utf8");
-    res.json(JSON.parse(data));
-  } catch (err) {
-    res.json([]);
-  }
+  const settings = readSettings();
+  ensureContentStore();
+  const shortVerses = parseJsonArray(GENERAL_SHORT_VERSES_FILE)
+    .map(verse => ({ ...verse, topicType: 'general', topicKey: 'general' }));
+  const scheduledVerses = readActiveVerses(new Date(), settings.hijriOffset)
+    .filter(verse => verse.shortText)
+    .map(verse => ({
+      text: verse.shortText,
+      reference: verse.reference,
+      type: verse.type,
+      topicType: verse.topicType,
+      topicKey: verse.topicKey,
+      schedule: verse.schedule
+    }));
+  res.json([...shortVerses, ...scheduledVerses]);
 });
-// ADD new verse
+
 app.post('/api/verses', (req, res) => {
   try {
-    const { reference, text, type } = req.body;
-
-    if (!reference || !text || !type) {
-      return res.status(400).json({ error: "All fields required" });
-    }
-
-    const verses = readVersesFile();
-
-    verses.push({ reference, text, type });
-
-    fs.writeFileSync(VERSES_FILE, JSON.stringify(verses, null, 2));
-
+    const topicType = req.body.topicType || 'general';
+    const topicKey = topicType === 'general' ? 'general' : req.body.topicKey;
+    const entry = normalizeVerseEntry(req.body, topicType, topicKey);
+    const entries = readTopicEntries(topicType, topicKey);
+    entries.push(entry);
+    writeTopicEntries(topicType, topicKey, entries);
     res.json({ success: true });
-
   } catch (err) {
-    console.error("Save error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
 app.delete('/api/verses/:index', (req, res) => {
-  try {
-    const index = parseInt(req.params.index);
-    const verses = readVersesFile();
-
-    if (index < 0 || index >= verses.length) {
-      return res.status(400).json({ error: "Invalid index" });
-    }
-
-    verses.splice(index, 1);
-
-    fs.writeFileSync(VERSES_FILE, JSON.stringify(verses, null, 2));
-
-    res.json({ success: true });
-
-  } catch (err) {
-    console.error("Delete error:", err);
-    res.status(500).json({ error: err.message });
+  const index = Number.parseInt(req.params.index, 10);
+  if (!Number.isInteger(index) || index < 0 || !removeVerseAtIndex(index)) {
+    return res.status(400).json({ error: 'Invalid index' });
   }
+  res.json({ success: true });
 });
 
-// UPDATE verse by index
 app.put('/api/verses/:index', (req, res) => {
   try {
-    const index = parseInt(req.params.index);
-    const { reference, text, type } = req.body;
-
-    const verses = readVersesFile();
-
-    if (index < 0 || index >= verses.length) {
-      return res.status(400).json({ error: "Invalid index" });
+    const index = Number.parseInt(req.params.index, 10);
+    const existing = readAllVerses()[index];
+    if (!Number.isInteger(index) || index < 0 || !existing) {
+      return res.status(400).json({ error: 'Invalid index' });
     }
 
-    verses[index] = { reference, text, type };
-
-    fs.writeFileSync(VERSES_FILE, JSON.stringify(verses, null, 2));
-
+    const topicType = req.body.topicType || existing.topicType;
+    const topicKey = topicType === 'general' ? 'general' : (req.body.topicKey || existing.topicKey);
+    const entry = normalizeVerseEntry(req.body, topicType, topicKey);
+    removeVerseAtIndex(index);
+    const entries = readTopicEntries(topicType, topicKey);
+    entries.push(entry);
+    writeTopicEntries(topicType, topicKey, entries);
     res.json({ success: true });
-
   } catch (err) {
-    console.error("Update error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -935,6 +1067,9 @@ if (require.main === module) {
 
 module.exports = {
   app,
+  getHijriDateParts,
+  readActiveVerses,
+  matchesContentSchedule,
   normalizeDisplayOverride,
   normalizeDisplayPage,
   normalizeDisplayDialogType,

@@ -1689,6 +1689,11 @@ function updateCurrentAndNextPrayerTimes() {
 async function loadVerses() {
     const res = await fetch('/api/short-verses');
     const verses = await res.json();
+    console.info('[Short verses selected for current date]', {
+        date: new Date().toLocaleString(),
+        count: verses.length,
+        verses
+    });
 
     const container = document.querySelector('.verse-slider-container');
 

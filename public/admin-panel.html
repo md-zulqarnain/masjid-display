@@ -457,15 +457,30 @@
         <!-- Verses Tab -->
         <div id="verses" class="tab-content">
             <div class="section">
-                <h2>Add Hadith / Surah / Sunnah</h2>
+                <h2>हदीस / सूरह / सुन्नत जोड़ें</h2>
 
                 <div class="form-group">
-                    <label>Type</label>
+                    <label>क़िस्म</label>
                     <select id="verseType">
-                        <option value="surah">Surah</option>
-                        <option value="hadith">Hadith</option>
-                        <option value="sunnah">Sunnah</option>
+                        <option value="surah">सूरह</option>
+                        <option value="hadith">हदीस</option>
+                        <option value="sunnah">सुन्नत</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Content group</label>
+                    <select id="verseTopicType">
+                        <option value="general">General</option>
+                        <option value="month">Hijri month</option>
+                        <option value="day">Day</option>
+                        <option value="occasion">Occasion</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Topic file name</label>
+                    <input type="text" id="verseTopicKey" placeholder="ramadan, friday, laylat-al-qadr" />
                 </div>
 
                 <div class="form-group">
@@ -479,6 +494,50 @@
                         style="width:100%; padding:12px; background:rgba(255,255,255,0.1); color:white; border:1px solid #444; border-radius:5px;"></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label>Source (optional)</label>
+                    <input type="text" id="verseSource" placeholder="Collection and hadith number or Quran reference" />
+                </div>
+
+                <div class="form-group">
+                    <label>Hadith grading (optional)</label>
+                    <input type="text" id="verseGrading" placeholder="For example: Sahih, Hasan, or disputed" />
+                </div>
+
+                <div class="form-group">
+                    <label>Short display text (optional)</label>
+                    <textarea id="verseShortText" rows="2" placeholder="Used in the rotating display"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Hijri month (optional)</label>
+                    <select id="verseHijriMonth">
+                        <option value="">Every month</option>
+                        <option value="1">Muharram</option>
+                        <option value="2">Safar</option>
+                        <option value="3">Rabi al-Awwal</option>
+                        <option value="4">Rabi al-Thani</option>
+                        <option value="5">Jumada al-Awwal</option>
+                        <option value="6">Jumada al-Thani</option>
+                        <option value="7">Rajab</option>
+                        <option value="8">Sha'ban</option>
+                        <option value="9">Ramadan</option>
+                        <option value="10">Shawwal</option>
+                        <option value="11">Dhul Qadah</option>
+                        <option value="12">Dhul Hijjah</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Hijri dates (optional)</label>
+                    <input type="text" id="verseHijriDays" placeholder="17, 19, 21" />
+                </div>
+
+                <div class="form-group">
+                    <label>Weekdays (optional)</label>
+                    <input type="text" id="verseWeekdays" placeholder="0 Sunday, 5 Friday, 6 Saturday" />
+                </div>
+
                 <div class="button-group">
                     <button class="btn-primary" id="verseSaveBtn">Save</button>
                 </div>
@@ -487,11 +546,11 @@
 
                 <hr style="margin:30px 0">
 
-                <h3>All Verses</h3>
+                <h3>तमाम आयात और रिवायतें</h3>
                 <table style="width:100%; color:white; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <th style="border:1px solid #444; padding:8px;">Type</th>
+                            <th style="border:1px solid #444; padding:8px;">क़िस्म</th>
                             <th style="border:1px solid #444; padding:8px;">Reference</th>
                             <th style="border:1px solid #444; padding:8px;">Actions</th>
                         </tr>
@@ -1134,41 +1193,52 @@
             const text = document.getElementById('verseText').value.trim();
             const type = document.getElementById('verseType').value;
             const saveBtn = document.getElementById('verseSaveBtn');
+            const topicType = document.getElementById('verseTopicType').value;
+            const topicKey = document.getElementById('verseTopicKey').value.trim().toLowerCase();
+            const parseNumberList = value => value.split(',').map(item => item.trim()).filter(Boolean).map(Number).filter(Number.isInteger);
+            const schedule = {
+                hijriMonth: document.getElementById('verseHijriMonth').value,
+                daysOfMonth: parseNumberList(document.getElementById('verseHijriDays').value),
+                weekdays: parseNumberList(document.getElementById('verseWeekdays').value)
+            };
+            const verseData = {
+                reference,
+                text,
+                type,
+                topicType,
+                topicKey,
+                source: document.getElementById('verseSource').value.trim(),
+                grading: document.getElementById('verseGrading').value.trim(),
+                shortText: document.getElementById('verseShortText').value.trim(),
+                schedule
+            };
 
             if (!reference || !text) {
-                showMessage('verseMessage', 'All fields are required!', 'error');
+                showMessage('verseMessage', 'Reference and text are required.', 'error');
+                return;
+            }
+            if (topicType !== 'general' && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(topicKey)) {
+                showMessage('verseMessage', 'Use a lowercase topic name with letters, numbers, and hyphens.', 'error');
                 return;
             }
 
             try {
+                const response = await fetch(editIndex === null ? '/api/verses' : '/api/verses/' + editIndex, {
+                    method: editIndex === null ? 'POST' : 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(verseData)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Could not save content');
 
-                if (editIndex === null) {
-                    // ADD
-                    await fetch('/api/verses', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ reference, text, type })
-                    });
-
-                    showMessage('verseMessage', 'Saved successfully!', 'success');
-
-                } else {
-                    // UPDATE
-                    await fetch('/api/verses/' + editIndex, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ reference, text, type })
-                    });
-
-                    showMessage('verseMessage', 'Updated successfully!', 'success');
-
-                    editIndex = null;
-                    saveBtn.innerText = "Save";
-                }
-
-                document.getElementById('verseReference').value = "";
-                document.getElementById('verseText').value = "";
-
+                showMessage('verseMessage', editIndex === null ? 'Saved successfully!' : 'Updated successfully!', 'success');
+                editIndex = null;
+                saveBtn.innerText = 'Save';
+                ['verseTopicKey', 'verseReference', 'verseText', 'verseSource', 'verseGrading', 'verseShortText', 'verseHijriDays', 'verseWeekdays'].forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+                document.getElementById('verseTopicType').value = 'general';
+                document.getElementById('verseHijriMonth').value = '';
                 loadVersesList();
 
             } catch (err) {
@@ -1181,12 +1251,13 @@
 
             const table = document.getElementById('versesTable');
             table.innerHTML = "";
+            const typeLabels = { surah: 'सूरह', hadith: 'हदीस', sunnah: 'सुन्नत' };
 
             verses.forEach((v, index) => {
                 table.innerHTML += `
             <tr>
-                <td style="border:1px solid #444; padding:8px;">${v.type}</td>
-                <td style="border:1px solid #444; padding:8px;">${v.reference}</td>
+                <td style="border:1px solid #444; padding:8px;">${typeLabels[v.type] || v.type}</td>
+                <td style="border:1px solid #444; padding:8px;">${v.topicType}/${v.topicKey}: ${v.reference}</td>
                 <td style="border:1px solid #444; padding:8px;">
                     <button onclick="editVerse(${index})">Edit</button>
                     <button onclick="deleteVerse(${index})">Delete</button>
@@ -1216,6 +1287,14 @@
             document.getElementById('verseReference').value = verse.reference;
             document.getElementById('verseText').value = verse.text;
             document.getElementById('verseType').value = verse.type;
+            document.getElementById('verseTopicType').value = verse.topicType || 'general';
+            document.getElementById('verseTopicKey').value = verse.topicType === 'general' ? '' : verse.topicKey;
+            document.getElementById('verseSource').value = verse.source || '';
+            document.getElementById('verseGrading').value = verse.grading || '';
+            document.getElementById('verseShortText').value = verse.shortText || '';
+            document.getElementById('verseHijriMonth').value = verse.schedule?.hijriMonth || '';
+            document.getElementById('verseHijriDays').value = verse.schedule?.daysOfMonth?.join(', ') || '';
+            document.getElementById('verseWeekdays').value = verse.schedule?.weekdays?.join(', ') || '';
 
             editIndex = index;
 
