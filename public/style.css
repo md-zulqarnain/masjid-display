@@ -1,0 +1,180 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  background: #0c1d15;
+  font-family: 'Segoe UI', sans-serif;
+  color: #facc15;
+}
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 3vw;
+  box-sizing: border-box;
+}
+
+/* Top Bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arabic-title {
+  font-size: 2vw;
+  text-align: center;
+  flex: 1;
+}
+
+.corner-img {
+  width: 6vw;
+  height: 6vw;
+  border-radius: 50%;
+  border: 3px solid gold;
+  object-fit: cover;
+}
+
+/* Clock */
+.clock-section {
+  text-align: center;
+  margin-top: 2vh;
+}
+
+#clock {
+  font-size: 6vw;
+  font-weight: bold;
+}
+
+#date, #hijri {
+  font-size: 1.5vw;
+  margin-top: 0.5vh;
+}
+
+/* Table */
+.table-container {
+  flex: 1;
+  margin-top: 3vh;
+}
+
+table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  font-size: 1.5vw;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+
+
+th, td {
+  text-align: center;
+  padding: 1vh;
+  color: white;
+}
+th {
+     color: #0c1d15;
+}
+
+thead {
+  background: linear-gradient(to right, #ca8a04, #facc15);
+  color: #0c1d15;
+}
+
+tbody tr:nth-child(odd) {
+  background: linear-gradient(90deg, #173025, #203c2f, #173025);
+}
+
+tbody tr:nth-child(even) {
+  background: linear-gradient(90deg, #12261d, #192e24, #12261d);
+}
+
+tbody td:nth-child(2),
+tbody td:nth-child(5) {
+  color: #facc15;
+}
+
+.active-row {
+  background: #16a34a !important;
+  color: white;
+  font-weight: bold;
+}
+#clock {
+  font-size: 6vw;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1vh;
+  text-align: center;
+}
+
+.clock-time {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5vw;
+}
+#hours {
+  font-size: 6vw;
+}
+
+/* Seconds smaller */
+#seconds {
+  font-size: 2vw;
+  opacity: 0.8;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 1.5vh 0;
+  color: #facc15;
+  font-size: 1.2vw;
+  margin-top: auto;
+  border-top: 2px solid #facc15;
+}
+
+.footer p {
+  margin: 0;
+}
+
+/* AM PM smaller */
+#ampm {
+  font-size: 2vw;
+  margin-left: 0.5vw;
+}
+
+/* Next prayer countdown */
+#nextPrayer {
+  margin-top: 1vh;
+  text-align: center;
+}
+#nextPrayerName {
+  font-weight: 700;
+}
+#nextPrayerCountdown {
+  margin-top: 0.4vh;
+  opacity: 0.95;
+}
+
+/* Date row: left date, center next prayer, right hijri */
+.date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 0.5vh;
+}
+.date-left, .date-center, .date-right {
+  flex: 1 1 0;
+}
+.date-left { text-align: left; }
+.date-center { text-align: center; }
+.date-right { text-align: right; }
+.date-center #nextPrayerName { font-size: 1.4vw; color: #facc15; font-weight: 700; }
+.date-center #nextPrayerCountdown { font-size: 1.1vw; color: #fff; }

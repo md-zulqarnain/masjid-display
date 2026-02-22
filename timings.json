@@ -1,0 +1,22 @@
+{
+  "fajr": {
+    "azan": "05:50 AM",
+    "jamah": "03:15 PM"
+  },
+  "dhuhr": {
+    "azan": "01:40 PM",
+    "jamah": "12:50 PM"
+  },
+  "asr": {
+    "azan": "04:00 PM",
+    "jamah": "04:15 PM"
+  },
+  "maghrib": {
+    "azan": "05:59 PM",
+    "jamah": "06:17 PM"
+  },
+  "isha": {
+    "azan": "07:45 PM",
+    "jamah": "07:00 AM"
+  }
+}
