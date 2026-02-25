@@ -3,7 +3,7 @@ const prayerData = {
   dhuhr: { arabic: "ظهر", start: "12:00 PM", azan: "12:30 PM", jamah: "12:45 PM", end: "03:30 PM" },
   asr: { arabic: "عصر", start: "03:30 PM", azan: "04:00 PM", jamah: "04:15 PM", end: "05:45 PM" },
   maghrib: { arabic: "مغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
-  isha: { arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "08:00 PM", end: "10:30 PM" }
+  isha: { arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "02:07 PM", end: "10:30 PM" },
 };
 
 // Load prayer times from timings.json with cache-busting and change detection
@@ -496,3 +496,28 @@ loadVideos().then(() => {
 setInterval(playVideoInterval, 5 * 60 * 1000); // 5 minutes
 
 renderTable();
+
+
+
+let ishaRedirectTriggered = false;
+
+function checkIshaJamahRedirect() {
+  const now = new Date();
+
+  console.log(prayerData, "Current prayer data for Isha:", prayerData.isha);
+
+  const ishaJamahTime = parseTime(prayerData.isha.jamah);
+
+  // If time already passed today, don't shift to tomorrow
+  const diff = now - ishaJamahTime;
+
+  // If current time is within first 5 seconds of Isha Jamah
+  if (diff >= 0 && diff < 5000 && !ishaRedirectTriggered) {
+    ishaRedirectTriggered = true;
+
+    // Go to isha.html
+    window.location.href = "isha.html";
+  }
+}
+
+setInterval(checkIshaJamahRedirect, 1000);

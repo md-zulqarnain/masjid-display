@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Jumu'ah Prayer</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        body {
+            margin: 0;
+            /* background: linear-gradient(135deg, #052e1b, #0a3d2a); */
+            background: #0c1d15;
+            /* font-family: Arial, sans-serif; */
+            overflow: hidden;
+            color: #ffd700;
+        }
+
+        .juma-wrapper {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .text-primary {
+            color: #ffd700;
+        }
+
+        .animate-spin-slow {
+            animation: spin 40s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Position rotating SVGs */
+        .top-left {
+            position: absolute;
+            top: 10%;
+            left: 0;
+            width: 25%;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 10%;
+            right: 0;
+            width: 25%;
+        }
+
+        .bottom-left {
+            position: absolute;
+            bottom: 10%;
+            left: 0;
+            width: 25%;
+        }
+
+        .bottom-right {
+            position: absolute;
+            bottom: 10%;
+            right: 0;
+            width: 25%;
+        }
+
+        /* Masjid bottom center */
+        .masjid-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .juma-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px;
+        }
+
+        .juma-header h1 {
+            font-size: 3vw;
+            margin: 0;
+            text-align: center;
+        }
+
+        .juma-header h2 {
+            font-size: 1.5vw;
+            letter-spacing: 3px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .juma-time {
+            font-size: 6vw;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .juma-date {
+            font-size: 1.5vw;
+            margin-bottom: 30px;
+        }
+
+        .juma-boxes {
+            display: flex;
+            justify-content: space-around;
+            gap: 2vw;
+        }
+
+        .juma-box {
+            flex: 1;
+            border: 0.3vw solid #ffffff1a;
+            border-radius: 20px;
+            padding: 2.5vw;
+            backdrop-filter: blur(5px);
+            text-align: center;
+        }
+
+        .juma-box h3 {
+            font-size: 2vw;
+            margin-bottom: 15px;
+        }
+
+        .juma-box h3 span {
+            color: #ffffffc7;
+            font-size: 1vw;
+            font-weight: 400;
+            letter-spacing: 0.5vw;
+        }
+
+        .juma-box p {
+            font-size: 3vw;
+            font-weight: bold;
+        }
+
+        
+
+        @media (orientation: portrait) {
+            .juma-boxes {
+                flex-direction: column;
+            }
+
+            .juma-header h1 {
+                font-size: 6vw;
+            }
+
+            .juma-header h2 {
+                font-size: 3vw;
+            }
+
+            .juma-time {
+                font-size: 12vw;
+            }
+
+            .juma-date {
+                font-size: 3vw;
+            }
+
+            .juma-box h3 {
+                font-size: 4vw;
+            }
+
+            .juma-box p {
+                font-size: 6vw;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="juma-wrapper">
+
+        <!-- Rotating Corners -->
+        <div class="top-left">
+            <svg viewBox="0 0 200 200" class="absolute top-0 left-0 w-64 h-64 text-primary animate-spin-slow"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.15">
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(0 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(45 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(90 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(135 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <circle cx="100" cy="100" r="40" stroke="currentColor" stroke-width="1"></circle>
+                    <circle cx="100" cy="100" r="55" stroke="currentColor" stroke-width="0.5"></circle>
+                    <g>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(0 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(45 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(90 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(135 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(0 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(45 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(90 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(135 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(0 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(45 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(90 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(135 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(0 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(45 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(90 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(135 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                </g>
+            </svg>
+        </div>
+
+        <div class="top-right">
+            <svg viewBox="0 0 200 200" class="absolute top-0 left-0 w-64 h-64 text-primary animate-spin-slow"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.15">
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(0 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(45 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(90 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(135 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <circle cx="100" cy="100" r="40" stroke="currentColor" stroke-width="1"></circle>
+                    <circle cx="100" cy="100" r="55" stroke="currentColor" stroke-width="0.5"></circle>
+                    <g>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(0 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(45 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(90 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(135 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(0 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(45 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(90 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(135 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(0 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(45 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(90 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(135 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(0 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(45 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(90 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(135 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                </g>
+            </svg>
+        </div>
+
+        <div class="bottom-left">
+            <svg viewBox="0 0 200 200" class="absolute top-0 left-0 w-64 h-64 text-primary animate-spin-slow"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.15">
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(0 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(45 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(90 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(135 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <circle cx="100" cy="100" r="40" stroke="currentColor" stroke-width="1"></circle>
+                    <circle cx="100" cy="100" r="55" stroke="currentColor" stroke-width="0.5"></circle>
+                    <g>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(0 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(45 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(90 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(135 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(0 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(45 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(90 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(135 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(0 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(45 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(90 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(135 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(0 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(45 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(90 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(135 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                </g>
+            </svg>
+        </div>
+
+        <div class="bottom-right">
+            <svg viewBox="0 0 200 200" class="absolute top-0 left-0 w-64 h-64 text-primary animate-spin-slow"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g opacity="0.15">
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(0 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(45 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(90 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <rect x="70" y="70" width="60" height="60" rx="4" transform="rotate(135 100 100)"
+                        stroke="currentColor" stroke-width="1.5"></rect>
+                    <circle cx="100" cy="100" r="40" stroke="currentColor" stroke-width="1"></circle>
+                    <circle cx="100" cy="100" r="55" stroke="currentColor" stroke-width="0.5"></circle>
+                    <g>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(0 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(45 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(90 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="18" width="24" height="24" rx="2" transform="rotate(135 30 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(0 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(45 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(90 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="18" width="24" height="24" rx="2" transform="rotate(135 170 30)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(0 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(45 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(90 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="18" y="158" width="24" height="24" rx="2" transform="rotate(135 30 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                    <g>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(0 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(45 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(90 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                        <rect x="158" y="158" width="24" height="24" rx="2" transform="rotate(135 170 170)"
+                            stroke="currentColor" stroke-width="0.8"></rect>
+                    </g>
+                </g>
+            </svg>
+        </div>
+
+        <div class="container">
+
+            <div class="top-bar">
+                <img src="https://png.pngtree.com/thumb_back/fh260/background/20250120/pngtree-a-view-of-kaba-mecca-image_16881215.jpg"
+                    class="corner-img left">
+                <div class="juma-header">
+                    <h1>صلاة الجمعة</h1>
+                    <h2>JUMU'AH PRAYER</h2>
+                </div>
+                <img src="https://thumbs.dreamstime.com/b/vector-draw-masjid-nabawi-madina-tun-nabi-grey-background-arabic-calligraphy-ya-rasool-allah-masjid-nabawi-madina-tun-160702294.jpg"
+                    class="corner-img right">
+            </div>
+
+            <!-- Clock Section -->
+            <div class="divider">
+                <div class="divider-line"></div>
+                <div class="divider-star">✦</div>
+                <div class="divider-line"></div>
+            </div>
+            <div id="clock">
+                <div class="clock-time">
+                    <span id="hours"></span>
+                    <span id="seconds"></span>
+                    <span id="ampm"></span>
+                </div>
+                <div class="date-row">
+                    <div id="date" class="date-left"></div>
+
+                    <div id="hijri" class="date-right"></div>
+                </div>
+            </div>
+            <div class="divider">
+                <div class="divider-line"></div>
+                <div class="divider-star">✦</div>
+                <div class="divider-line"></div>
+            </div>
+            <div class="juma-boxes">
+                <div class="juma-box">
+                    <h3>أذان<br><span>AZAN</span></h3>
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                    </div>
+                    <p>1:00 PM</p>
+                </div>
+
+                <div class="juma-box">
+                    <h3>خطبة<br><span>KHUTBA</span></h3>
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                    </div>
+                    <p>1:45 PM</p>
+                </div>
+
+                <div class="juma-box">
+                    <h3>جماعة<br><span>JAMAH</span></h3>
+                    <div class="divider">
+                        <div class="divider-line"></div>
+                    </div>
+                    <p>2:00 PM</p>
+                </div>
+            </div>
+
+            <div class="footer">
+                Jama Masjid Jhirniya Shaikh
+            </div>
+
+        </div>
+
+        <!-- Bottom Masjid Silhouette -->
+        <div class="masjid-bottom text-primary">
+            <svg viewBox="0 0 400 120" class="absolute bottom-0 left-0 w-full text-primary" fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg">
+                <path d="M160 120 V70 Q160 20 200 10 Q240 20 240 70 V120 Z" opacity="0.12"></path>
+                <rect x="130" y="30" width="12" height="90" rx="2" opacity="0.1"></rect>
+                <circle cx="136" cy="28" r="6" opacity="0.1"></circle>
+                <path d="M133 28 L136 18 L139 28" opacity="0.1"></path>
+                <rect x="258" y="30" width="12" height="90" rx="2" opacity="0.1"></rect>
+                <circle cx="264" cy="28" r="6" opacity="0.1"></circle>
+                <path d="M261 28 L264 18 L267 28" opacity="0.1"></path>
+                <path d="M90 120 V85 Q90 55 120 50 Q150 55 150 85 V120 Z" opacity="0.08"></path>
+                <path d="M250 120 V85 Q250 55 280 50 Q310 55 310 85 V120 Z" opacity="0.08"></path>
+                <g transform="translate(196, 2)">
+                    <path d="M4 0 Q8 4 4 8 Q2 4 4 0 Z" opacity="0.15"></path>
+                </g>
+            </svg>
+        </div>
+
+    </div>
+
+
+
+    <script>
+        function updateJumaClock() {
+            const now = new Date();
+
+            document.getElementById("jumaClock").innerText =
+                now.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' });
+
+            document.getElementById("jumaDate").innerText =
+                now.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric"
+                });
+        }
+
+        setInterval(updateJumaClock, 1000);
+        updateJumaClock();
+
+        // Return to index after 3 hours
+        setTimeout(() => {
+            window.location.href = "index.html";
+        }, 3 * 60 * 60 * 1000);
+
+    </script>
+    <script src="app.js"></script>
+
+</body>
+
+</html>

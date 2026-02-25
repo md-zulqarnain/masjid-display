@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Surah & Hadith Screen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* body .arabic {
+            font-family: sans-serif;
+        } */
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .kalima {
+            font-size: 40px;
+            margin: 10px 0;
+            color: gold;
+        }
+
+        .time {
+            font-size: 60px;
+            font-weight: bold;
+            color: gold;
+        }
+
+        .date {
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        .separator {
+            height: 1px;
+            background: gold;
+            margin: 20px 0;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .badge {
+            border: 1px solid gold;
+            padding: 5px 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            letter-spacing: 3px;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            /* important */
+        }
+
+        .arabic {
+            width: 90%;
+            height: 60%;
+            /* limit height area */
+            overflow: hidden;
+            /* important */
+            line-height: 1.8;
+            direction: rtl;
+            /* better for Arabic */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reference {
+            margin-top: 20px;
+            font-size: 24px;
+            color: gold;
+        }
+
+        .referenceEn {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .fade {
+            transition: opacity 0.6s ease;
+        }
+
+        .hidden {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="top-bar">
+            <img src="https://png.pngtree.com/thumb_back/fh260/background/20250120/pngtree-a-view-of-kaba-mecca-image_16881215.jpg"
+                class="corner-img left">
+            <div class="arabic-title">
+                لَا إِلٰهَ إِلَّا ٱللَّٰهُ مُحَمَّدٌ رَسُولُ ٱللَّٰهِ
+            </div>
+            <img src="https://thumbs.dreamstime.com/b/vector-draw-masjid-nabawi-madina-tun-nabi-grey-background-arabic-calligraphy-ya-rasool-allah-masjid-nabawi-madina-tun-160702294.jpg"
+                class="corner-img right">
+        </div>
+
+
+        <div id="clock">
+            <div class="clock-time">
+                <span id="hours"></span>
+                <span id="seconds"></span>
+                <span id="ampm"></span>
+            </div>
+            <div class="date-row">
+                <div id="date" class="date-left"></div>
+
+                <div id="hijri" class="date-right"></div>
+            </div>
+        </div>
+
+        <div class="divider">
+            <div class="divider-line"></div>
+            <div class="divider-star">✦</div>
+            <div class="divider-line"></div>
+        </div>
+
+
+        <div class="content fade" id="content">
+            <div class="badge" id="type"></div>
+            <div class="arabic" id="arabic"></div>
+            <div class="divider divider-small">
+                <div class="divider-line"></div>
+                <div class="divider-star">❁</div>
+                <div class="divider-line"></div>
+            </div>
+            <div class="reference" id="reference"></div>
+
+            <div class="referenceEn" id="referenceEn"></div>
+        </div>
+
+    </div>
+    <script src="app.js"></script>
+    <script>
+        const verses = [
+            {
+                arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمَٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
+                reference: "سُورَةُ الْفَاتِحَة",
+                referenceEn: "Surah Al-Fatiha (1:1-7)",
+                referenceHindi: "सूरह अल-फ़ातिहा (1:1-7)",
+                hindi: "शुरू अल्लाह के नाम से जो बड़ा मेहरबान, निहायत रहम करने वाला है। सब तारीफ़ अल्लाह के लिए है जो सारे जहानों का रब है। बड़ा मेहरबान, निहायत रहम करने वाला। बदले के दिन का मालिक। हम तेरी ही इबादत करते हैं और तुझी से मदद मांगते हैं। हमें सीधा रास्ता दिखा। उन लोगों का रास्ता जिन पर तूने इनाम किया, न कि उन पर जिन पर ग़ज़ब हुआ और न गुमराहों का।",
+                type: "surah",
+            },
+
+            {
+                arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ ...",
+                reference: "آيَةُ الْكُرْسِيّ",
+                referenceEn: "Ayatul Kursi (2:255)",
+                referenceHindi: "आयतुल कुर्सी (सूरह अल-बक़रह 2:255)",
+                hindi: "अल्लाह, उसके सिवा कोई माबूद नहीं। वह ज़िंदा है, सबको संभालने वाला है। उसे न ऊँघ आती है न नींद... वह बुलंद और अज़ीम है।",
+                type: "surah",
+            },
+
+            {
+                arabic: "قُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ ﴿٤﴾",
+                reference: "سُورَةُ الْإِخْلَاص",
+                referenceEn: "Surah Al-Ikhlas (112:1-4)",
+                referenceHindi: "सूरह अल-इख़लास (112:1-4)",
+                hindi: "कह दो, वह अल्लाह एक है। अल्लाह बेनियाज़ है। न वह किसी का बाप है और न किसी का बेटा। और न कोई उसका बराबर है।",
+                type: "surah",
+            },
+
+            {
+                arabic: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
+                reference: "صحيح البخاري",
+                referenceEn: "Sahih al-Bukhari — Hadith on Intentions",
+                referenceHindi: "सहीह अल-बुख़ारी — नीयतों पर हदीस",
+                hindi: "अमल का दारोमदार नियतों पर है, और हर व्यक्ति को वही मिलेगा जिसकी उसने नियत की।",
+                type: "hadith",
+            },
+
+            {
+                arabic: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ",
+                reference: "صحيح مسلم",
+                referenceEn: "Sahih Muslim — Hadith on Knowledge",
+                referenceHindi: "सहीह मुस्लिम — इल्म के बारे में हदीस",
+                hindi: "जो व्यक्ति ज्ञान की तलाश में कोई रास्ता चलता है, अल्लाह उसके लिए जन्नत का रास्ता आसान कर देता है।",
+                type: "hadith",
+            },
+
+            {
+                arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
+                reference: "صحيح البخاري",
+                referenceEn: "Sahih al-Bukhari — Hadith on Quran",
+                referenceHindi: "सहीह अल-बुख़ारी — क़ुरआन के बारे में हदीस",
+                hindi: "तुम में सबसे बेहतर वह है जो क़ुरआन सीखे और उसे सिखाए।",
+                type: "hadith",
+            }
+        ];
+
+        let currentIndex = 0;
+        const content = document.getElementById("content");
+
+        function fitText() {
+            const el = document.querySelector('.arabic');
+
+            let fontSize = 60; // start large
+            el.style.fontSize = fontSize + "px";
+
+            // Keep shrinking until BOTH height and width fit
+            while (
+                (el.scrollHeight > el.clientHeight ||
+                    el.scrollWidth > el.clientWidth)
+                && fontSize > 10
+            ) {
+                fontSize -= 1;
+                el.style.fontSize = fontSize + "px";
+            }
+        }
+
+        window.addEventListener("load", fitText);
+        window.addEventListener("resize", fitText);
+
+        function updateVerse() {
+            content.classList.add("hidden");
+
+            setTimeout(() => {
+                const current = verses[currentIndex];
+
+                document.getElementById("type").innerText = current.type;
+                document.getElementById("arabic").innerText = current.hindi;
+                document.getElementById("reference").innerText = current.referenceHindi;
+                document.getElementById("referenceEn").innerText = current.referenceEn;
+
+                content.classList.remove("hidden");
+
+                currentIndex = (currentIndex + 1) % verses.length;
+                fitText()
+            }, 600);
+        }
+
+        setInterval(updateVerse, 15000);
+        updateVerse();
+
+
+
+
+    </script>
+
+</body>
+
+</html>
