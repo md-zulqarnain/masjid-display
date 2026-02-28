@@ -1,7 +1,10 @@
 {
   "fajr": {
     "azan": "05:55 AM",
-    "jamah": "03:15 PM"
+    "jamah": "03:18 PM",
+    "specialEnabled": true,
+    "azanAfterSahri": 15,
+    "jamahAfterAzan": 10
   },
   "dhuhr": {
     "azan": "01:40 PM",
@@ -13,7 +16,9 @@
   },
   "maghrib": {
     "azan": "05:59 PM",
-    "jamah": "06:17 PM"
+    "jamah": "06:17 PM",
+    "specialEnabled": true,
+    "jamahAfterAzan": 10
   },
   "isha": {
     "azan": "07:55 PM",
