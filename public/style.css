@@ -143,6 +143,15 @@ tbody td:nth-child(5) {
     font-size: 1.2vw;
     margin-top: auto;
     border-top: 2px solid #facc15;
+    position: relative;
+}
+.brand-log {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.brand-log img {
+    max-width: 10vw;
 }
 
 .footer p {
@@ -233,28 +242,41 @@ tbody td:nth-child(5) {
 }
 
 .divider {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin: 30px 0;
-        }
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 30px 0;
+}
 
-        .divider-line {
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(to right, transparent, #ffd700, transparent);
-        }
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #ffd700, transparent);
+}
 
-        .divider-star {
-            color: #ffd700;
-            font-size: 2vw;
-            margin: 0 15px;
-            opacity: 0.9;
-        }
-        .divider-small {
-            max-width: 200px;
-        }
+.divider-star {
+    color: #ffd700;
+    font-size: 2vw;
+    margin: 0 15px;
+    opacity: 0.9;
+}
 
+.divider-small {
+    max-width: 200px;
+}
+
+div#nextPrayerCountdown {
+    margin: 16px 0 10px;
+}
+.countdown {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 3px 9px;
+    display: inline-block;
+    color: #ffffffd1;
+    font-size: 20px;
+    font-weight: bold;
+}
 /* Portrait mode tweaks for display (narrow, tall screens) */
 @media (orientation: portrait) {
     .container {
@@ -267,7 +289,7 @@ tbody td:nth-child(5) {
     }
 
     .arabic-title {
-        font-size: 6vw;
+        font-size: 5vw;
     }
 
     #clock {
@@ -347,5 +369,5 @@ tbody td:nth-child(5) {
         line-height: 1.6;
     }
 
-    
+
 }

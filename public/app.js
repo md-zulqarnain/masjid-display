@@ -1,15 +1,20 @@
 const prayerData = {
-    fajr: { arabic: "فجر", start: "04:30 AM", azan: "05:00 AM", jamah: "05:15 AM", end: "06:15 AM" },
-    dhuhr: { arabic: "ظهر", start: "12:00 PM", azan: "12:30 PM", jamah: "12:45 PM", end: "03:30 PM" },
-    asr: { arabic: "عصر", start: "03:30 PM", azan: "04:00 PM", jamah: "04:15 PM", end: "05:45 PM" },
-    maghrib: { arabic: "مغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
-    isha: { arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "02:07 PM", end: "10:30 PM" },
+    fajr: { name: "Fajr", arabic: "فجر", start: "04:30 AM", azan: "05:00 AM", jamah: "05:15 AM", end: "06:15 AM" },
+    dhuhr: { name: "Zohar", arabic: "ظهر", start: "12:00 PM", azan: "12:30 PM", jamah: "12:45 PM", end: "03:30 PM" },
+    asr: { name: "Asr", arabic: "عصر", start: "03:30 PM", azan: "04:00 PM", jamah: "04:15 PM", end: "05:45 PM" },
+    maghrib: { name: "Maghrib", arabic: "مغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
+    isha: { name: "Isha", arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "08:07 PM", end: "10:30 PM" },
 };
 
 // Load prayer times from timings.json with cache-busting and change detection
 let lastTimingJSON = null;
 
 let lastRenderedData = JSON.stringify(prayerData);
+
+let azanBeeped = {};
+let jamahBeeped = {};
+let beepInterval = null;
+let HIJRI_OFFSET = 0;
 
 function parseHM(timeStr) {
     // accepts 'HH:MM' or 'H:MM'
@@ -36,6 +41,33 @@ function to12Hour(time24) {
     if (hh === 0) hh = 12;
     return String(hh).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' ' + ampm;
 }
+
+function formatDisplayTime(timeStr) {
+    // Converts "04:30 AM" → "04:30"
+    return timeStr.replace(" AM", "").replace(" PM", "");
+}
+
+
+async function loadHijriOffset() {
+    try {
+        const res = await fetch('/api/settings?t=' + Date.now(), { cache: 'no-store' });
+        const data = await res.json();
+
+        if (typeof data.hijriOffset !== "undefined" && data.hijriOffset !== HIJRI_OFFSET) {
+            HIJRI_OFFSET = data.hijriOffset;
+            console.log("Hijri offset updated:", HIJRI_OFFSET);
+        }
+
+    } catch (e) {
+        console.error("Error refreshing Hijri offset");
+    }
+}
+
+loadHijriOffset();
+
+setInterval(async () => {
+    loadHijriOffset();
+}, 5000);
 
 // Load prayer times either from quick-times or monthly timing-data files
 async function loadPrayerTimesForToday() {
@@ -301,12 +333,24 @@ function updateClock() {
     }
 
     if (hijriEl) {
-        hijriEl.innerText =
-            new Intl.DateTimeFormat('en-TN-u-ca-islamic', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            }).format(now);
+
+        const islamicDate = new Intl.DateTimeFormat('en-TN-u-ca-islamic', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).formatToParts(now);
+
+        let day, month, year;
+
+        islamicDate.forEach(part => {
+            if (part.type === "day") day = parseInt(part.value);
+            if (part.type === "month") month = part.value;
+            if (part.type === "year") year = part.value;
+        });
+
+        day = day + HIJRI_OFFSET;
+
+        hijriEl.innerText = `${month} ${day}, ${year} AH`;
     }
 }
 
@@ -336,12 +380,12 @@ function renderTable() {
         row.id = key;
 
         row.innerHTML = `
-      <td>${key.charAt(0).toUpperCase() + key.slice(1)}</td>
+      <td>${prayerData[key].name}</td>
       <td>${prayerData[key].arabic}</td>
-      <td>${prayerData[key].start}</td>
-      <td>${prayerData[key].azan}</td>
-      <td>${prayerData[key].jamah}</td>
-      <td>${prayerData[key].end}</td>
+      <td>${formatDisplayTime(prayerData[key].start)}</td>
+        <td>${formatDisplayTime(prayerData[key].azan)}</td>
+        <td>${formatDisplayTime(prayerData[key].jamah)}</td>
+        <td>${formatDisplayTime(prayerData[key].end)}</td>
     `;
 
         table.appendChild(row);
@@ -375,17 +419,13 @@ function highlightNextPrayer() {
     document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
 
     Object.keys(prayerData).forEach(key => {
-        let prayerTime = parseTime(prayerData[key].azan);
+        let prayerTime = parseTime(prayerData[key].jamah);
         if (prayerTime < now) prayerTime.setDate(prayerTime.getDate() + 1);
 
         const diff = prayerTime - now;
         if (diff < minDiff) {
             minDiff = diff;
             closest = key;
-        }
-
-        if (Math.abs(diff) < 1000) {
-            triggerAzan(key);
         }
     });
 
@@ -406,35 +446,103 @@ function formatDiff(ms) {
     return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 }
 
+function startBeepRepeating() {
+    const audio = document.getElementById("beepSound");
+    if (!audio) return;
+
+    // Prevent multiple intervals
+    if (beepInterval) return;
+
+    beepInterval = setInterval(() => {
+        audio.currentTime = 0;
+        audio.play().catch(() => { });
+    }, 2000); // repeat every 2 seconds
+}
+
+function stopBeepRepeating() {
+    if (beepInterval) {
+        clearInterval(beepInterval);
+        beepInterval = null;
+    }
+}
+
 function updateNextPrayerCountdown() {
     try {
         const now = new Date();
-        let closest = null;
+        let closestPrayer = null;
+        let closestType = null;
         let minDiff = Infinity;
+        let shouldBeep = false;   // 🔥 Important
 
         Object.keys(prayerData).forEach(key => {
-            let prayerTime = parseTime(prayerData[key].azan);
-            if (prayerTime < now) prayerTime.setDate(prayerTime.getDate() + 1);
-            const diff = prayerTime - now;
-            if (diff < minDiff) {
-                minDiff = diff;
-                closest = key;
+
+            const azanTime = parseTime(prayerData[key].azan);
+            const jamahTime = parseTime(prayerData[key].jamah);
+
+            if (azanTime < now) azanTime.setDate(azanTime.getDate() + 1);
+            if (jamahTime < now) jamahTime.setDate(jamahTime.getDate() + 1);
+
+            // 🔥 NOW calculate diff AFTER adjusting date
+            const azanDiff = azanTime - now;
+            const jamahDiff = jamahTime - now;
+
+            // 🔔 Beep window (first 5 seconds)
+            // Beep for ALL Azan
+            if (azanDiff > 0 && azanDiff <= 10000) {
+                shouldBeep = true;
+            }
+
+            // Beep for Jamat EXCEPT Maghrib
+            if (jamahDiff > 0 && jamahDiff <= 10000 && key !== "maghrib") {
+                shouldBeep = true;
+            }
+
+            // Find closest event
+            if (azanDiff > 0 && azanDiff < minDiff) {
+                minDiff = azanDiff;
+                closestPrayer = key;
+                closestType = "Azan";
+            }
+
+            if (jamahDiff > 0 && jamahDiff < minDiff) {
+                minDiff = jamahDiff;
+                closestPrayer = key;
+                closestType = "Jamat";
             }
         });
 
-        const nameEl = document.getElementById('nextPrayerName');
-        const cntEl = document.getElementById('nextPrayerCountdown');
-
-        if (!nameEl || !cntEl) return;
-
-        if (closest) {
-            const displayName = (prayerData[closest].arabic || '') + ' - ' + (closest.charAt(0).toUpperCase() + closest.slice(1));
-            nameEl.innerText = 'Next: ' + displayName;
-            cntEl.innerText = formatDiff(minDiff);
+        // 🔥 Handle beep OUTSIDE loop
+        if (shouldBeep) {
+            startBeepRepeating();
         } else {
-            nameEl.innerText = '';
-            cntEl.innerText = '';
+            stopBeepRepeating();
         }
+
+        const nameEl = document.getElementById('nextPrayerName');
+        if (!nameEl) return;
+
+        if (closestPrayer) {
+            const displayName =
+                prayerData[closestPrayer].arabic +
+                ' - ' +
+                prayerData[closestPrayer].name;
+
+            nameEl.innerText = `Next ${closestType}: ${displayName}`;
+
+            const hours = Math.floor(minDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((minDiff % (1000 * 60)) / 1000);
+
+            document.getElementById("countHours").innerText =
+                String(hours).padStart(2, "0");
+
+            document.getElementById("countMinutes").innerText =
+                String(minutes).padStart(2, "0");
+
+            document.getElementById("countSeconds").innerText =
+                String(seconds).padStart(2, "0");
+        }
+
     } catch (e) {
         console.error('Error updating next prayer countdown', e);
     }
@@ -444,90 +552,8 @@ function updateNextPrayerCountdown() {
 setInterval(updateNextPrayerCountdown, 1000);
 updateNextPrayerCountdown();
 
-function triggerAzan(prayer) {
-    const audio = document.getElementById("azanAudio");
-    audio.play();
 
-    const black = document.getElementById("blackScreen");
-    black.style.display = "block";
 
-    setTimeout(() => {
-        black.style.display = "none";
-    }, 10 * 60 * 1000); // 10 minutes
-}
-
-function showVideo() {
-    const video = document.getElementById("masjidVideo");
-    const container = document.querySelector(".container");
-
-    container.style.display = "none";
-    video.style.display = "block";
-    video.play();
-}
-
-function hideVideo() {
-    const video = document.getElementById("masjidVideo");
-    const container = document.querySelector(".container");
-
-    video.style.display = "none";
-    container.style.display = "flex";
-    video.pause();
-}
-
-// Video rotation functionality
-let videoList = [];
-let currentVideoIndex = 0;
-
-// Fetch available videos from server
-async function loadVideos() {
-    try {
-        const response = await fetch("/api/videos");
-        videoList = await response.json();
-        console.log("Available videos:", videoList);
-        return videoList;
-    } catch (err) {
-        console.error("Error loading videos:", err);
-        return [];
-    }
-}
-
-// Play video for 30 seconds every 5 minutes
-function playVideoInterval() {
-    if (videoList.length === 0) {
-        console.log("No videos available");
-        return;
-    }
-
-    const video = document.getElementById("masjidVideo");
-    const source = video.querySelector("source");
-
-    console.log("Playing video:", videoList[currentVideoIndex]);
-
-    source.src = videoList[currentVideoIndex];
-    video.load();
-
-    video.oncanplay = function () {
-        console.log("Video loaded, playing...");
-        showVideo();
-    };
-
-    video.onerror = function () {
-        console.error("Error loading video:", videoList[currentVideoIndex]);
-        hideVideo();
-    };
-
-    setTimeout(() => {
-        hideVideo();
-        currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
-    }, 30 * 1000); // 30 seconds
-}
-
-// Load videos on page load
-loadVideos().then(() => {
-    console.log("Videos loaded, starting interval...");
-});
-
-setInterval(playVideoInterval, 5 * 60 * 1000); // 5 minutes
 
 renderTable();
 
@@ -555,3 +581,54 @@ function checkIshaJamahRedirect() {
 }
 
 setInterval(checkIshaJamahRedirect, 1000);
+
+
+async function loadVerses() {
+    const res = await fetch('/api/verses');
+    const verses = await res.json();
+
+    if (!verses.length) return;
+
+    let index = 0;
+
+    function showVerse() {
+        const verse = verses[index];
+
+        const refEl = document.getElementById('verseReference');
+        const textEl = document.getElementById('verseText');
+
+        if (!refEl || !textEl) return; // stop if elements not found
+
+        refEl.innerText = verse.reference;
+        textEl.innerText = verse.text;
+
+        index = (index + 1) % verses.length;
+    }
+
+    showVerse();
+
+    // Rotate every 20 seconds
+    setInterval(showVerse, 20000);
+
+
+}
+
+loadVerses();
+
+
+let audioUnlocked = false;
+
+function unlockAudio() {
+    const audio = document.getElementById("beepSound");
+    if (!audioUnlocked && audio) {
+        audio.play().then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+            audioUnlocked = true;
+            console.log("Audio unlocked");
+        }).catch(() => { });
+    }
+}
+
+document.addEventListener("click", unlockAudio);
+document.addEventListener("touchstart", unlockAudio);

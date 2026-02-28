@@ -122,7 +122,8 @@
         select,
         input[type="text"],
         input[type="time"],
-        input[type="file"] {
+        input[type="file"],
+        input[type="number"] {
             width: 100%;
             padding: 12px;
             border: 1px solid #444;
@@ -420,8 +421,9 @@
         </header>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('quick-times')">Quick Times</button>
-            <button class="tab-btn" onclick="switchTab('videos')">Manage Videos</button>
+            <button class="tab-btn active" onclick="switchTab('quick-times', this)">Quick Times</button>
+            <button class="tab-btn" onclick="switchTab('verses', this)">Manage Verses</button>
+            <button class="tab-btn" onclick="switchTab('settings', this)">Settings</button>
         </div>
 
         <!-- Quick Times Tab -->
@@ -442,38 +444,80 @@
                 <div id="quickMessage" class="message"></div>
             </div>
         </div>
-
-        <!-- Videos Tab -->
-        <div id="videos" class="tab-content">
+        <!-- Quick Times Tab -->
+        <!-- Verses Tab -->
+        <div id="verses" class="tab-content">
             <div class="section">
-                <h2>Video Management</h2>
+                <h2>Add Hadith / Surah / Sunnah</h2>
 
                 <div class="form-group">
-                    <label>Upload New Video:</label>
-                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('videoInput').click()">
-                        <p>Click to upload or drag and drop</p>
-                        <p style="font-size: 0.9em; color: #bbb; margin-top: 10px;">MP4, WebM, OGG, MOV</p>
-                        <input type="file" id="videoInput" accept="video/*" style="display:none;"
-                            onchange="uploadVideo()">
-                    </div>
+                    <label>Type</label>
+                    <select id="verseType">
+                        <option value="surah">Surah</option>
+                        <option value="hadith">Hadith</option>
+                        <option value="sunnah">Sunnah</option>
+                    </select>
                 </div>
 
-                <div id="uploadMessage" class="message"></div>
-
-                <h3 style="color: #facc15; margin-top: 30px; margin-bottom: 20px;">Uploaded Videos</h3>
-                <div id="videoList" class="video-list">
-                    <p style="color: #bbb;">Loading videos...</p>
+                <div class="form-group">
+                    <label>Reference</label>
+                    <input type="text" id="verseReference" placeholder="Surah Al-Fatiha (1:1-7)" />
                 </div>
+
+                <div class="form-group">
+                    <label>Text</label>
+                    <textarea id="verseText" rows="6" placeholder="Enter full text here"
+                        style="width:100%; padding:12px; background:rgba(255,255,255,0.1); color:white; border:1px solid #444; border-radius:5px;"></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="verseSaveBtn">Save</button>
+                </div>
+
+                <div id="verseMessage" class="message"></div>
+
+                <hr style="margin:30px 0">
+
+                <h3>All Verses</h3>
+                <table style="width:100%; color:white; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #444; padding:8px;">Type</th>
+                            <th style="border:1px solid #444; padding:8px;">Reference</th>
+                            <th style="border:1px solid #444; padding:8px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="versesTable"></tbody>
+                </table>
             </div>
         </div>
 
+        <div id="settings" class="tab-content">
+            <div class="section">
+                <h2>Hijri Date Settings</h2>
+
+                <div class="form-group">
+                    <label>Hijri Date Offset (Days)</label>
+                    <input type="number" id="hijriOffsetInput" min="-5" max="5" />
+                    <small style="color:#bbb;">
+                        Use -1 if Hijri is 1 day ahead, 1 if 1 day behind.
+                    </small>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="saveSettings()">Save</button>
+                </div>
+
+                <div id="settingsMessage" class="message"></div>
+            </div>
+        </div>
     </div>
 
     <script>
         const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
         const prayerNames = {
             fajr: 'فجر - Fajr',
-            dhuhr: 'ظهر - Dhuhr',
+            dhuhr: 'ظهر - Zohar',
             asr: 'عصر - Asr',
             maghrib: 'مغرب - Maghrib',
             isha: 'عشاء - Isha'
@@ -482,21 +526,24 @@
         let prayerData = {};
         let quickTimesData = {};
 
+        let editIndex = null;
+
         // Tab Switching
-        function switchTab(tab) {
+        function switchTab(tab, btn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
             document.getElementById(tab).classList.add('active');
-            event.target.classList.add('active');
+            btn.classList.add('active');
 
-            if (tab === 'videos') {
-                loadVideos();
+            if (tab === 'verses') {
+                loadVersesList();
             } else if (tab === 'quick-times') {
                 loadQuickTimes();
+            } else if (tab === 'settings') {
+                loadSettings();
             }
         }
-
         // Load quick times from timings.json
         async function loadQuickTimes() {
             try {
@@ -686,116 +733,6 @@
         }
 
 
-
-        // Video Management
-        async function loadVideos() {
-            try {
-                const response = await fetch('/api/videos');
-                const videos = await response.json();
-                const container = document.getElementById('videoList');
-
-                if (videos.length === 0) {
-                    container.innerHTML = '<p style="color: #bbb; grid-column: 1/-1;">No videos uploaded yet</p>';
-                    return;
-                }
-
-                container.innerHTML = '';
-                videos.forEach(videoPath => {
-                    const filename = videoPath.split('/').pop();
-                    const card = document.createElement('div');
-                    card.className = 'video-card';
-                    card.innerHTML = `
-          <h3>${filename}</h3>
-          <video width="100%" height="150" controls style="border-radius: 5px;">
-            <source src="${videoPath}" type="video/mp4">
-          </video>
-          <div class="video-card-actions">
-            <button class="btn-danger" onclick="deleteVideo('${filename}')">Delete</button>
-          </div>
-        `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                console.error('Error loading videos:', err);
-            }
-        }
-
-        // Upload video
-        async function uploadVideo() {
-            const fileInput = document.getElementById('videoInput');
-            const file = fileInput.files[0];
-
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append('video', file);
-
-            const uploadArea = document.getElementById('uploadArea');
-            uploadArea.innerHTML = '<div class="loading" style="margin: 20px auto;"></div>';
-
-            try {
-                const response = await fetch('/api/upload-video', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                if (response.ok) {
-                    showMessage('uploadMessage', result.message || 'Video uploaded successfully!', 'success');
-                    loadVideos();
-                    fileInput.value = '';
-                } else {
-                    showMessage('uploadMessage', result.error || 'Upload failed', 'error');
-                }
-            } catch (err) {
-                showMessage('uploadMessage', 'Error uploading video: ' + err.message, 'error');
-            }
-
-            uploadArea.innerHTML = '<p>Click to upload or drag and drop</p><p style="font-size: 0.9em; color: #bbb; margin-top: 10px;">MP4, WebM, OGG, MOV</p>';
-        }
-
-        // Delete video
-        async function deleteVideo(filename) {
-            if (!confirm('Are you sure you want to delete this video?')) return;
-
-            try {
-                const response = await fetch(`/api/video/${encodeURIComponent(filename)}`, {
-                    method: 'DELETE'
-                });
-
-                const result = await response.json();
-                if (response.ok) {
-                    showMessage('uploadMessage', result.message || 'Video deleted successfully!', 'success');
-                    loadVideos();
-                } else {
-                    showMessage('uploadMessage', result.error || 'Delete failed', 'error');
-                }
-            } catch (err) {
-                showMessage('uploadMessage', 'Error deleting video: ' + err.message, 'error');
-            }
-        }
-
-        // Drag and drop
-        const uploadArea = document.getElementById('uploadArea');
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('video/')) {
-                document.getElementById('videoInput').files = e.dataTransfer.files;
-                uploadVideo();
-            }
-        });
-
         // Utility functions
         function showMessage(elementId, text, type) {
             const el = document.getElementById(elementId);
@@ -815,17 +752,13 @@
         }
 
         // Tab Switching
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        // function switchTab(tab) {
+        //     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        //     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
-            document.getElementById(tab).classList.add('active');
-            event.target.classList.add('active');
-
-            if (tab === 'videos') {
-                loadVideos();
-            }
-        }
+        //     document.getElementById(tab).classList.add('active');
+        //     event.target.classList.add('active');
+        // }
 
         loadQuickTimes();
 
@@ -839,6 +772,121 @@
             const checked = document.getElementById('maghrib-special-toggle').checked;
             document.getElementById('maghrib-special-fields').style.display = checked ? 'block' : 'none';
         }
+
+        async function saveVerse() {
+            const reference = document.getElementById('verseReference').value.trim();
+            const text = document.getElementById('verseText').value.trim();
+            const type = document.getElementById('verseType').value;
+            const saveBtn = document.getElementById('verseSaveBtn');
+
+            if (!reference || !text) {
+                showMessage('verseMessage', 'All fields are required!', 'error');
+                return;
+            }
+
+            try {
+
+                if (editIndex === null) {
+                    // ADD
+                    await fetch('/api/verses', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reference, text, type })
+                    });
+
+                    showMessage('verseMessage', 'Saved successfully!', 'success');
+
+                } else {
+                    // UPDATE
+                    await fetch('/api/verses/' + editIndex, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reference, text, type })
+                    });
+
+                    showMessage('verseMessage', 'Updated successfully!', 'success');
+
+                    editIndex = null;
+                    saveBtn.innerText = "Save";
+                }
+
+                document.getElementById('verseReference').value = "";
+                document.getElementById('verseText').value = "";
+
+                loadVersesList();
+
+            } catch (err) {
+                showMessage('verseMessage', 'Server error: ' + err.message, 'error');
+            }
+        }
+        async function loadVersesList() {
+            const res = await fetch('/api/verses');
+            const verses = await res.json();
+
+            const table = document.getElementById('versesTable');
+            table.innerHTML = "";
+
+            verses.forEach((v, index) => {
+                table.innerHTML += `
+            <tr>
+                <td style="border:1px solid #444; padding:8px;">${v.type}</td>
+                <td style="border:1px solid #444; padding:8px;">${v.reference}</td>
+                <td style="border:1px solid #444; padding:8px;">
+                    <button onclick="editVerse(${index})">Edit</button>
+                    <button onclick="deleteVerse(${index})">Delete</button>
+                </td>
+            </tr>
+        `;
+            });
+        }
+
+        async function deleteVerse(index) {
+            if (!confirm("Delete this verse?")) return;
+
+            try {
+                await fetch('/api/verses/' + index, { method: 'DELETE' });
+                showMessage('verseMessage', 'Deleted successfully!', 'success');
+                loadVersesList();
+            } catch (err) {
+                showMessage('verseMessage', 'Delete failed!', 'error');
+            }
+        }
+
+        async function editVerse(index) {
+            const res = await fetch('/api/verses');
+            const verses = await res.json();
+            const verse = verses[index];
+
+            document.getElementById('verseReference').value = verse.reference;
+            document.getElementById('verseText').value = verse.text;
+            document.getElementById('verseType').value = verse.type;
+
+            editIndex = index;
+
+            document.getElementById('verseSaveBtn').innerText = "Update";
+        }
+
+
+        async function loadSettings() {
+            const res = await fetch('/api/settings');
+            const data = await res.json();
+            document.getElementById('hijriOffsetInput').value = data.hijriOffset || 0;
+        }
+
+        async function saveSettings() {
+            const offset = parseInt(document.getElementById('hijriOffsetInput').value);
+
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hijriOffset: offset })
+            });
+
+            showMessage('settingsMessage', 'Settings saved successfully!', 'success');
+        }
+
+        window.addEventListener("load", loadVersesList);
+        document.getElementById('verseSaveBtn').addEventListener('click', saveVerse);
     </script>
 
 </body>

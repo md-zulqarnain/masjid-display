@@ -145,13 +145,17 @@
 
         <div class="content fade" id="content">
             <div class="badge" id="type"></div>
-            <div class="arabic" id="arabic"></div>
+            <!-- <div class="verse-section">
+                <h2 id="verseReference"></h2>
+                <p id="verseText"></p>
+            </div> -->
+            <div class="arabic" id="verseText"></div>
             <div class="divider divider-small">
                 <div class="divider-line"></div>
                 <div class="divider-star">❁</div>
                 <div class="divider-line"></div>
             </div>
-            <div class="reference" id="reference"></div>
+            <div class="reference" id="verseReference"></div>
 
             <div class="referenceEn" id="referenceEn"></div>
         </div>
@@ -159,105 +163,128 @@
     </div>
     <script src="app.js"></script>
     <script>
-        const verses = [
-            {
-                arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمَٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
-                reference: "سُورَةُ الْفَاتِحَة",
-                referenceEn: "Surah Al-Fatiha (1:1-7)",
-                referenceHindi: "सूरह अल-फ़ातिहा (1:1-7)",
-                hindi: "शुरू अल्लाह के नाम से जो बड़ा मेहरबान, निहायत रहम करने वाला है। सब तारीफ़ अल्लाह के लिए है जो सारे जहानों का रब है। बड़ा मेहरबान, निहायत रहम करने वाला। बदले के दिन का मालिक। हम तेरी ही इबादत करते हैं और तुझी से मदद मांगते हैं। हमें सीधा रास्ता दिखा। उन लोगों का रास्ता जिन पर तूने इनाम किया, न कि उन पर जिन पर ग़ज़ब हुआ और न गुमराहों का।",
-                type: "surah",
-            },
+        // const verses = [
+        //     {
+        //         arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمَٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
+        //         reference: "سُورَةُ الْفَاتِحَة",
+        //         referenceEn: "Surah Al-Fatiha (1:1-7)",
+        //         referenceHindi: "सूरह अल-फ़ातिहा (1:1-7)",
+        //         hindi: "शुरू अल्लाह के नाम से जो बड़ा मेहरबान, निहायत रहम करने वाला है। सब तारीफ़ अल्लाह के लिए है जो सारे जहानों का रब है। बड़ा मेहरबान, निहायत रहम करने वाला। बदले के दिन का मालिक। हम तेरी ही इबादत करते हैं और तुझी से मदद मांगते हैं। हमें सीधा रास्ता दिखा। उन लोगों का रास्ता जिन पर तूने इनाम किया, न कि उन पर जिन पर ग़ज़ब हुआ और न गुमराहों का।",
+        //         type: "surah",
+        //     },
 
-            {
-                arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ ...",
-                reference: "آيَةُ الْكُرْسِيّ",
-                referenceEn: "Ayatul Kursi (2:255)",
-                referenceHindi: "आयतुल कुर्सी (सूरह अल-बक़रह 2:255)",
-                hindi: "अल्लाह, उसके सिवा कोई माबूद नहीं। वह ज़िंदा है, सबको संभालने वाला है। उसे न ऊँघ आती है न नींद... वह बुलंद और अज़ीम है।",
-                type: "surah",
-            },
+        //     {
+        //         arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ ...",
+        //         reference: "آيَةُ الْكُرْسِيّ",
+        //         referenceEn: "Ayatul Kursi (2:255)",
+        //         referenceHindi: "आयतुल कुर्सी (सूरह अल-बक़रह 2:255)",
+        //         hindi: "अल्लाह, उसके सिवा कोई माबूद नहीं। वह ज़िंदा है, सबको संभालने वाला है। उसे न ऊँघ आती है न नींद... वह बुलंद और अज़ीम है।",
+        //         type: "surah",
+        //     },
 
-            {
-                arabic: "قُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ ﴿٤﴾",
-                reference: "سُورَةُ الْإِخْلَاص",
-                referenceEn: "Surah Al-Ikhlas (112:1-4)",
-                referenceHindi: "सूरह अल-इख़लास (112:1-4)",
-                hindi: "कह दो, वह अल्लाह एक है। अल्लाह बेनियाज़ है। न वह किसी का बाप है और न किसी का बेटा। और न कोई उसका बराबर है।",
-                type: "surah",
-            },
+        //     {
+        //         arabic: "قُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ ﴿٤﴾",
+        //         reference: "سُورَةُ الْإِخْلَاص",
+        //         referenceEn: "Surah Al-Ikhlas (112:1-4)",
+        //         referenceHindi: "सूरह अल-इख़लास (112:1-4)",
+        //         hindi: "कह दो, वह अल्लाह एक है। अल्लाह बेनियाज़ है। न वह किसी का बाप है और न किसी का बेटा। और न कोई उसका बराबर है।",
+        //         type: "surah",
+        //     },
 
-            {
-                arabic: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
-                reference: "صحيح البخاري",
-                referenceEn: "Sahih al-Bukhari — Hadith on Intentions",
-                referenceHindi: "सहीह अल-बुख़ारी — नीयतों पर हदीस",
-                hindi: "अमल का दारोमदार नियतों पर है, और हर व्यक्ति को वही मिलेगा जिसकी उसने नियत की।",
-                type: "hadith",
-            },
+        //     {
+        //         arabic: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
+        //         reference: "صحيح البخاري",
+        //         referenceEn: "Sahih al-Bukhari — Hadith on Intentions",
+        //         referenceHindi: "सहीह अल-बुख़ारी — नीयतों पर हदीस",
+        //         hindi: "अमल का दारोमदार नियतों पर है, और हर व्यक्ति को वही मिलेगा जिसकी उसने नियत की।",
+        //         type: "hadith",
+        //     },
 
-            {
-                arabic: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ",
-                reference: "صحيح مسلم",
-                referenceEn: "Sahih Muslim — Hadith on Knowledge",
-                referenceHindi: "सहीह मुस्लिम — इल्म के बारे में हदीस",
-                hindi: "जो व्यक्ति ज्ञान की तलाश में कोई रास्ता चलता है, अल्लाह उसके लिए जन्नत का रास्ता आसान कर देता है।",
-                type: "hadith",
-            },
+        //     {
+        //         arabic: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ",
+        //         reference: "صحيح مسلم",
+        //         referenceEn: "Sahih Muslim — Hadith on Knowledge",
+        //         referenceHindi: "सहीह मुस्लिम — इल्म के बारे में हदीस",
+        //         hindi: "जो व्यक्ति ज्ञान की तलाश में कोई रास्ता चलता है, अल्लाह उसके लिए जन्नत का रास्ता आसान कर देता है।",
+        //         type: "hadith",
+        //     },
 
-            {
-                arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
-                reference: "صحيح البخاري",
-                referenceEn: "Sahih al-Bukhari — Hadith on Quran",
-                referenceHindi: "सहीह अल-बुख़ारी — क़ुरआन के बारे में हदीस",
-                hindi: "तुम में सबसे बेहतर वह है जो क़ुरआन सीखे और उसे सिखाए।",
-                type: "hadith",
-            }
-        ];
+        //     {
+        //         arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
+        //         reference: "صحيح البخاري",
+        //         referenceEn: "Sahih al-Bukhari — Hadith on Quran",
+        //         referenceHindi: "सहीह अल-बुख़ारी — क़ुरआन के बारे में हदीस",
+        //         hindi: "तुम में सबसे बेहतर वह है जो क़ुरआन सीखे और उसे सिखाए।",
+        //         type: "hadith",
+        //     }
+        // ];
 
+        let verses = [];
         let currentIndex = 0;
         const content = document.getElementById("content");
 
-        function fitText() {
-            const el = document.querySelector('.arabic');
+        async function loadVersesFromServer() {
+            try {
+                const res = await fetch('/api/verses');
+                verses = await res.json();
 
-            let fontSize = 60; // start large
+                if (!verses.length) {
+                    document.getElementById("verseText").innerText = "No content available";
+                    return;
+                }
+
+                updateVerse();
+                setInterval(updateVerse, 15000);
+
+            } catch (err) {
+                console.error("Error loading verses:", err);
+            }
+        }
+
+        function fitText() {
+            const el = document.getElementById('verseText');
+            let fontSize = 60;
             el.style.fontSize = fontSize + "px";
 
-            // Keep shrinking until BOTH height and width fit
             while (
                 (el.scrollHeight > el.clientHeight ||
                     el.scrollWidth > el.clientWidth)
-                && fontSize > 10
+                && fontSize > 14
             ) {
                 fontSize -= 1;
                 el.style.fontSize = fontSize + "px";
             }
         }
 
-        window.addEventListener("load", fitText);
-        window.addEventListener("resize", fitText);
-
         function updateVerse() {
             content.classList.add("hidden");
 
             setTimeout(() => {
+
                 const current = verses[currentIndex];
 
-                document.getElementById("type").innerText = current.type;
-                document.getElementById("arabic").innerText = current.hindi;
-                document.getElementById("reference").innerText = current.referenceHindi;
-                document.getElementById("referenceEn").innerText = current.referenceEn;
+                document.getElementById("type").innerText =
+                    current.type.toUpperCase();
+
+                document.getElementById("verseText").innerText =
+                    current.text;
+
+                document.getElementById("verseReference").innerText =
+                    current.reference;
+
+                document.getElementById("referenceEn").innerText = "";
 
                 content.classList.remove("hidden");
 
                 currentIndex = (currentIndex + 1) % verses.length;
-                fitText()
+
+                fitText();
+
             }, 600);
         }
 
-        setInterval(updateVerse, 15000);
-        updateVerse();
+        window.addEventListener("load", loadVersesFromServer);
+        window.addEventListener("resize", fitText);
 
 
 
