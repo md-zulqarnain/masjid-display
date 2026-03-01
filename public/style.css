@@ -4,9 +4,12 @@ body {
     padding: 0;
     overflow: hidden;
     height: 100%;
-    background: #0c1d15;
     font-family: 'Segoe UI', sans-serif;
     color: #facc15;
+    background: #0c1d15;
+    /* background-image: url(images/islamic-pattern-bg.jpg); */
+    background-size: 100% 100%;
+    background-position: center;
 }
 
 .container {
@@ -115,7 +118,7 @@ tbody td:nth-child(5) {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 1vh;
+    /* gap: 1vh; */
     text-align: center;
 }
 
@@ -145,13 +148,15 @@ tbody td:nth-child(5) {
     border-top: 2px solid #facc15;
     position: relative;
 }
+
 .brand-log {
     position: absolute;
-    top: 0;
+    bottom: 0;
     right: 0;
 }
+
 .brand-log img {
-    max-width: 10vw;
+    max-width: 15vw;
 }
 
 .footer p {
@@ -166,17 +171,80 @@ tbody td:nth-child(5) {
 
 /* Next prayer countdown */
 #nextPrayer {
-    margin-top: 1vh;
+    /* margin-top: 1vh; */
     text-align: center;
 }
 
 #nextPrayerName {
     font-weight: 700;
+    color: #facc15;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+#nextPrayerName .prefix {
+    font-size: 1.2vw;
+    opacity: 0.8;
+}
+
+#nextPrayerName .prayer {
+    font-size: 2.2vw;
+    display: block;
+    margin-top: 0.2vh;
 }
 
 #nextPrayerCountdown {
     margin-top: 0.4vh;
     opacity: 0.95;
+    font-size: 1.5vw;
+    color: #fff;
+}
+
+/* hijri box acts as card header for Ramadan info */
+#hijri {
+    font-weight: 700;
+    color: #facc15;
+    text-transform: uppercase;
+    margin-bottom: 0.8vh;
+    line-height: 1.2;
+}
+
+#hijri .hijri-month {
+    display: block;
+    font-size: 2.4vw;
+}
+
+#hijri .hijri-date {
+    display: block;
+    font-size: 1.6vw;
+    opacity: 0.85;
+}
+
+/* sahri/iftar times inside right card */
+#ramadanTimes {
+    font-size: 1.8vw;
+    font-weight: bold;
+    color: #ffffffd1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1vw;
+}
+
+/* add a thin vertical divider between sahri and iftar when both present */
+#ramadanTimes span:not(:last-child) {
+    position: relative;
+}
+
+#ramadanTimes span:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.5vw;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #facc15;
+    opacity: 0.6;
 }
 
 /* Date row: left date, center next prayer, right hijri */
@@ -268,17 +336,52 @@ tbody td:nth-child(5) {
 div#nextPrayerCountdown {
     margin: 16px 0 10px;
 }
+
 .countdown {
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 3px 9px;
     display: inline-block;
     color: #ffffffd1;
-    font-size: 20px;
+    font-size: 3.5vw;
     font-weight: bold;
 }
+
+.nextPrayerAndHijri {
+    display: flex;
+    /* flex-direction: column; */
+    /* align-items: center; */
+    gap: 40px;
+}
+
+/* #ramadanTimes already styled earlier; no need to duplicate. Keeping original behavior. */
+
+.card {
+    /* dark translucent background similar to screenshot */
+    background: linear-gradient(135deg, rgba(15,32,26,0.9), rgba(27,58,46,0.9));
+    border: 1px solid #facc15;
+    border-radius: 15px;
+    padding: 1.5vh 2vw;
+    box-sizing: border-box;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.nextPrayerAndHijri .card {
+    flex: 1 1 0;
+}
+
+/* ensure right-hand card stacks hijri header and times */
+.nextPrayerAndHijriDate {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Portrait mode tweaks for display (narrow, tall screens) */
 @media (orientation: portrait) {
+
     .container {
         padding: 2vh 4vw;
     }
@@ -324,10 +427,27 @@ div#nextPrayerCountdown {
     }
 
     /* Override earlier ID selectors for portrait */
-    #date,
-    #hijri {
+    #date{
         font-size: 3.8vw;
         font-weight: 600;
+        margin-bottom: 50px
+    }
+    #hijri {
+        font-size: 4.5vw;
+        font-weight: 700;
+    }
+
+    #hijri .hijri-month {
+        font-size: 5vw;
+    }
+
+    #hijri .hijri-date {
+        font-size: 4vw;
+    }
+
+    #ramadanTimes {
+        font-size: 4.5vw;
+        gap: 2vw;
     }
 
     .date-center #nextPrayerName {

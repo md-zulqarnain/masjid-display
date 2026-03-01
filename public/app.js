@@ -15,6 +15,8 @@ let azanBeeped = {};
 let jamahBeeped = {};
 let beepInterval = null;
 let HIJRI_OFFSET = 0;
+let todaySahri = null;
+let todayMaghrib = null;
 
 function parseHM(timeStr) {
     // accepts 'HH:MM' or 'H:MM'
@@ -100,6 +102,9 @@ async function loadPrayerTimesForToday() {
         const asr = dayObj.Asr;
         const maghrib = dayObj.Maghrib;
         const isha = dayObj.Isha;
+
+        todaySahri = sahri;
+        todayMaghrib = addMinutesToHM(maghrib, 2);
 
         let changed = false;
 
@@ -205,7 +210,7 @@ async function loadPrayerTimesForToday() {
         const maghribJamahDefault24 = addMinutesToHM(maghribStart24, 5);
         const maghribEnd24 = addMinutesToHM(isha, -2);
 
-        prayerData.maghrib.start = to12Hour(maghribStart24);
+        prayerData.maghrib.start = to12Hour(maghribStart24, 2);
         prayerData.maghrib.end = to12Hour(maghribEnd24);
 
         if (quickData?.maghrib?.specialEnabled === true) {
@@ -350,7 +355,19 @@ function updateClock() {
 
         day = day + HIJRI_OFFSET;
 
-        hijriEl.innerText = `${month} ${day}, ${year} AH`;
+        // month will be shown as a large header, date+year beneath it
+        hijriEl.innerHTML = `<span class="hijri-month">${month}</span> <span class="hijri-date">${day}, ${year} AH</span>`;
+        // 🔥 Show Sahri & Iftar
+        const sahriEl = document.getElementById("sahriTime");
+        const iftarEl = document.getElementById("iftarTime");
+
+        if (sahriEl && todaySahri) {
+            sahriEl.innerText = "Sahri Ends: " + to12Hour(todaySahri);
+        }
+
+        if (iftarEl && todayMaghrib) {
+            iftarEl.innerText = "Iftar: " + to12Hour(todayMaghrib);
+        }
     }
 }
 
@@ -527,7 +544,8 @@ function updateNextPrayerCountdown() {
                 ' - ' +
                 prayerData[closestPrayer].name;
 
-            nameEl.innerText = `Next ${closestType}: ${displayName}`;
+            // split into a small prefix and larger prayer name for styling
+            nameEl.innerHTML = `<span class="prefix"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Next ${closestType}:</span><span class="prayer">${displayName}</span>`;
 
             const hours = Math.floor(minDiff / (1000 * 60 * 60));
             const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));

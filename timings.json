@@ -1,8 +1,10 @@
 {
   "fajr": {
-    "azan": "02:33 AM",
+    "azan": "11:42 PM",
     "jamah": "04:01 AM",
-    "specialEnabled": false
+    "specialEnabled": true,
+    "azanAfterSahri": 10,
+    "jamahAfterAzan": 10
   },
   "dhuhr": {
     "azan": "01:40 PM",
