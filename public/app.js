@@ -1,9 +1,9 @@
 const prayerData = {
-    fajr: { name: "Fajr", arabic: "فجر", start: "04:30 AM", azan: "05:00 AM", jamah: "05:15 AM", end: "06:15 AM" },
-    dhuhr: { name: "Zohar", arabic: "ظهر", start: "12:00 PM", azan: "12:30 PM", jamah: "12:45 PM", end: "03:30 PM" },
-    asr: { name: "Asr", arabic: "عصر", start: "03:30 PM", azan: "04:00 PM", jamah: "04:15 PM", end: "05:45 PM" },
-    maghrib: { name: "Maghrib", arabic: "مغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
-    isha: { name: "Isha", arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "08:07 PM", end: "10:30 PM" },
+    fajr: { name: "फ़जर ", arabic: "فجر", start: "04:30 AM", azan: "05:00 AM", jamah: "05:15 AM", end: "06:15 AM" },
+    dhuhr: { name: "ज़ोहर ", arabic: "ظهر", start: "12:00 PM", azan: "12:30 PM", jamah: "12:45 PM", end: "03:30 PM" },
+    asr: { name: "असर ", arabic: "عصر", start: "03:30 PM", azan: "04:00 PM", jamah: "04:15 PM", end: "05:45 PM" },
+    maghrib: { name: "मग़रिब ", arabic: "مغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
+    isha: { name: "इशा ", arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "08:07 PM", end: "10:30 PM" },
 };
 
 // Load prayer times from timings.json with cache-busting and change detection
@@ -112,7 +112,7 @@ async function loadPrayerTimesForToday() {
         // FAJR
         // ==============================
 
-        const fajrStart24_normal = addMinutesToHM(sahri, 15);
+        const fajrStart24_normal = addMinutesToHM(sahri, 10);
         const fajrEnd24 = addMinutesToHM(sunrise, -2);
 
         if (quickData?.fajr?.specialEnabled === true) {
@@ -183,8 +183,8 @@ async function loadPrayerTimesForToday() {
         // ASR
         // ==============================
 
-        const asrStart24 = addMinutesToHM(asr, 2);
-        const asrEnd24 = addMinutesToHM(maghrib, -2);
+        const asrStart24 = asr;
+        const asrEnd24 = maghrib;
 
         prayerData.asr.start = to12Hour(asrStart24);
         prayerData.asr.end = to12Hour(asrEnd24);
@@ -210,7 +210,7 @@ async function loadPrayerTimesForToday() {
         const maghribJamahDefault24 = addMinutesToHM(maghribStart24, 5);
         const maghribEnd24 = addMinutesToHM(isha, -2);
 
-        prayerData.maghrib.start = to12Hour(maghribStart24, 2);
+        prayerData.maghrib.start = to12Hour(maghribAzanDefault24);
         prayerData.maghrib.end = to12Hour(maghribEnd24);
 
         if (quickData?.maghrib?.specialEnabled === true) {
@@ -328,18 +328,27 @@ function updateClock() {
     if (ampmEl) ampmEl.innerText = ampm;
 
     if (dateEl) {
-        dateEl.innerText =
-            now.toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric"
-            });
+        const urduWeekdays = [
+            "इतवार",   // Sunday
+            "पीर",      // Monday
+            "मंगल",     // Tuesday
+            "बुध",      // Wednesday
+            "जुमेरात",   // Thursday
+            "जुमा",      // Friday
+            "हफ्ता"     // Saturday
+        ];
+
+        const weekday = urduWeekdays[now.getDay()];
+        const day = now.getDate();
+        const month = now.toLocaleDateString("hi-IN", { month: "long" });
+        const year = now.getFullYear();
+
+        dateEl.innerText = `${weekday}, ${day} ${month} ${year}`;
     }
 
     if (hijriEl) {
 
-        const islamicDate = new Intl.DateTimeFormat('en-TN-u-ca-islamic', {
+        const islamicDate = new Intl.DateTimeFormat('hi-IN-u-ca-islamic', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
@@ -356,17 +365,17 @@ function updateClock() {
         day = day + HIJRI_OFFSET;
 
         // month will be shown as a large header, date+year beneath it
-        hijriEl.innerHTML = `<span class="hijri-month">${month}</span> <span class="hijri-date">${day}, ${year} AH</span>`;
+        hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${month}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
         // 🔥 Show Sahri & Iftar
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
 
         if (sahriEl && todaySahri) {
-            sahriEl.innerText = "Sahri Ends: " + to12Hour(todaySahri);
+            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${to12Hour(todaySahri)}`;
         }
 
         if (iftarEl && todayMaghrib) {
-            iftarEl.innerText = "Iftar: " + to12Hour(todayMaghrib);
+            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${to12Hour(todayMaghrib)}`;
         }
     }
 }
@@ -518,13 +527,13 @@ function updateNextPrayerCountdown() {
             if (azanDiff > 0 && azanDiff < minDiff) {
                 minDiff = azanDiff;
                 closestPrayer = key;
-                closestType = "Azan";
+                closestType = "अज़ान";
             }
 
             if (jamahDiff > 0 && jamahDiff < minDiff) {
                 minDiff = jamahDiff;
                 closestPrayer = key;
-                closestType = "Jamat";
+                closestType = "जमाअत";
             }
         });
 
@@ -545,7 +554,7 @@ function updateNextPrayerCountdown() {
                 prayerData[closestPrayer].name;
 
             // split into a small prefix and larger prayer name for styling
-            nameEl.innerHTML = `<span class="prefix"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Next ${closestType}:</span><span class="prayer">${displayName}</span>`;
+            nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Next ${closestType}</span><span class="prayer">${displayName}</span>`;
 
             const hours = Math.floor(minDiff / (1000 * 60 * 60));
             const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
@@ -599,6 +608,52 @@ function checkIshaJamahRedirect() {
 }
 
 setInterval(checkIshaJamahRedirect, 1000);
+
+// ------------------------------------------------
+// automatic view scheduler (30m index ↔ 10m surah-hadith)
+// surah-hadith will not open if the next azan/jamah
+// is less than 20 minutes away.
+// ------------------------------------------------
+
+const SURAH_DURATION = 10 * 60 * 1000;
+const INDEX_DURATION = 1 * 60 * 1000;
+let scheduleLastSwitch = Date.now();
+let scheduleViewingSurah = window.location.pathname.endsWith('surah-hadith.html');
+
+function minutesUntilNextAzanJamah() {
+    const now = new Date();
+    let min = Infinity;
+    Object.keys(prayerData).forEach(key => {
+        ['azan'].forEach(type => {
+            let t = parseTime(prayerData[key][type]);
+            if (t < now) t.setDate(t.getDate() + 1);
+            const diff = (t - now) / 60000;
+            if (diff < min) min = diff;
+        });
+    });
+    return Math.floor(min);
+}
+
+function scheduleSwitcher() {
+    const now = Date.now();
+    const elapsed = now - scheduleLastSwitch;
+
+    if (scheduleViewingSurah) {
+        if (elapsed >= SURAH_DURATION) {
+            // switch back to index
+            window.location.href = 'index.html';
+        }
+    } else {
+        if (elapsed >= INDEX_DURATION) {
+            const mins = minutesUntilNextAzanJamah();
+            if (mins >= 20) {
+                window.location.href = 'surah-hadith.html';
+            }
+        }
+    }
+}
+
+setInterval(scheduleSwitcher, 1000);
 
 
 async function loadVerses() {

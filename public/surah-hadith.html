@@ -86,6 +86,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #ffffffa6;
         }
 
         .reference {
@@ -112,17 +113,19 @@
 <body>
 
     <div class="container">
+        <!-- Top Arabic Header -->
         <div class="top-bar">
-            <img src="images/kaba.webp"
-                class="corner-img left">
+            <img src="https://thumbs.dreamstime.com/b/vector-draw-masjid-nabawi-madina-tun-nabi-grey-background-arabic-calligraphy-ya-rasool-allah-masjid-nabawi-madina-tun-160702294.jpg"
+                class="corner-img">
             <div class="arabic-title">
                 لَا إِلٰهَ إِلَّا ٱللَّٰهُ مُحَمَّدٌ رَسُولُ ٱللَّٰهِ
             </div>
-            <img src="images/masjid.webp"
-                class="corner-img right">
+
+            <img src="https://png.pngtree.com/thumb_back/fh260/background/20250120/pngtree-a-view-of-kaba-mecca-image_16881215.jpg"
+                class="corner-img ">
         </div>
 
-
+        <!-- Clock Section -->
         <div id="clock">
             <div class="clock-time">
                 <span id="hours"></span>
@@ -131,8 +134,27 @@
             </div>
             <div class="date-row">
                 <div id="date" class="date-left"></div>
-
-                <div id="hijri" class="date-right"></div>
+            </div>
+            <div class="nextPrayerAndHijri">
+                <div id="nextPrayer" class="date-center card">
+                    <div>
+                        <div id="nextPrayerName"></div>
+                        <div id="nextPrayerCountdown">
+                            <span id="countHours" class="countdown">00</span> :
+                            <span id="countMinutes" class="countdown">00</span> :
+                            <span id="countSeconds" class="countdown">00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="nextPrayerAndHijriDate card">
+                    <div>
+                        <div id="hijri" class="date-right"></div>
+                        <div id="ramadanTimes">
+                            <span id="sahriTime"></span>
+                            <span id="iftarTime"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -221,6 +243,7 @@
 
         let verses = [];
         let currentIndex = 0;
+        let slideTimer = null;
         const content = document.getElementById("content");
 
         async function loadVersesFromServer() {
@@ -234,7 +257,7 @@
                 }
 
                 updateVerse();
-                setInterval(updateVerse, 15000);
+                // setInterval(updateVerse, 15000);
 
             } catch (err) {
                 console.error("Error loading verses:", err);
@@ -257,6 +280,12 @@
         }
 
         function updateVerse() {
+
+            // ✅ Clear previous timer (IMPORTANT)
+            if (slideTimer) {
+                clearTimeout(slideTimer);
+            }
+
             content.classList.add("hidden");
 
             setTimeout(() => {
@@ -276,19 +305,26 @@
 
                 content.classList.remove("hidden");
 
+                fitText();
+
+                // 🔥 Better Word Count (removes extra spaces)
+                const wordCount = current.text.trim().split(/\s+/).length;
+
+                let displayTime = 4000 + (wordCount * 350);
+
+                displayTime = Math.max(5000, displayTime);
+                displayTime = Math.min(40000, displayTime);
+
                 currentIndex = (currentIndex + 1) % verses.length;
 
-                fitText();
+                // ✅ Store timeout reference
+                slideTimer = setTimeout(updateVerse, displayTime);
 
             }, 600);
         }
 
         window.addEventListener("load", loadVersesFromServer);
         window.addEventListener("resize", fitText);
-
-
-
-
     </script>
 
 </body>
