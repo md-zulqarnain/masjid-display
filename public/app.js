@@ -576,6 +576,7 @@ updateNextPrayerCountdown();
 
 
 renderTable();
+
 // ------------------------------------------------
 // automatic view scheduler (30m index ↔ 10m surah-hadith)
 // surah-hadith will not open if the next azan/jamah
@@ -607,10 +608,10 @@ function scheduleSwitcher() {
 
     // Check if it's Ramadan and Isha Jamat is over
     const isRamadan = checkIfRamadan(); // Assume this function determines if it's Ramadan
-    const ishaJamatTime = parseTime(prayerData['isha']['jamat']); // Get Isha Jamat time
+    const ishaJamatTime = parseTime(prayerData['isha']['jamah']) // Get Isha Jamat time
     const trabihEndTime = new Date(ishaJamatTime.getTime() + 90 * 60 * 1000); // Add 1 hour 30 minutes
 
-    if (isRamadan && now > ishaJamatTime && now < trabihEndTime) {
+    if (isRamadan && (now > ishaJamatTime) && (now < trabihEndTime)) {
         if (!window.location.pathname.endsWith('ramadan-isha.html')) {
             window.location.href = 'ramadan-isha.html';
         }
