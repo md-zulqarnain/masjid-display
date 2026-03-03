@@ -576,29 +576,6 @@ updateNextPrayerCountdown();
 
 
 renderTable();
-
-
-
-let ishaRedirectTriggered = false;
-
-function checkIshaJamahRedirect() {
-    const now = new Date();
-    const ishaJamahTime = parseTime(prayerData.isha.jamah);
-
-    // If time already passed today, don't shift to tomorrow
-    const diff = now - ishaJamahTime;
-
-    // If current time is within first 5 seconds of Isha Jamah
-    if (diff >= 0 && diff < 5000 && !ishaRedirectTriggered) {
-        ishaRedirectTriggered = true;
-
-        // Go to isha.html
-        window.location.href = "isha.html";
-    }
-}
-
-setInterval(checkIshaJamahRedirect, 1000);
-
 // ------------------------------------------------
 // automatic view scheduler (30m index ↔ 10m surah-hadith)
 // surah-hadith will not open if the next azan/jamah
@@ -628,6 +605,18 @@ function scheduleSwitcher() {
     const now = new Date();
     const elapsed = now - scheduleLastSwitch;
 
+    // Check if it's Ramadan and Isha Jamat is over
+    const isRamadan = checkIfRamadan(); // Assume this function determines if it's Ramadan
+    const ishaJamatTime = parseTime(prayerData['isha']['jamat']); // Get Isha Jamat time
+    const trabihEndTime = new Date(ishaJamatTime.getTime() + 90 * 60 * 1000); // Add 1 hour 30 minutes
+
+    if (isRamadan && now > ishaJamatTime && now < trabihEndTime) {
+        if (!window.location.pathname.endsWith('ramadan-isha.html')) {
+            window.location.href = 'ramadan-isha.html';
+        }
+        return;
+    }
+
     // Check if it's Friday and time is between 12:30 PM and 2:30 PM
     const isFriday = now.getDay() === 2; // 5 represents Friday
     const currentTime = now.getHours() * 60 + now.getMinutes(); // Time in minutes since midnight
@@ -654,6 +643,18 @@ function scheduleSwitcher() {
             }
         }
     }
+}
+
+function checkIfRamadan() {
+    const now = new Date();
+
+    const islamicDate = new Intl.DateTimeFormat('hi-IN-u-ca-islamic').formatToParts(now);
+
+    let month;
+    islamicDate.forEach(part => {
+        if (part.type === "month") month = part.value;
+    });
+    return month == 9
 }
 
 setInterval(scheduleSwitcher, 1000);
