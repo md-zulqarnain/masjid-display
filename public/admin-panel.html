@@ -549,7 +549,6 @@
             try {
                 const response = await fetch('/api/quick-times');
                 quickTimesData = await response.json();
-                console.log('Quick times loaded:', quickTimesData);
                 renderQuickTimesForm();
             } catch (err) {
                 console.error('Error loading quick times:', err);

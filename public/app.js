@@ -57,7 +57,6 @@ async function loadHijriOffset() {
 
         if (typeof data.hijriOffset !== "undefined" && data.hijriOffset !== HIJRI_OFFSET) {
             HIJRI_OFFSET = data.hijriOffset;
-            console.log("Hijri offset updated:", HIJRI_OFFSET);
         }
 
     } catch (e) {
@@ -215,8 +214,6 @@ async function loadPrayerTimesForToday() {
 
         if (quickData?.maghrib?.specialEnabled === true) {
 
-            console.log("Maghrib Special Mode Enabled");
-
             // 1️⃣ Get azan
             let azan24;
 
@@ -245,8 +242,6 @@ async function loadPrayerTimesForToday() {
             prayerData.maghrib.jamah = to12Hour(jamah24);
 
         } else {
-
-            console.log("Maghrib Normal Mode");
 
             prayerData.maghrib.azan = to12Hour(maghribAzanDefault24);
             prayerData.maghrib.jamah = to12Hour(maghribJamahDefault24);
@@ -293,7 +288,6 @@ async function loadPrayerTimesForToday() {
 setInterval(async () => {
     const hasChanged = await loadPrayerTimesForToday();
     if (hasChanged) {
-        console.log("Prayer times updated, re-rendering table...");
         renderTable();
     }
 }, 3 * 1000);
@@ -395,7 +389,6 @@ function renderTable() {
     const table = document.getElementById("prayerTable");
 
     if (!table) {
-        console.error("Prayer table element not found");
         return;
     }
 
@@ -590,9 +583,6 @@ let ishaRedirectTriggered = false;
 
 function checkIshaJamahRedirect() {
     const now = new Date();
-
-    console.log(prayerData, "Current prayer data for Isha:", prayerData.isha);
-
     const ishaJamahTime = parseTime(prayerData.isha.jamah);
 
     // If time already passed today, don't shift to tomorrow
