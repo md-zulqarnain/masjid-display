@@ -8,14 +8,10 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        body {
-            margin: 0;
-            /* background: linear-gradient(135deg, #052e1b, #0a3d2a); */
-            background: #0c1d15;
-            /* font-family: Arial, sans-serif; */
+        /* background: #0c1d15;
             overflow: hidden;
             color: #ffd700;
-        }
+        }  */
 
         .juma-wrapper {
             position: relative;
@@ -111,16 +107,21 @@
         }
 
         .juma-boxes {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             justify-content: space-around;
-            gap: 2vw;
+            gap: 5vw 2vw;
+        }
+
+        .juma-boxes .juma-box:last-child {
+            grid-column: 1 / -1;
         }
 
         .juma-box {
             flex: 1;
             border: 0.3vw solid #ffffff1a;
             border-radius: 20px;
-            padding: 1vw;
+            padding: 70px 50px;
             backdrop-filter: blur(5px);
             text-align: center;
         }
@@ -132,9 +133,8 @@
 
         .juma-box h3 span {
             color: #ffffffc7;
-            font-size: 1vw;
+            font-size: 3vw;
             font-weight: 400;
-            letter-spacing: 0.5vw;
         }
 
         .juma-box p {
@@ -142,7 +142,7 @@
             font-weight: bold;
         }
 
-        
+
 
         @media (orientation: portrait) {
             .juma-boxes {
@@ -170,7 +170,9 @@
             }
 
             .juma-box p {
-                font-size: 5vw;
+                font-size: 7vw;
+                margin: 0;
+                color: #ffffff96;
             }
         }
     </style>
@@ -415,15 +417,15 @@
 
         <div class="container">
 
+            <!-- Top Arabic Header -->
             <div class="top-bar">
-                <img src="https://png.pngtree.com/thumb_back/fh260/background/20250120/pngtree-a-view-of-kaba-mecca-image_16881215.jpg"
-                    class="corner-img left">
+                <img src="images/roza.webp" class="corner-img">
                 <div class="juma-header">
                     <h1>صلاة الجمعة</h1>
-                    <h2>JUMU'AH PRAYER</h2>
+                    <h2>जुमा की नमाज़</h2>
                 </div>
-                <img src="https://thumbs.dreamstime.com/b/vector-draw-masjid-nabawi-madina-tun-nabi-grey-background-arabic-calligraphy-ya-rasool-allah-masjid-nabawi-madina-tun-160702294.jpg"
-                    class="corner-img right">
+
+                <img src="images/kaaba.jpg" class="corner-img ">
             </div>
 
             <!-- Clock Section -->
@@ -432,6 +434,7 @@
                 <div class="divider-star">✦</div>
                 <div class="divider-line"></div>
             </div>
+            <!-- Clock Section -->
             <div id="clock">
                 <div class="clock-time">
                     <span id="hours"></span>
@@ -440,10 +443,13 @@
                 </div>
                 <div class="date-row">
                     <div id="date" class="date-left"></div>
-
-                    <div id="hijri" class="date-right"></div>
                 </div>
+
             </div>
+
+
+
+
             <div class="divider">
                 <div class="divider-line"></div>
                 <div class="divider-star">✦</div>
@@ -451,7 +457,7 @@
             </div>
             <div class="juma-boxes">
                 <div class="juma-box">
-                    <h3>أذان<br><span>AZAN</span></h3>
+                    <h3>أذان<br><span>अज़ान</span></h3>
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
@@ -459,7 +465,7 @@
                 </div>
 
                 <div class="juma-box">
-                    <h3>خطبة<br><span>KHUTBA</span></h3>
+                    <h3>خطبة<br><span>ख़ुत्बा</span></h3>
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
@@ -467,7 +473,7 @@
                 </div>
 
                 <div class="juma-box">
-                    <h3>جماعة<br><span>JAMAH</span></h3>
+                    <h3>جماعة<br><span>जमाअत</span></h3>
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
@@ -475,9 +481,12 @@
                 </div>
             </div>
 
-            <div class="footer">
-                Jama Masjid Jhirniya Shaikh
-            </div>
+            <footer class="footer">
+                <p>जामा मस्जिद झिरन्या शेख</p>
+                <div class="brand-log">
+                    <img src="images/logo.jpg" />
+                </div>
+            </footer>
 
         </div>
 

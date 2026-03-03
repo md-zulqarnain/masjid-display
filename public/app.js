@@ -365,7 +365,7 @@ function updateClock() {
         day = day + HIJRI_OFFSET;
 
         // month will be shown as a large header, date+year beneath it
-        hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${month}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
+        hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${month}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
         // 🔥 Show Sahri & Iftar
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
@@ -554,7 +554,7 @@ function updateNextPrayerCountdown() {
                 prayerData[closestPrayer].name;
 
             // split into a small prefix and larger prayer name for styling
-            nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Next ${closestType}</span><span class="prayer">${displayName}</span>`;
+            nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> अगली ${closestType}</span><span class="prayer">${displayName}</span>`;
 
             const hours = Math.floor(minDiff / (1000 * 60 * 60));
             const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
@@ -616,7 +616,7 @@ setInterval(checkIshaJamahRedirect, 1000);
 // ------------------------------------------------
 
 const SURAH_DURATION = 10 * 60 * 1000;
-const INDEX_DURATION = 1 * 60 * 1000;
+const INDEX_DURATION = 30 * 60 * 1000;
 let scheduleLastSwitch = Date.now();
 let scheduleViewingSurah = window.location.pathname.endsWith('surah-hadith.html');
 
@@ -635,8 +635,21 @@ function minutesUntilNextAzanJamah() {
 }
 
 function scheduleSwitcher() {
-    const now = Date.now();
+    const now = new Date();
     const elapsed = now - scheduleLastSwitch;
+
+    // Check if it's Friday and time is between 12:30 PM and 2:30 PM
+    const isFriday = now.getDay() === 2; // 5 represents Friday
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // Time in minutes since midnight
+    const startJumaTime = 14 * 60 + 40; // 12:30 PM in minutes
+    const endJumaTime = 14 * 60 + 43; // 2:30 PM in minutes
+
+    if (isFriday && currentTime >= startJumaTime && currentTime < endJumaTime) {
+        if (!window.location.pathname.endsWith('juma.html')) {
+            window.location.href = 'juma.html';
+        }
+        return;
+    }
 
     if (scheduleViewingSurah) {
         if (elapsed >= SURAH_DURATION) {
