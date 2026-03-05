@@ -329,7 +329,7 @@ function updateClock() {
             "बुध",      // Wednesday
             "जुमेरात",   // Thursday
             "जुमा",      // Friday
-            "हफ्ता"     // Saturday
+            "सनीचर"     // Saturday
         ];
 
         const weekday = urduWeekdays[now.getDay()];
