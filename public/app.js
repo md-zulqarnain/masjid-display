@@ -111,7 +111,7 @@ async function loadPrayerTimesForToday() {
         // FAJR
         // ==============================
 
-        const fajrStart24_normal = addMinutesToHM(sahri, 10);
+        const fajrStart24_normal = addMinutesToHM(sahri, 11);
         const fajrEnd24 = addMinutesToHM(sunrise, -2);
 
         if (quickData?.fajr?.specialEnabled === true) {

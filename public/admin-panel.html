@@ -741,12 +741,12 @@
         }
 
         function logout() {
-            sessionStorage.removeItem('adminLogged');
+            localStorage.removeItem('adminLogged');
             window.location.href = '/login.html';
         }
 
         // Initialize
-        if (!sessionStorage.getItem('adminLogged')) {
+        if (!localStorage.getItem('adminLogged')) {
             window.location.href = '/login.html';
         }
 
