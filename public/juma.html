@@ -124,6 +124,7 @@
             padding: 70px 50px;
             backdrop-filter: blur(5px);
             text-align: center;
+            background: transparent;
         }
 
         .juma-box h3 {
@@ -133,8 +134,8 @@
 
         .juma-box h3 span {
             color: #ffffffc7;
-            font-size: 3vw;
-            font-weight: 400;
+            font-size: 5vw;
+            font-weight: 600;
         }
 
         .juma-box p {
@@ -154,7 +155,7 @@
             }
 
             .juma-header h2 {
-                font-size: 3vw;
+                font-size: 5vw;
             }
 
             .juma-time {
@@ -166,11 +167,12 @@
             }
 
             .juma-box h3 {
-                font-size: 3vw;
+                font-size: 6vw;
+                margin: 0;
             }
 
             .juma-box p {
-                font-size: 7vw;
+                font-size: 8vw;
                 margin: 0;
                 color: #ffffff96;
             }
@@ -456,28 +458,28 @@
                 <div class="divider-line"></div>
             </div>
             <div class="juma-boxes">
-                <div class="juma-box">
+                <div class="juma-time-box juma-box">
                     <h3>أذان<br><span>अज़ान</span></h3>
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
-                    <p>1:00 PM</p>
+                    <p id="jumaAzanTime">1:00 PM</p>
                 </div>
 
-                <div class="juma-box">
+                <div class="juma-time-box juma-box">
                     <h3>خطبة<br><span>ख़ुत्बा</span></h3>
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
-                    <p>1:45 PM</p>
+                    <p id="jumaKhutbaTime">1:45 PM</p>
                 </div>
 
-                <div class="juma-box">
+                <div class="juma-time-box juma-box">
                     <h3>جماعة<br><span>जमाअत</span></h3>
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
-                    <p>2:00 PM</p>
+                    <p id="jumaJamatTime">2:00 PM</p>
                 </div>
             </div>
 
@@ -514,28 +516,7 @@
 
 
     <script>
-        function updateJumaClock() {
-            const now = new Date();
 
-            document.getElementById("jumaClock").innerText =
-                now.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' });
-
-            document.getElementById("jumaDate").innerText =
-                now.toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric"
-                });
-        }
-
-        setInterval(updateJumaClock, 1000);
-        updateJumaClock();
-
-        // Return to index after 3 hours
-        setTimeout(() => {
-            window.location.href = "index.html";
-        }, 3 * 60 * 60 * 1000);
 
     </script>
     <script src="app.js"></script>

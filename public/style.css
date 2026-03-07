@@ -431,7 +431,7 @@ div#nextPrayerCountdown {
   margin-bottom: 2vh;
 }
 
-.juma-header {
+.juma-header-card {
   background: linear-gradient(to right, #ca8a04, #facc15);
   color: #0c1d15;
   padding: 1.5vh 2vw;
@@ -598,12 +598,12 @@ div#nextPrayerCountdown {
     line-height: 1.6;
   }
 
-  .juma-header {
+  .juma-header-card {
     font-size: 4vw;
     padding: 1vh 2vw;
   }
 
-  .juma-header .juma-arabic {
+  .juma-header-card .juma-arabic {
     font-size: 4vw;
   }
 

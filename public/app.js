@@ -6,6 +6,13 @@ const prayerData = {
     isha: { name: "इशा ", arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "08:07 PM", end: "10:30 PM" },
 };
 
+// default Juma times (can be updated dynamically if needed)
+const jumaData = {
+    azan: "01:00 PM",
+    khutba: "01:45 PM",
+    jamat: "02:00 PM"
+};
+
 // Load prayer times from timings.json with cache-busting and change detection
 let lastTimingJSON = null;
 
@@ -104,6 +111,13 @@ async function loadPrayerTimesForToday() {
 
         todaySahri = sahri;
         todayMaghrib = addMinutesToHM(maghrib, 2);
+
+        // quickData may carry overrides for juma times
+        if (quickData?.juma) {
+            if (quickData.juma.azan) jumaData.azan = quickData.juma.azan;
+            if (quickData.juma.khutba) jumaData.khutba = quickData.juma.khutba;
+            if (quickData.juma.jamat) jumaData.jamat = quickData.juma.jamat;
+        }
 
         let changed = false;
 
@@ -366,11 +380,11 @@ function updateClock() {
 
         console.log("Today's Sahri:", todaySahri, "Today's Maghrib:", todayMaghrib);
         if (sahriEl && todaySahri) {
-            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(todaySahri)}`;
+            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(todaySahri))}`;
         }
 
         if (iftarEl && todayMaghrib) {
-            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(todayMaghrib)}`;
+            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(to12Hour(todayMaghrib))}`;
         }
     }
 }
@@ -429,12 +443,48 @@ function parseTime(timeStr) {
     return date;
 }
 
+// helper: convert a 12‑hour string to minutes-since-midnight
+function toMinutes(timeStr) {
+    const d = parseTime(timeStr);
+    return d.getHours() * 60 + d.getMinutes();
+}
+
 function highlightNextPrayer() {
     const now = new Date();
+    const isFriday = now.getDay() === 5;
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const endJumaTime = 14 * 60 + 40;
+    const fajrJamahMinutes = toMinutes(prayerData.fajr.jamah);
     let closest = null;
     let minDiff = Infinity;
+
     // clear previous active rows
     document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+    // clear any juma highlights
+    document.querySelectorAll('.juma-time-box').forEach(el => el.classList.remove('active-row'));
+
+    // if friday & after fajr jamah & before juma end, highlight juma event instead of normal rows
+    if (isFriday && currentTime >= fajrJamahMinutes && currentTime < endJumaTime) {
+        const events = [
+            { type: 'अज़ान', time: parseTime(jumaData.azan), selector: '#jumaAzanTime' },
+            { type: 'ख़ुत्बा', time: parseTime(jumaData.khutba), selector: '#jumaKhutbaTime' },
+            { type: 'जमाअत', time: parseTime(jumaData.jamat), selector: '#jumaJamatTime' }
+        ];
+        events.forEach(ev => {
+            let t = new Date(ev.time);
+            if (t < now) t.setDate(t.getDate() + 1);
+            const diff = t - now;
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = ev;
+            }
+        });
+        if (closest && closest.selector) {
+            const box = document.querySelector(closest.selector)?.closest('.juma-time-box');
+            if (box) box.classList.add('active-row');
+        }
+        return;
+    }
 
     Object.keys(prayerData).forEach(key => {
         let prayerTime = parseTime(prayerData[key].jamah);
@@ -487,6 +537,87 @@ function stopBeepRepeating() {
 function updateNextPrayerCountdown() {
     try {
         const now = new Date();
+        const isFriday = now.getDay() === 5; // keep same logic as scheduleSwitcher
+        console.log("Updating countdown. Is Friday?", isFriday);
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const endJumaTime = 14 * 60 + 40;
+        const fajrJamahMinutes = toMinutes(prayerData.fajr.jamah);
+
+        // always refresh displayed juma section values
+        const azEl = document.getElementById("jumaAzanTime");
+        const khEl = document.getElementById("jumaKhutbaTime");
+        const jmEl = document.getElementById("jumaJamatTime");
+        if (azEl) azEl.innerText = jumaData.azan;
+        if (khEl) khEl.innerText = jumaData.khutba;
+        if (jmEl) jmEl.innerText = jumaData.jamat;
+        // also update boxes on juma.html (same ids) if present
+        document.querySelectorAll('#jumaAzanTime,#jumaKhutbaTime,#jumaJamatTime').forEach(el => {
+            if (el.id === 'jumaAzanTime') el.innerText = jumaData.azan;
+            if (el.id === 'jumaKhutbaTime') el.innerText = jumaData.khutba;
+            if (el.id === 'jumaJamatTime') el.innerText = jumaData.jamat;
+        });
+
+        // handle friday/juma countdown separately until endJumaTime
+        if (isFriday && currentTime >= fajrJamahMinutes && currentTime < endJumaTime) {
+            let closestType = null;
+            let minDiff = Infinity;
+            let shouldBeep = false;
+
+            const events = [
+                { type: "अज़ान", time: parseTime(jumaData.azan) },
+                { type: "ख़ुत्बा", time: parseTime(jumaData.khutba) },
+                { type: "जमाअत", time: parseTime(jumaData.jamat) }
+            ];
+
+            events.forEach(ev => {
+                let t = new Date(ev.time);
+                if (t < now) t.setDate(t.getDate() + 1);
+                const diff = t - now;
+                if (diff > 0 && diff < minDiff) {
+                    minDiff = diff;
+                    closestType = ev.type;
+                }
+                if (diff > 0 && diff <= 10000) {
+                    shouldBeep = true;
+                }
+            });
+
+            if (shouldBeep) {
+                startBeepRepeating();
+            } else {
+                stopBeepRepeating();
+            }
+
+            const nameEl = document.getElementById('nextPrayerName');
+            if (nameEl && closestType) {
+                nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> अगली ${closestType}</span><span class="prayer">जुमा</span>`;
+
+                const hours = Math.floor(minDiff / (1000 * 60 * 60));
+                const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((minDiff % (1000 * 60)) / 1000);
+
+                document.getElementById("countHours").innerText =
+                    String(hours).padStart(2, "0");
+                document.getElementById("countMinutes").innerText =
+                    String(minutes).padStart(2, "0");
+                document.getElementById("countSeconds").innerText =
+                    String(seconds).padStart(2, "0");
+
+                // highlight the corresponding juma box
+                document.querySelectorAll('.juma-time-box').forEach(el => el.classList.remove('active-row'));
+                let selector = null;
+                if (closestType === 'अज़ान') selector = '#jumaAzanTime';
+                else if (closestType === 'ख़ुत्बा') selector = '#jumaKhutbaTime';
+                else if (closestType === 'जमाअत') selector = '#jumaJamatTime';
+                if (selector) {
+                    const box = document.querySelector(selector)?.closest('.juma-time-box');
+                    if (box) box.classList.add('active-row');
+                }
+            }
+            return;
+        }
+
+        // fallback to normal prayer countdown
         let closestPrayer = null;
         let closestType = null;
         let minDiff = Infinity;
@@ -567,9 +698,13 @@ function updateNextPrayerCountdown() {
     }
 }
 
-// Start countdown timer
-setInterval(updateNextPrayerCountdown, 1000);
+// Start countdown timer and highlight events
+setInterval(() => {
+    updateNextPrayerCountdown();
+    highlightNextPrayer();
+}, 1000);
 updateNextPrayerCountdown();
+highlightNextPrayer();
 
 
 
@@ -618,7 +753,7 @@ function scheduleSwitcher() {
     }
 
     // Check if it's Friday and time is between 12:30 PM and 2:30 PM
-    const isFriday = now.getDay() === 2; // 5 represents Friday
+    const isFriday = now.getDay() === 5; // 5 represents Friday
     const currentTime = now.getHours() * 60 + now.getMinutes(); // Time in minutes since midnight
     const startJumaTime = 12 * 60 + 30; // 12:30 PM in minutes
     const endJumaTime = 14 * 60 + 40; // 2:30 PM in minutes
