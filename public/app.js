@@ -581,6 +581,33 @@ function formatDiff(ms) {
 }
 
 
+let popupShown = false;
+
+function showJamatPopup(prayerKey) {
+
+    const popup = document.getElementById("jamatPopup");
+    if (!popup) return;
+
+
+    document.getElementById("popupClock").innerText = formatDisplayTime(prayerData[prayerKey].jamah);
+
+    const prayerName =
+        prayerData[prayerKey].arabic + " - " + prayerData[prayerKey].name;
+
+    document.getElementById("popupPrayerName").innerText =
+        prayerName + " जमाअत";
+
+    popup.style.display = "flex";
+
+    popupShown = true;
+
+    // Hide after 2 minutes
+    setTimeout(() => {
+        popup.style.display = "none";
+        popupShown = false;
+    }, 1000 * 60 * 5);
+}
+
 function updateNextPrayerCountdown() {
     try {
         const now = new Date();
@@ -608,6 +635,26 @@ function updateNextPrayerCountdown() {
             let closestType = null;
             let minDiff = Infinity;
             let shouldBeep = false;
+
+            // ==========================
+            // Sahri Beep
+            // ==========================
+
+            if (todaySahri) {
+
+                const sahriTime = parseTime(to12Hour(todaySahri));
+
+                if (sahriTime < now) {
+                    sahriTime.setDate(sahriTime.getDate() + 1);
+                }
+
+                const sahriDiff = sahriTime - now;
+
+                // Beep exactly at Sahri time
+                if (sahriDiff > 500 && sahriDiff <= 1500) {
+                    shouldBeep = true;
+                }
+            }
 
             const events = [
                 { type: "अज़ान", time: parseTime(jumaData.azan) },
@@ -682,6 +729,13 @@ function updateNextPrayerCountdown() {
             // 🔥 NOW calculate diff AFTER adjusting date
             const azanDiff = azanTime - now;
             const jamahDiff = jamahTime - now;
+
+            // Show popup exactly when jamat starts
+            if (jamahDiff <= 0 && jamahDiff > -2000 && !popupShown) {
+                setTimeout(() => {
+                    showJamatPopup(key);
+                }, 1000); // slight delay to ensure it doesn't clash with the beep
+            }
 
             // 🔔 Beep window (first 5 seconds)
             // Beep exactly at time
