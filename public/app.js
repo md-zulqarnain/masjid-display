@@ -20,7 +20,6 @@ let lastRenderedData = JSON.stringify(prayerData);
 
 let azanBeeped = {};
 let jamahBeeped = {};
-let beepInterval = null;
 let HIJRI_OFFSET = 0;
 let todaySahri = null;
 let todayMaghrib = null;
@@ -54,6 +53,60 @@ function to12Hour(time24) {
 function formatDisplayTime(timeStr) {
     // Converts "04:30 AM" → "04:30"
     return timeStr.replace(" AM", "").replace(" PM", "");
+}
+
+// ============================================
+// MASJID DISPLAY BEEP SYSTEM (Stable Version)
+// ============================================
+
+let lastBeepWindow = false;
+let beepAudio;
+
+window.addEventListener("DOMContentLoaded", () => {
+    beepAudio = document.getElementById("beepSound");
+
+    // Unlock audio automatically
+    const unlockAudio = () => {
+
+        beepAudio.muted = false;
+
+        beepAudio.play()
+            .then(() => {
+                beepAudio.pause();
+                beepAudio.currentTime = 0;
+                console.log("Audio unlocked");
+            })
+            .catch(() => { });
+
+        document.removeEventListener("click", unlockAudio);
+        document.removeEventListener("touchstart", unlockAudio);
+        document.removeEventListener("keydown", unlockAudio);
+    };
+
+    document.addEventListener("click", unlockAudio);
+    document.addEventListener("touchstart", unlockAudio);
+    document.addEventListener("keydown", unlockAudio);
+});
+
+
+function playLongBeep() {
+
+    if (!beepAudio) return;
+
+    beepAudio.pause();
+    beepAudio.currentTime = 0;
+    beepAudio.volume = 1;
+
+    beepAudio.play().catch(err => {
+        console.log("Beep blocked", err);
+    });
+
+}
+
+function startBeepSequence() {
+
+    playLongBeep();
+
 }
 
 
@@ -378,7 +431,6 @@ function updateClock() {
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
 
-        console.log("Today's Sahri:", todaySahri, "Today's Maghrib:", todayMaghrib);
         if (sahriEl && todaySahri) {
             sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(todaySahri))}`;
         }
@@ -441,6 +493,20 @@ function parseTime(timeStr) {
     date.setSeconds(0);
 
     return date;
+}
+
+function to24Hour(timeStr) {
+
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    hours = parseInt(hours);
+
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    return String(hours).padStart(2, '0') + ":" + minutes;
+
 }
 
 // helper: convert a 12‑hour string to minutes-since-midnight
@@ -514,31 +580,11 @@ function formatDiff(ms) {
     return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 }
 
-function startBeepRepeating() {
-    const audio = document.getElementById("beepSound");
-    if (!audio) return;
-
-    // Prevent multiple intervals
-    if (beepInterval) return;
-
-    beepInterval = setInterval(() => {
-        audio.currentTime = 0;
-        audio.play().catch(() => { });
-    }, 2000); // repeat every 2 seconds
-}
-
-function stopBeepRepeating() {
-    if (beepInterval) {
-        clearInterval(beepInterval);
-        beepInterval = null;
-    }
-}
 
 function updateNextPrayerCountdown() {
     try {
         const now = new Date();
         const isFriday = now.getDay() === 5; // keep same logic as scheduleSwitcher
-        console.log("Updating countdown. Is Friday?", isFriday);
         const currentTime = now.getHours() * 60 + now.getMinutes();
         const endJumaTime = 14 * 60 + 40;
         const fajrJamahMinutes = toMinutes(prayerData.fajr.jamah);
@@ -547,14 +593,14 @@ function updateNextPrayerCountdown() {
         const azEl = document.getElementById("jumaAzanTime");
         const khEl = document.getElementById("jumaKhutbaTime");
         const jmEl = document.getElementById("jumaJamatTime");
-        if (azEl) azEl.innerText = jumaData.azan;
-        if (khEl) khEl.innerText = jumaData.khutba;
-        if (jmEl) jmEl.innerText = jumaData.jamat;
+        if (azEl) azEl.innerText = formatDisplayTime(to12Hour(jumaData.azan));
+        if (khEl) khEl.innerText = formatDisplayTime(to12Hour(jumaData.khutba));
+        if (jmEl) jmEl.innerText = formatDisplayTime(to12Hour(jumaData.jamat));
         // also update boxes on juma.html (same ids) if present
         document.querySelectorAll('#jumaAzanTime,#jumaKhutbaTime,#jumaJamatTime').forEach(el => {
-            if (el.id === 'jumaAzanTime') el.innerText = jumaData.azan;
-            if (el.id === 'jumaKhutbaTime') el.innerText = jumaData.khutba;
-            if (el.id === 'jumaJamatTime') el.innerText = jumaData.jamat;
+            if (el.id === 'jumaAzanTime') el.innerText = formatDisplayTime(to12Hour(jumaData.azan));
+            if (el.id === 'jumaKhutbaTime') el.innerText = formatDisplayTime(to12Hour(jumaData.khutba));
+            if (el.id === 'jumaJamatTime') el.innerText = formatDisplayTime(to12Hour(jumaData.jamat));
         });
 
         // handle friday/juma countdown separately until endJumaTime
@@ -577,17 +623,19 @@ function updateNextPrayerCountdown() {
                     minDiff = diff;
                     closestType = ev.type;
                 }
-                if (diff > 0 && diff <= 10000) {
+                if (diff > 0 && diff <= 1000) {
                     shouldBeep = true;
                 }
             });
 
-            if (shouldBeep) {
-                startBeepRepeating();
-            } else {
-                stopBeepRepeating();
+            if (shouldBeep && !lastBeepWindow) {
+                startBeepSequence();
+                lastBeepWindow = true;
             }
 
+            if (!shouldBeep) {
+                lastBeepWindow = false;
+            }
             const nameEl = document.getElementById('nextPrayerName');
             if (nameEl && closestType) {
                 nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> अगली ${closestType}</span><span class="prayer">जुमा</span>`;
@@ -636,13 +684,12 @@ function updateNextPrayerCountdown() {
             const jamahDiff = jamahTime - now;
 
             // 🔔 Beep window (first 5 seconds)
-            // Beep for ALL Azan
-            if (azanDiff > 0 && azanDiff <= 10000) {
+            // Beep exactly at time
+            if (azanDiff > 500 && azanDiff <= 1500) {
                 shouldBeep = true;
             }
 
-            // Beep for Jamat EXCEPT Maghrib
-            if (jamahDiff > 0 && jamahDiff <= 10000 && key !== "maghrib") {
+            if (jamahDiff > 500 && jamahDiff <= 1500 && key !== "maghrib") {
                 shouldBeep = true;
             }
 
@@ -660,11 +707,13 @@ function updateNextPrayerCountdown() {
             }
         });
 
-        // 🔥 Handle beep OUTSIDE loop
-        if (shouldBeep) {
-            startBeepRepeating();
-        } else {
-            stopBeepRepeating();
+        if (shouldBeep && !lastBeepWindow) {
+            startBeepSequence();
+            lastBeepWindow = true;
+        }
+
+        if (!shouldBeep) {
+            lastBeepWindow = false;
         }
 
         const nameEl = document.getElementById('nextPrayerName');
@@ -702,7 +751,8 @@ function updateNextPrayerCountdown() {
 setInterval(() => {
     updateNextPrayerCountdown();
     highlightNextPrayer();
-}, 1000);
+}, 500);
+
 updateNextPrayerCountdown();
 highlightNextPrayer();
 
@@ -717,8 +767,8 @@ renderTable();
 // is less than 20 minutes away.
 // ------------------------------------------------
 
-const SURAH_DURATION = 10 * 60 * 1000;
-const INDEX_DURATION = 30 * 60 * 1000;
+const SURAH_DURATION = 3 * 60 * 1000;
+const INDEX_DURATION = 15 * 60 * 1000;
 let scheduleLastSwitch = Date.now();
 let scheduleViewingSurah = window.location.pathname.endsWith('surah-hadith.html');
 
@@ -826,21 +876,3 @@ async function loadVerses() {
 }
 
 loadVerses();
-
-
-let audioUnlocked = false;
-
-function unlockAudio() {
-    const audio = document.getElementById("beepSound");
-    if (!audioUnlocked && audio) {
-        audio.play().then(() => {
-            audio.pause();
-            audio.currentTime = 0;
-            audioUnlocked = true;
-            console.log("Audio unlocked");
-        }).catch(() => { });
-    }
-}
-
-document.addEventListener("click", unlockAudio);
-document.addEventListener("touchstart", unlockAudio);

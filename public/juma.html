@@ -174,7 +174,11 @@
             .juma-box p {
                 font-size: 8vw;
                 margin: 0;
-                color: #ffffff96;
+                color: #ffcc00;
+            }
+
+            .juma-box.active-row p {
+                color: #ffffff;
             }
         }
     </style>
@@ -463,7 +467,7 @@
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
-                    <p id="jumaAzanTime">1:00 PM</p>
+                    <p id="jumaAzanTime">1:00</p>
                 </div>
 
                 <div class="juma-time-box juma-box">
@@ -471,7 +475,7 @@
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
-                    <p id="jumaKhutbaTime">1:45 PM</p>
+                    <p id="jumaKhutbaTime">1:45</p>
                 </div>
 
                 <div class="juma-time-box juma-box">
@@ -479,7 +483,7 @@
                     <div class="divider">
                         <div class="divider-line"></div>
                     </div>
-                    <p id="jumaJamatTime">2:00 PM</p>
+                    <p id="jumaJamatTime">2:00</p>
                 </div>
             </div>
 
@@ -515,10 +519,9 @@
 
 
 
-    <script>
-
-
-    </script>
+    <audio id="beepSound" preload="auto">
+        <source src="audio/beep_long.wav" type="audio/wav" muted>
+    </audio>
     <script src="app.js"></script>
 
 </body>

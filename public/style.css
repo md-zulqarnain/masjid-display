@@ -115,8 +115,13 @@ tbody tr:nth-child(even) {
   background: linear-gradient(90deg, #12261d, #192e24, #12261d);
 }
 
-tbody td:nth-child(2),
-tbody td:nth-child(5) {
+tbody td:nth-child(2) {
+  color: #facc15;
+}
+tbody td:nth-child(4) {
+  color: #3eff33;
+}
+tbody .active-row td:nth-child(4) {
   color: #facc15;
 }
 
