@@ -636,25 +636,7 @@ function updateNextPrayerCountdown() {
             let minDiff = Infinity;
             let shouldBeep = false;
 
-            // ==========================
-            // Sahri Beep
-            // ==========================
 
-            if (todaySahri) {
-
-                const sahriTime = parseTime(to12Hour(todaySahri));
-
-                if (sahriTime < now) {
-                    sahriTime.setDate(sahriTime.getDate() + 1);
-                }
-
-                const sahriDiff = sahriTime - now;
-
-                // Beep exactly at Sahri time
-                if (sahriDiff > 500 && sahriDiff <= 1500) {
-                    shouldBeep = true;
-                }
-            }
 
             const events = [
                 { type: "अज़ान", time: parseTime(jumaData.azan) },
@@ -718,6 +700,32 @@ function updateNextPrayerCountdown() {
         let minDiff = Infinity;
         let shouldBeep = false;   // 🔥 Important
 
+        // ==========================
+        // Sahri Countdown AND Beep Logic
+        // ==========================
+
+        if (todaySahri) {
+
+            let sahriTime = parseTime(to12Hour(todaySahri));
+
+            if (sahriTime < now) {
+                sahriTime.setDate(sahriTime.getDate() + 1);
+            }
+
+            const sahriDiff = sahriTime - now;
+
+            if (sahriDiff > 0 && sahriDiff < minDiff) {
+                minDiff = sahriDiff;
+                closestPrayer = "sahri";
+                closestType = "सहरी";
+            }
+
+            // Beep exactly at Sahri
+            if (sahriDiff > 500 && sahriDiff <= 1500) {
+                shouldBeep = true;
+            }
+        }
+
         Object.keys(prayerData).forEach(key => {
 
             const azanTime = parseTime(prayerData[key].azan);
@@ -772,8 +780,32 @@ function updateNextPrayerCountdown() {
 
         const nameEl = document.getElementById('nextPrayerName');
         if (!nameEl) return;
+        if (closestPrayer === "sahri") {
+            nameEl.innerHTML =
+                `<span class="prefix card-heading">
+        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-clock w-4 h-4 text-gold">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+        </svg> सहरी </span>
+        <span class="prayer">खत्म</span>`;
 
-        if (closestPrayer) {
+            const hours = Math.floor(minDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((minDiff % (1000 * 60)) / 1000);
+
+            document.getElementById("countHours").innerText =
+                String(hours).padStart(2, "0");
+
+            document.getElementById("countMinutes").innerText =
+                String(minutes).padStart(2, "0");
+
+            document.getElementById("countSeconds").innerText =
+                String(seconds).padStart(2, "0");
+        } else if (closestPrayer) {
             const displayName =
                 prayerData[closestPrayer].arabic +
                 ' - ' +
