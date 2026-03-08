@@ -126,9 +126,9 @@ async function loadHijriOffset() {
 
 loadHijriOffset();
 
-setInterval(async () => {
-    loadHijriOffset();
-}, 5000);
+// setInterval(async () => {
+//     loadHijriOffset();
+// }, 5000);
 
 // Load prayer times either from quick-times or monthly timing-data files
 async function loadPrayerTimesForToday() {
@@ -357,7 +357,7 @@ setInterval(async () => {
     if (hasChanged) {
         renderTable();
     }
-}, 3 * 1000);
+}, 60 * 1000);
 
 function updateClock() {
     const now = new Date();
@@ -441,7 +441,6 @@ function updateClock() {
     }
 }
 
-setInterval(updateClock, 1000);
 updateClock();
 
 // Load prayer times on page load and then render table
@@ -608,6 +607,80 @@ function showJamatPopup(prayerKey) {
     }, 1000 * 60 * 5);
 }
 
+
+function getUpcomingEvents() {
+
+    const now = new Date();
+    const events = [];
+
+    // Sahri
+    if (todaySahri) {
+        let t = parseTime(to12Hour(todaySahri));
+        if (t < now) t.setDate(t.getDate() + 1);
+
+        events.push({
+            name: "सहरी खत्म",
+            type: "सहरी",
+            time: t
+        });
+    }
+
+    // Prayer Azan + Jamat
+    Object.keys(prayerData).forEach(key => {
+
+        let az = parseTime(prayerData[key].azan);
+        let jm = parseTime(prayerData[key].jamah);
+
+        if (az < now) az.setDate(az.getDate() + 1);
+        if (jm < now) jm.setDate(jm.getDate() + 1);
+
+        const jmdiff = now - jm;
+
+        if (jmdiff <= 0 && jmdiff > -2000 && !popupShown) {
+            setTimeout(() => {
+                showJamatPopup(key);
+            }, 1000); // slight delay to ensure it doesn't clash with the beep
+        }
+
+
+        events.push({
+            name: prayerData[key].arabic + " - " + prayerData[key].name,
+            type: "अज़ान",
+            prayer: key,
+            time: az
+        });
+
+        if (key !== "maghrib") {
+            events.push({
+                name: prayerData[key].arabic + " - " + prayerData[key].name,
+                type: "जमाअत",
+                prayer: key,
+                time: jm
+            });
+        }
+    });
+
+    // Friday Juma events
+    const nowDay = now.getDay();
+
+    if (nowDay === 5) {
+
+        let az = parseTime(jumaData.azan);
+        let kh = parseTime(jumaData.khutba);
+        let jm = parseTime(jumaData.jamat);
+
+        if (az < now) az.setDate(az.getDate() + 7);
+        if (kh < now) kh.setDate(kh.getDate() + 7);
+        if (jm < now) jm.setDate(jm.getDate() + 7);
+
+        events.push({ name: "जुमा", type: "अज़ान", time: az });
+        events.push({ name: "जुमा", type: "ख़ुत्बा", time: kh });
+        events.push({ name: "जुमा", type: "जमाअत", time: jm });
+    }
+
+    return events;
+}
+
 function updateNextPrayerCountdown() {
     try {
         const now = new Date();
@@ -695,79 +768,59 @@ function updateNextPrayerCountdown() {
         }
 
         // fallback to normal prayer countdown
-        let closestPrayer = null;
-        let closestType = null;
         let minDiff = Infinity;
         let shouldBeep = false;   // 🔥 Important
 
-        // ==========================
-        // Sahri Countdown AND Beep Logic
-        // ==========================
+        const events = getUpcomingEvents();
 
-        if (todaySahri) {
+        let closest = null;
 
-            let sahriTime = parseTime(to12Hour(todaySahri));
+        events.forEach(ev => {
 
-            if (sahriTime < now) {
-                sahriTime.setDate(sahriTime.getDate() + 1);
+            const diff = ev.time - now;
+
+            if (diff > 0 && diff < minDiff) {
+                minDiff = diff;
+                closest = ev;
             }
 
-            const sahriDiff = sahriTime - now;
-
-            if (sahriDiff > 0 && sahriDiff < minDiff) {
-                minDiff = sahriDiff;
-                closestPrayer = "sahri";
-                closestType = "सहरी";
-            }
-
-            // Beep exactly at Sahri
-            if (sahriDiff > 500 && sahriDiff <= 1500) {
+            if (diff > 500 && diff <= 1500) {
                 shouldBeep = true;
-            }
-        }
-
-        Object.keys(prayerData).forEach(key => {
-
-            const azanTime = parseTime(prayerData[key].azan);
-            const jamahTime = parseTime(prayerData[key].jamah);
-
-            if (azanTime < now) azanTime.setDate(azanTime.getDate() + 1);
-            if (jamahTime < now) jamahTime.setDate(jamahTime.getDate() + 1);
-
-            // 🔥 NOW calculate diff AFTER adjusting date
-            const azanDiff = azanTime - now;
-            const jamahDiff = jamahTime - now;
-
-            // Show popup exactly when jamat starts
-            if (jamahDiff <= 0 && jamahDiff > -2000 && !popupShown) {
-                setTimeout(() => {
-                    showJamatPopup(key);
-                }, 1000); // slight delay to ensure it doesn't clash with the beep
-            }
-
-            // 🔔 Beep window (first 5 seconds)
-            // Beep exactly at time
-            if (azanDiff > 500 && azanDiff <= 1500) {
-                shouldBeep = true;
-            }
-
-            if (jamahDiff > 500 && jamahDiff <= 1500 && key !== "maghrib") {
-                shouldBeep = true;
-            }
-
-            // Find closest event
-            if (azanDiff > 0 && azanDiff < minDiff) {
-                minDiff = azanDiff;
-                closestPrayer = key;
-                closestType = "अज़ान";
-            }
-
-            if (jamahDiff > 0 && jamahDiff < minDiff) {
-                minDiff = jamahDiff;
-                closestPrayer = key;
-                closestType = "जमाअत";
             }
         });
+
+
+        if (closest) {
+
+            const nameEl = document.getElementById("nextPrayerName");
+
+            nameEl.innerHTML =
+                `<span class="prefix card-heading">
+        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-clock w-4 h-4 text-gold">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+        </svg> अगली ${closest.type}</span>
+        <span class="prayer">${closest.name}</span>`;
+
+            const hours = Math.floor(minDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((minDiff % (1000 * 60)) / 1000);
+
+            document.getElementById("countHours").innerText =
+                String(hours).padStart(2, "0");
+
+            document.getElementById("countMinutes").innerText =
+                String(minutes).padStart(2, "0");
+
+            document.getElementById("countSeconds").innerText =
+                String(seconds).padStart(2, "0");
+        }
+
+
 
         if (shouldBeep && !lastBeepWindow) {
             startBeepSequence();
@@ -778,56 +831,6 @@ function updateNextPrayerCountdown() {
             lastBeepWindow = false;
         }
 
-        const nameEl = document.getElementById('nextPrayerName');
-        if (!nameEl) return;
-        if (closestPrayer === "sahri") {
-            nameEl.innerHTML =
-                `<span class="prefix card-heading">
-        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-clock w-4 h-4 text-gold">
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-        </svg> सहरी </span>
-        <span class="prayer">खत्म</span>`;
-
-            const hours = Math.floor(minDiff / (1000 * 60 * 60));
-            const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((minDiff % (1000 * 60)) / 1000);
-
-            document.getElementById("countHours").innerText =
-                String(hours).padStart(2, "0");
-
-            document.getElementById("countMinutes").innerText =
-                String(minutes).padStart(2, "0");
-
-            document.getElementById("countSeconds").innerText =
-                String(seconds).padStart(2, "0");
-        } else if (closestPrayer) {
-            const displayName =
-                prayerData[closestPrayer].arabic +
-                ' - ' +
-                prayerData[closestPrayer].name;
-
-            // split into a small prefix and larger prayer name for styling
-            nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> अगली ${closestType}</span><span class="prayer">${displayName}</span>`;
-
-            const hours = Math.floor(minDiff / (1000 * 60 * 60));
-            const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((minDiff % (1000 * 60)) / 1000);
-
-            document.getElementById("countHours").innerText =
-                String(hours).padStart(2, "0");
-
-            document.getElementById("countMinutes").innerText =
-                String(minutes).padStart(2, "0");
-
-            document.getElementById("countSeconds").innerText =
-                String(seconds).padStart(2, "0");
-        }
-
     } catch (e) {
         console.error('Error updating next prayer countdown', e);
     }
@@ -836,11 +839,12 @@ function updateNextPrayerCountdown() {
 // Start countdown timer and highlight events
 setInterval(() => {
     updateNextPrayerCountdown();
-    highlightNextPrayer();
 }, 500);
 
 updateNextPrayerCountdown();
 highlightNextPrayer();
+
+
 
 
 
@@ -928,7 +932,17 @@ function checkIfRamadan() {
     return month == 9
 }
 
-setInterval(scheduleSwitcher, 1000);
+
+function mainLoop() {
+
+    updateClock();
+    updateNextPrayerCountdown();
+    highlightNextPrayer();
+    scheduleSwitcher();
+
+}
+
+setInterval(mainLoop, 1000);
 
 
 async function loadVerses() {
@@ -957,8 +971,6 @@ async function loadVerses() {
 
     // Rotate every 20 seconds
     setInterval(showVerse, 20000);
-
-
 }
 
 loadVerses();
