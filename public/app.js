@@ -669,6 +669,14 @@ function getUpcomingEvents() {
         let kh = parseTime(jumaData.khutba);
         let jm = parseTime(jumaData.jamat);
 
+        const jmdiff = now - jm;
+
+        if (jmdiff <= 0 && jmdiff > -2000 && !popupShown) {
+            setTimeout(() => {
+                showJamatPopup(key);
+            }, 1000); // slight delay to ensure it doesn't clash with the beep
+        }
+
         if (az < now) az.setDate(az.getDate() + 7);
         if (kh < now) kh.setDate(kh.getDate() + 7);
         if (jm < now) jm.setDate(jm.getDate() + 7);

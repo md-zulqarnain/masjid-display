@@ -13,6 +13,16 @@
             color: #ffd700;
         }  */
 
+        /* body::before {
+            content: "";
+            left: 0;
+            right: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ccc;
+        } */
+
         .juma-wrapper {
             position: relative;
             height: 100vh;
@@ -180,12 +190,17 @@
             .juma-box.active-row p {
                 color: #ffffff;
             }
+
+            .top-bar .corner-img {
+                width: 21vw;
+                height: revert-layer;
+            }
         }
     </style>
 </head>
 
 <body>
-
+    <div class="bg-main"></div>
     <div class="juma-wrapper">
 
         <!-- Rotating Corners -->
@@ -425,13 +440,13 @@
 
             <!-- Top Arabic Header -->
             <div class="top-bar">
-                <img src="images/roza.webp" class="corner-img">
+                <img src="images/m-name.png" class="corner-img">
                 <div class="juma-header">
                     <h1>صلاة الجمعة</h1>
                     <h2>जुमा की नमाज़</h2>
                 </div>
 
-                <img src="images/kaaba.jpg" class="corner-img ">
+                <img src="images/a-name.png" class="corner-img ">
             </div>
 
             <!-- Clock Section -->
@@ -461,6 +476,9 @@
                 <div class="divider-star">✦</div>
                 <div class="divider-line"></div>
             </div>
+
+
+
             <div class="juma-boxes">
                 <div class="juma-time-box juma-box">
                     <h3>أذان<br><span>अज़ान</span></h3>
@@ -522,6 +540,24 @@
     <audio id="beepSound" preload="auto">
         <source src="audio/beep_long.wav" type="audio/wav" muted>
     </audio>
+
+    <div id="jamatPopup" class="jamat-popup" style="display:none;">
+        <div class="jamat-popup-content">
+            <div id="popupPrayerName" class="popup-prayer"></div>
+            <div id="popupClock" class="popup-clock"></div>
+            <div class="divider">
+                <div class="divider-line"></div>
+                <div class="divider-star">☪</div>
+                <div class="divider-line"></div>
+            </div>
+            <div class="popup-text popup-text-large">
+                जमाअत शुरू हो चुकी है </div>
+            <div class="popup-text">बराए मेहरबानी अपने मोबाइल फ़ोन
+                साइलेंट कर लें</div>
+            <div class="popup-text">सफ़ों को दुरुस्त करें और खामोशी
+                के साथ नमाज़ में शामिल हों</div>
+        </div>
+    </div>
     <script src="app.js"></script>
 
 </body>

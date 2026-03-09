@@ -542,6 +542,20 @@ div#nextPrayerCountdown {
   font-size: 6vw;
 }
 
+.bg-main {
+  background-image: url(images/juma-bg.jpg);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 0;
+  opacity: 0.3;
+}
+
 /* Portrait mode tweaks for display (narrow, tall screens) */
 @media (orientation: portrait) {
   .container {
