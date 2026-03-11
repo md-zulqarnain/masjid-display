@@ -530,23 +530,32 @@ function highlightNextPrayer() {
 
     // if friday & after fajr jamah & before juma end, highlight juma event instead of normal rows
     if (isFriday && currentTime >= fajrJamahMinutes && currentTime < endJumaTime) {
-        const events = [
-            { type: 'अज़ान', time: parseTime(jumaData.azan), selector: '#jumaAzanTime' },
-            { type: 'ख़ुत्बा', time: parseTime(jumaData.khutba), selector: '#jumaKhutbaTime' },
-            { type: 'जमाअत', time: parseTime(jumaData.jamat), selector: '#jumaJamatTime' }
-        ];
-        events.forEach(ev => {
-            let t = new Date(ev.time);
-            if (t < now) t.setDate(t.getDate() + 1);
-            const diff = t - now;
-            if (diff < minDiff) {
-                minDiff = diff;
-                closest = ev;
-            }
-        });
-        if (closest && closest.selector) {
-            const box = document.querySelector(closest.selector)?.closest('.juma-time-box');
+        const jamatTime = parseTime(jumaData.jamat);
+
+        // If Jamat time has passed, keep highlighting Jamat box
+        if (now >= jamatTime) {
+            const box = document.querySelector('#jumaJamatTime')?.closest('.juma-time-box');
             if (box) box.classList.add('active-row');
+        } else {
+            // Otherwise, find the next upcoming event (Azan, Khutba, or Jamat)
+            const events = [
+                { type: 'अज़ान', time: parseTime(jumaData.azan), selector: '#jumaAzanTime' },
+                { type: 'ख़ुत्बा', time: parseTime(jumaData.khutba), selector: '#jumaKhutbaTime' },
+                { type: 'जमाअत', time: parseTime(jumaData.jamat), selector: '#jumaJamatTime' }
+            ];
+            events.forEach(ev => {
+                let t = new Date(ev.time);
+                if (t < now) t.setDate(t.getDate() + 1);
+                const diff = t - now;
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = ev;
+                }
+            });
+            if (closest && closest.selector) {
+                const box = document.querySelector(closest.selector)?.closest('.juma-time-box');
+                if (box) box.classList.add('active-row');
+            }
         }
         return;
     }
@@ -717,26 +726,34 @@ function updateNextPrayerCountdown() {
             let minDiff = Infinity;
             let shouldBeep = false;
 
+            const jamatTime = parseTime(jumaData.jamat);
+            
+            // If Jamat time has passed, keep the Jamat event highlighted
+            if (now >= jamatTime) {
+                closestType = "जमाअत";
+                const diff = now - jamatTime; // Time since jamat started
+                minDiff = 0; // Keep it at 0 so countdown shows 00:00:00
+            } else {
+                // Otherwise find the next upcoming event
+                const events = [
+                    { type: "अज़ान", time: parseTime(jumaData.azan) },
+                    { type: "ख़ुत्बा", time: parseTime(jumaData.khutba) },
+                    { type: "जमाअत", time: parseTime(jumaData.jamat) }
+                ];
 
-
-            const events = [
-                { type: "अज़ान", time: parseTime(jumaData.azan) },
-                { type: "ख़ुत्बा", time: parseTime(jumaData.khutba) },
-                { type: "जमाअत", time: parseTime(jumaData.jamat) }
-            ];
-
-            events.forEach(ev => {
-                let t = new Date(ev.time);
-                if (t < now) t.setDate(t.getDate() + 1);
-                const diff = t - now;
-                if (diff > 0 && diff < minDiff) {
-                    minDiff = diff;
-                    closestType = ev.type;
-                }
-                if (diff > 0 && diff <= 1000) {
-                    shouldBeep = true;
-                }
-            });
+                events.forEach(ev => {
+                    let t = new Date(ev.time);
+                    if (t < now) t.setDate(t.getDate() + 1);
+                    const diff = t - now;
+                    if (diff > 0 && diff < minDiff) {
+                        minDiff = diff;
+                        closestType = ev.type;
+                    }
+                    if (diff > 0 && diff <= 1000) {
+                        shouldBeep = true;
+                    }
+                });
+            }
 
             if (shouldBeep && !lastBeepWindow) {
                 startBeepSequence();
@@ -750,9 +767,9 @@ function updateNextPrayerCountdown() {
             if (nameEl && closestType) {
                 nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> अगली ${closestType}</span><span class="prayer">जुमा</span>`;
 
-                const hours = Math.floor(minDiff / (1000 * 60 * 60));
-                const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((minDiff % (1000 * 60)) / 1000);
+                const hours = Math.floor(Math.max(0, minDiff) / (1000 * 60 * 60));
+                const minutes = Math.floor((Math.max(0, minDiff) % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((Math.max(0, minDiff) % (1000 * 60)) / 1000);
 
                 document.getElementById("countHours").innerText =
                     String(hours).padStart(2, "0");

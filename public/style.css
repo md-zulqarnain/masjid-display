@@ -553,7 +553,7 @@ div#nextPrayerCountdown {
   background-repeat: no-repeat;
   background-position: center;
   z-index: 0;
-  opacity: 0.3;
+  opacity: 0.2;
 }
 
 /* Portrait mode tweaks for display (narrow, tall screens) */

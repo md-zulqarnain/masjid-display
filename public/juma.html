@@ -105,11 +105,11 @@
             text-align: center;
         }
 
-        .juma-time {
+        /* .juma-time {
             font-size: 6vw;
             font-weight: bold;
             margin: 20px 0;
-        }
+        } */
 
         .juma-date {
             font-size: 1.5vw;
@@ -168,9 +168,9 @@
                 font-size: 5vw;
             }
 
-            .juma-time {
+            /* .juma-time {
                 font-size: 12vw;
-            }
+            } */
 
             .juma-date {
                 font-size: 3vw;
@@ -194,6 +194,133 @@
             .top-bar .corner-img {
                 width: 21vw;
                 height: revert-layer;
+            }
+        }
+
+        /* Durood Ibrahim Section */
+        .juma-durood-section {
+            margin-top: 0;
+            padding: 1.1vh 2vw;
+            background: linear-gradient(135deg, rgba(15, 32, 26, 0.95), rgba(27, 58, 46, 0.95));
+            border-radius: 15px;
+            border-top: 3px solid #facc15;
+        }
+
+        .durood-header {
+            text-align: center;
+            font-size: 1.5vw;
+            font-weight: bold;
+            color: #facc15;
+            letter-spacing: 2px;
+            margin-bottom: 1.5vh;
+        }
+
+        .durood-arabic {
+            text-align: center;
+            font-size: 1.3vw;
+            line-height: 1.8;
+            color: #7FDBFF;
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+
+
+        /* Virtues of Juma Section */
+        .juma-virtues-section {
+            margin-top: 2vh;
+            padding: 2vh 2vw;
+            background: linear-gradient(135deg, rgba(15, 32, 26, 0.95), rgba(27, 58, 46, 0.95));
+            border-radius: 15px;
+            border-top: 3px solid #facc15;
+        }
+
+        .virtues-header {
+            text-align: center;
+            font-size: 1.5vw;
+            font-weight: bold;
+            color: #facc15;
+            letter-spacing: 2px;
+            margin-bottom: 1.5vh;
+        }
+
+        .virtues-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5vw;
+        }
+
+        .virtue-item {
+            display: flex;
+            align-items: center;
+            gap: 1vw;
+            padding: 1vh 1.5vw;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border-left: 3px solid #facc15;
+            animation: slideInFromTop 0.8s ease-out forwards;
+        }
+
+        .virtue-item.exit {
+            animation: slideOutToBottom 0.8s ease-in forwards;
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOutToBottom {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+        }
+
+        .virtue-icon {
+            font-size: 2.5vw;
+            flex-shrink: 0;
+        }
+
+        .virtue-text {
+            color: #ffffffd1;
+            font-size: 1.1vw;
+            line-height: 1.4;
+        }
+
+        @media (orientation: portrait) {
+            .virtues-list {
+                grid-template-columns: 1fr;
+            }
+
+            .durood-header,
+            .virtues-header {
+                font-size: 3vw;
+            }
+
+            .durood-arabic {
+                font-size: 3.7vw;
+            }
+
+
+            .virtue-text {
+                font-size: 3.5vw;
+            }
+
+            .virtue-icon {
+                font-size: 4vw;
             }
         }
     </style>
@@ -450,11 +577,11 @@
             </div>
 
             <!-- Clock Section -->
-            <div class="divider">
+            <!-- <div class="divider">
                 <div class="divider-line"></div>
                 <div class="divider-star">✦</div>
                 <div class="divider-line"></div>
-            </div>
+            </div> -->
             <!-- Clock Section -->
             <div id="clock">
                 <div class="clock-time">
@@ -469,39 +596,45 @@
             </div>
 
 
-
-
-            <div class="divider">
-                <div class="divider-line"></div>
-                <div class="divider-star">✦</div>
-                <div class="divider-line"></div>
+            <div class="juma-section-container">
+                <div class="juma-header-card">
+                    <span>जुमा</span>
+                    <span class="juma-arabic">جمعة</span>
+                </div>
+                <div class="juma-times">
+                    <div class="juma-time-box">
+                        <div class="juma-label">अज़ान</div>
+                        <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
+                    </div>
+                    <div class="juma-time-box">
+                        <div class="juma-label">खु़त्बा</div>
+                        <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
+                    </div>
+                    <div class="juma-time-box">
+                        <div class="juma-label">जमाअत</div>
+                        <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
+                    </div>
+                </div>
             </div>
 
+            <!-- Durood Ibrahim Section -->
+            <div class="juma-durood-section">
+                <div class="durood-arabic">
+                    अल्लाहुम्मा सल्लि अला मुहम्मदिन व अला आले मुहम्मद,
+                    कमा सल्लैता अला इब्राहीमा व अला आले इब्राहीम,
+                    इन्नका हमीदुम मजीद।
 
-
-            <div class="juma-boxes">
-                <div class="juma-time-box juma-box">
-                    <h3>أذان<br><span>अज़ान</span></h3>
-                    <div class="divider">
-                        <div class="divider-line"></div>
-                    </div>
-                    <p id="jumaAzanTime">1:00</p>
+                    अल्लाहुम्मा बारिक अला मुहम्मदिन व अला आले मुहम्मद,
+                    कमा बारकता अला इब्राहीमा व अला आले इब्राहीम,
+                    इन्नका हमीदुम मजीद।
                 </div>
+            </div>
 
-                <div class="juma-time-box juma-box">
-                    <h3>خطبة<br><span>ख़ुत्बा</span></h3>
-                    <div class="divider">
-                        <div class="divider-line"></div>
-                    </div>
-                    <p id="jumaKhutbaTime">1:45</p>
-                </div>
-
-                <div class="juma-time-box juma-box">
-                    <h3>جماعة<br><span>जमाअत</span></h3>
-                    <div class="divider">
-                        <div class="divider-line"></div>
-                    </div>
-                    <p id="jumaJamatTime">2:00</p>
+            <!-- Virtues of Juma Section -->
+            <div class="juma-virtues-section">
+                <div class="virtues-header">जुमे के फ़ज़ाइल</div>
+                <div class="virtues-list" id="virtuesList">
+                    <!-- virtues will be injected here via JavaScript -->
                 </div>
             </div>
 
@@ -558,6 +691,99 @@
                 के साथ नमाज़ में शामिल हों</div>
         </div>
     </div>
+
+    <script>
+        // Virtue items rotation
+        const virtuesData = [
+            {
+                icon: '🤲',
+                text: 'इस दिन एक ऐसी घड़ी होती है जिसमें दुआ कबूल होती है।'
+            },
+            {
+                icon: '📿',
+                text: 'इस दिन दुरूद शरीफ़ की कसरत करना बहुत बड़ी फ़ज़ीलत है।'
+            },
+            {
+                icon: '✨',
+                text: 'दो जुमों के दरमियान के गुनाह माफ कर दिए जाते हैं।'
+            },
+            {
+                icon: '📖',
+                text: 'जो शख़्स जुमे के दिन सूरह अल-कहफ़ की तिलावत करता है, उसके लिए दो जुमों के दरमियान नूर पैदा कर दिया जाता है।'
+            },
+            {
+                icon: '🌙',
+                text: 'जुमा के दिन अल्लाह तआला अपने बंदों पर खास रहमत नाज़िल फरमाता है।'
+            },
+            {
+                icon: '🤍',
+                text: 'यह दिन रहमत, बरकत और मग़फिरत से भरा हुआ है।'
+            },
+            {
+                icon: '👂',
+                text: 'ख़ुत्बा ख़ामोशी से सुनना जरूरी है।'
+            },
+        ];
+
+        let currentVirtueIndex = 0;
+
+        function initializeVirtues() {
+            const virtuesList = document.getElementById('virtuesList');
+            if (!virtuesList) return;
+
+            // Show first two virtues
+            virtuesList.innerHTML = '';
+            const item1 = createVirtueElement(virtuesData[0]);
+            const item2 = createVirtueElement(virtuesData[1]);
+            virtuesList.appendChild(item1);
+            virtuesList.appendChild(item2);
+            currentVirtueIndex = 0;
+        }
+
+        function createVirtueElement(virtue) {
+            const div = document.createElement('div');
+            div.className = 'virtue-item';
+            div.innerHTML = `
+                <div class="virtue-icon">${virtue.icon}</div>
+                <div class="virtue-text">${virtue.text}</div>
+            `;
+            return div;
+        }
+
+        function rotateVirtues() {
+            const virtuesList = document.getElementById('virtuesList');
+            if (!virtuesList) return;
+
+            // Add exit animation to first item
+            const firstItem = virtuesList.querySelector('.virtue-item:first-child');
+            if (firstItem && !firstItem.classList.contains('exit')) {
+                firstItem.classList.add('exit');
+
+                // Wait for animation to complete, then replace items
+                setTimeout(() => {
+                    // Move to next virtue
+                    const nextIndex = (currentVirtueIndex + 2) % virtuesData.length;
+
+                    // Remove first item
+                    firstItem.remove();
+
+                    // Add new item at the end
+                    const newItem = createVirtueElement(virtuesData[nextIndex]);
+                    virtuesList.appendChild(newItem);
+
+                    currentVirtueIndex = (currentVirtueIndex + 1) % virtuesData.length;
+                }, 800);
+            }
+        }
+
+        // Initialize virtues on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeVirtues();
+            // Rotate every 30 seconds
+            setInterval(rotateVirtues, 10000);
+        });
+    </script>
+
     <script src="app.js"></script>
 
 </body>
