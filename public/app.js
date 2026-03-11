@@ -727,7 +727,7 @@ function updateNextPrayerCountdown() {
             let shouldBeep = false;
 
             const jamatTime = parseTime(jumaData.jamat);
-            
+
             // If Jamat time has passed, keep the Jamat event highlighted
             if (now >= jamatTime) {
                 closestType = "जमाअत";
