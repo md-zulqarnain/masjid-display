@@ -605,7 +605,7 @@ div#nextPrayerCountdown {
 .extraPrayerTime {
   font-size: 4.2vw;
   color: white;
-  font-weight: 500;
+  font-weight: bold;
 }
 /* Portrait mode tweaks for display (narrow, tall screens) */
 @media (orientation: portrait) {
@@ -700,6 +700,7 @@ div#nextPrayerCountdown {
   th,
   td {
     padding: 1vh 0.6vw;
+    font-weight: bold;
   }
 
   .corner-img {
