@@ -58,20 +58,41 @@
     </div>
 
     <!-- Prayer Table -->
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>नमाज़</th>
-            <th>الصلاة</th>
-            <!-- <th>वक़्त-ए-शुरू</th> -->
-            <th>अज़ान</th>
-            <th>जमाअत</th>
-            <!-- <th>वक़्त-ए-ख़त्म</th> -->
-          </tr>
-        </thead>
-        <tbody id="prayerTable"></tbody>
-      </table>
+    <div class="prayerTimeingContainer">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>नमाज़</th>
+              <th>अज़ान</th>
+              <th>जमाअत</th>
+            </tr>
+          </thead>
+          <tbody id="prayerTable"></tbody>
+        </table>
+      </div>
+      <div class="extraPrayerCol">
+        <div class="extraPrayerCard card-1">
+          <div class="extraPrayerLabel" id="currentPrayerLabel">करेंट नमाज़ का अंत</div>
+          <div id="currentPrayerEndTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-2">
+          <div class="extraPrayerLabel" id="nextPrayerLabel">अगली नमाज़</div>
+          <div id="nextPrayerStartTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-3">
+          <div class="extraPrayerLabel">तहज्जुद</div>
+          <div id="tahajjudTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-4">
+          <div class="extraPrayerLabel">इश्राक़</div>
+          <div id="ishraqTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-5">
+          <div class="extraPrayerLabel">चाश्त</div>
+          <div id="chashtTime" class="extraPrayerTime"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Juma Section -->

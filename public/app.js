@@ -24,6 +24,21 @@ let HIJRI_OFFSET = 0;
 let todaySahri = null;
 let todayMaghrib = null;
 
+const islamicMonths = [
+    "मुहर्रम",
+    "सफर",
+    "रबीउल अव्वल",
+    "रबीउल आखिर",
+    "जुमादा अल अव्वल",
+    "जुमादा अल आखिर",
+    "रजब",
+    "शाबान",
+    "रमज़ान",
+    "शव्वाल",
+    "ज़िलक़ादा",
+    "ज़िलहिज्जा"
+];
+
 function parseHM(timeStr) {
     // accepts 'HH:MM' or 'H:MM'
     const [h, m] = timeStr.split(':').map(s => parseInt(s, 10));
@@ -111,74 +126,7 @@ function startBeepSequence() {
 
 
 
-// ==============================
-// EXTRA ISLAMIC TIMES
-// ==============================
 
-// Tulu (Sunrise)
-const tuluStart = sunrise;
-
-// Ishraq
-const ishraqStart = addMinutesToHM(sunrise, 15);
-const ishraqEnd = addMinutesToHM(sunrise, 20);
-
-// Chasht (Duha)
-const chashtStart = ishraqEnd;
-const chashtEnd = addMinutesToHM(zohar, -15);
-
-// Gurub End (Maghrib)
-const gurubEnd = maghrib;
-
-// Tahajjud (Last 1/3 of night)
-function calculateTahajjudRange(sahri, maghrib) {
-
-    const [sh, sm] = sahri.split(":").map(Number);
-    const [mh, mm] = maghrib.split(":").map(Number);
-
-    let fajrTime = new Date();
-    fajrTime.setHours(sh, sm, 0, 0);
-
-    let maghribTime = new Date();
-    maghribTime.setHours(mh, mm, 0, 0);
-
-    // adjust for next day
-    if (fajrTime <= maghribTime) {
-        fajrTime.setDate(fajrTime.getDate() + 1);
-    }
-
-    const nightDuration = fajrTime - maghribTime;
-
-    // use 1/3 of night
-    const tahajjudPortion = 1 / 3;
-
-    const tahajjudStart = new Date(
-        fajrTime.getTime() - (nightDuration * tahajjudPortion)
-    );
-
-    return {
-        start: (
-            String(tahajjudStart.getHours()).padStart(2, "0") + ":" +
-            String(tahajjudStart.getMinutes()).padStart(2, "0")
-        ),
-        end: sahri
-    };
-}
-
-const tahajjudTime = calculateTahajjudRange(sahri, maghrib);
-
-// Store globally (for UI use)
-window.extraTimes = {
-    tahajjudStart: to12Hour(tahajjud.start),
-    tahajjudEnd: to12Hour(tahajjud.end),
-
-    tulu: to12Hour(tuluStart),
-
-    ishraqStart: to12Hour(ishraqStart),
-    ishraqEnd: to12Hour(ishraqEnd),
-
-    chashtStart: to12Hour(chashtStart),
-    chashtEnd: to12Hour(chashtEnd)
-};
 
 async function loadHijriOffset() {
     try {
@@ -391,20 +339,83 @@ async function loadPrayerTimesForToday() {
         const ishaStart24 = addMinutesToHM(isha, 2);
         const ishaEnd24 = addMinutesToHM(sahri, -2);
 
-        prayerData.isha.start = to12Hour(ishaStart24);
-        prayerData.isha.end = to12Hour(ishaEnd24);
+        prayerData.isha.start = to12Hour(isha);
+        prayerData.isha.end = to12Hour(sahri);
 
         if (quickData?.isha?.azan) {
             prayerData.isha.azan = quickData.isha.azan;
         } else {
-            prayerData.isha.azan = to12Hour(ishaStart24);
+            prayerData.isha.azan = to12Hour(isha);
         }
 
         if (quickData?.isha?.jamah) {
             prayerData.isha.jamah = quickData.isha.jamah;
         } else {
-            prayerData.isha.jamah = to12Hour(addMinutesToHM(ishaStart24, 15));
+            prayerData.isha.jamah = to12Hour(addMinutesToHM(isha, 15));
         }
+
+        // ==============================
+        // EXTRA ISLAMIC TIMES (moved here to use loaded data)
+        // ==============================
+
+        // Tulu (Sunrise)
+        const tuluStart = sunrise;
+
+        // Ishraq
+        const ishraqStart = addMinutesToHM(sunrise, 15);
+        const ishraqEnd = addMinutesToHM(sunrise, 20);
+
+        // Chasht (Duha)
+        const chashtStart = ishraqEnd;
+        const chashtEnd = addMinutesToHM(zohar, -15);
+
+        // Tahajjud (Last 1/3 of night)
+        function calculateTahajjudRange(sahriTime, maghribTime) {
+            const [sh, sm] = sahriTime.split(":").map(Number);
+            const [mh, mm] = maghribTime.split(":").map(Number);
+
+            let fajrTime = new Date();
+            fajrTime.setHours(sh, sm, 0, 0);
+
+            let maghribTime_date = new Date();
+            maghribTime_date.setHours(mh, mm, 0, 0);
+
+            // adjust for next day
+            if (fajrTime <= maghribTime_date) {
+                fajrTime.setDate(fajrTime.getDate() + 1);
+            }
+
+            const nightDuration = fajrTime - maghribTime_date;
+            const tahajjudPortion = 1 / 3;
+            const tahajjudStart = new Date(fajrTime.getTime() - (nightDuration * tahajjudPortion));
+
+            return {
+                start: String(tahajjudStart.getHours()).padStart(2, "0") + ":" + String(tahajjudStart.getMinutes()).padStart(2, "0"),
+                end: sahriTime
+            };
+        }
+
+        const tahajjudTime = calculateTahajjudRange(sahri, maghrib);
+
+        // Update global extraTimes object
+        window.extraTimes = {
+            tahajjudStart: formatDisplayTime(to12Hour(tahajjudTime.start)),
+            tahajjudEnd: formatDisplayTime(to12Hour(tahajjudTime.end)),
+            tulu: formatDisplayTime(to12Hour(tuluStart)),
+            ishraqStart: formatDisplayTime(to12Hour(ishraqStart)),
+            ishraqEnd: formatDisplayTime(to12Hour(ishraqEnd)),
+            chashtStart: formatDisplayTime(to12Hour(chashtStart)),
+            chashtEnd: formatDisplayTime(to12Hour(chashtEnd))
+        };
+
+        // Update UI elements
+        const tahajjudEl = document.getElementById("tahajjudTime");
+        const ishraqEl = document.getElementById("ishraqTime");
+        const chashtEl = document.getElementById("chashtTime");
+
+        if (tahajjudEl) tahajjudEl.innerText = `${window.extraTimes.tahajjudStart} - ${window.extraTimes.tahajjudEnd}`;
+        if (ishraqEl) ishraqEl.innerText = `${window.extraTimes.ishraqStart} - ${window.extraTimes.ishraqEnd}`;
+        if (chashtEl) chashtEl.innerText = `${window.extraTimes.chashtStart} - ${window.extraTimes.chashtEnd}`;
 
         const currentData = JSON.stringify(prayerData);
 
@@ -485,18 +496,39 @@ function updateClock() {
             year: 'numeric'
         }).formatToParts(now);
 
+        const formatter = new Intl.DateTimeFormat('en-u-ca-islamic', {
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric'
+        });
+
+        const parts = formatter.formatToParts(now);
+
         let day, month, year;
 
-        islamicDate.forEach(part => {
+        parts.forEach(part => {
             if (part.type === "day") day = parseInt(part.value);
-            if (part.type === "month") month = part.value;
-            if (part.type === "year") year = part.value;
+            if (part.type === "month") month = parseInt(part.value); // ✅ NUMBER (1–12)
+            if (part.type === "year") year = parseInt(part.value);
         });
 
         day = day + HIJRI_OFFSET;
 
+        if (day <= 0) {
+            day = 30 + day; // fallback
+
+            month -= 1;
+
+            if (month <= 0) {
+                month = 12;
+                year -= 1;
+            }
+        }
+
+        const monthName = islamicMonths[month - 1];
+
         // month will be shown as a large header, date+year beneath it
-        hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${month}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
+        hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${monthName}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
         // 🔥 Show Sahri & Iftar
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
@@ -517,6 +549,7 @@ updateClock();
 async function initializePage() {
     await loadPrayerTimesForToday();
     renderTable();
+    updateCurrentAndNextPrayerTimes();
 }
 
 initializePage();
@@ -536,7 +569,6 @@ function renderTable() {
 
         row.innerHTML = `
       <td>${prayerData[key].name}</td>
-      <td>${prayerData[key].arabic}</td>
       <td>${formatDisplayTime(prayerData[key].azan)}</td>
       <td>${formatDisplayTime(prayerData[key].jamah)}</td>
     `;
@@ -1033,11 +1065,62 @@ function mainLoop() {
     updateClock();
     updateNextPrayerCountdown();
     highlightNextPrayer();
+    updateCurrentAndNextPrayerTimes();
     scheduleSwitcher();
 
 }
 
 setInterval(mainLoop, 1000);
+
+
+// ==============================
+// EXTRA ISLAMIC TIMES - Updates from prayer loader above
+// ==============================
+
+// Update current and next prayer times  
+function updateCurrentAndNextPrayerTimes() {
+    const now = new Date();
+    const prayerOrder = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+    let currentPrayer = null;
+    let nextPrayer = null;
+    let minDiff = Infinity;
+
+    // Find next prayer
+    prayerOrder.forEach(key => {
+        let prayerTime = parseTime(prayerData[key].jamah);
+        if (prayerTime < now) prayerTime.setDate(prayerTime.getDate() + 1);
+        const diff = prayerTime - now;
+        if (diff > 0 && diff < minDiff) {
+            minDiff = diff;
+            nextPrayer = key;
+        }
+    });
+
+    // Find current prayer (the one we just passed or are in)
+    if (nextPrayer) {
+        const nextIndex = prayerOrder.indexOf(nextPrayer);
+        currentPrayer = nextIndex > 0 ? prayerOrder[nextIndex - 1] : 'isha';
+    }
+
+    // Update display elements
+    if (currentPrayer && prayerData[currentPrayer]) {
+        const currentEndTime = formatDisplayTime(prayerData[currentPrayer].end);
+        const currentLabel = prayerData[currentPrayer].name.trim() + " आख़िर ";
+        const endEl = document.getElementById("currentPrayerEndTime");
+        const labelEl = document.getElementById("currentPrayerLabel");
+        if (endEl) endEl.innerText = currentEndTime;
+        if (labelEl) labelEl.innerText = currentLabel;
+    }
+
+    if (nextPrayer && prayerData[nextPrayer]) {
+        const nextStartTime = formatDisplayTime(prayerData[nextPrayer].start);
+        const nextLabel = prayerData[nextPrayer].name.trim() + " शुरू ";
+        const startEl = document.getElementById("nextPrayerStartTime");
+        const labelEl = document.getElementById("nextPrayerLabel");
+        if (startEl) startEl.innerText = nextStartTime;
+        if (labelEl) labelEl.innerText = nextLabel;
+    }
+}
 
 
 async function loadVerses() {
