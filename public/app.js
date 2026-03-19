@@ -110,6 +110,76 @@ function startBeepSequence() {
 }
 
 
+
+// ==============================
+// EXTRA ISLAMIC TIMES
+// ==============================
+
+// Tulu (Sunrise)
+const tuluStart = sunrise;
+
+// Ishraq
+const ishraqStart = addMinutesToHM(sunrise, 15);
+const ishraqEnd = addMinutesToHM(sunrise, 20);
+
+// Chasht (Duha)
+const chashtStart = ishraqEnd;
+const chashtEnd = addMinutesToHM(zohar, -15);
+
+// Gurub End (Maghrib)
+const gurubEnd = maghrib;
+
+// Tahajjud (Last 1/3 of night)
+function calculateTahajjudRange(sahri, maghrib) {
+
+    const [sh, sm] = sahri.split(":").map(Number);
+    const [mh, mm] = maghrib.split(":").map(Number);
+
+    let fajrTime = new Date();
+    fajrTime.setHours(sh, sm, 0, 0);
+
+    let maghribTime = new Date();
+    maghribTime.setHours(mh, mm, 0, 0);
+
+    // adjust for next day
+    if (fajrTime <= maghribTime) {
+        fajrTime.setDate(fajrTime.getDate() + 1);
+    }
+
+    const nightDuration = fajrTime - maghribTime;
+
+    // use 1/3 of night
+    const tahajjudPortion = 1 / 3;
+
+    const tahajjudStart = new Date(
+        fajrTime.getTime() - (nightDuration * tahajjudPortion)
+    );
+
+    return {
+        start: (
+            String(tahajjudStart.getHours()).padStart(2, "0") + ":" +
+            String(tahajjudStart.getMinutes()).padStart(2, "0")
+        ),
+        end: sahri
+    };
+}
+
+const tahajjudTime = calculateTahajjudRange(sahri, maghrib);
+
+// Store globally (for UI use)
+window.extraTimes = {
+    tahajjudStart: to12Hour(tahajjud.start),
+    tahajjudEnd: to12Hour(tahajjud.end),
+
+    tulu: to12Hour(tuluStart),
+
+    ishraqStart: to12Hour(ishraqStart),
+    ishraqEnd: to12Hour(ishraqEnd),
+
+    chashtStart: to12Hour(chashtStart),
+    chashtEnd: to12Hour(chashtEnd)
+};
+
 async function loadHijriOffset() {
     try {
         const res = await fetch('/api/settings?t=' + Date.now(), { cache: 'no-store' });
