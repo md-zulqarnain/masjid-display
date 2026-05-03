@@ -154,7 +154,12 @@ function isBeforeHM(timeStr, date = new Date()) {
 }
 
 function buildTimingChangeMessage(prefix, prayerName, times) {
-    return `${prefix} इंशाअल्लाह ${prayerName} की अज़ान ${formatDisplayTime(to12Hour(times.azan))} और जमात ${formatDisplayTime(to12Hour(times.jamah))} पर होगी`;
+    let colorClass = '';
+    if (prayerName === 'फ़जर') colorClass = 'marquee-fajr';
+    else if (prayerName === 'असर') colorClass = 'marquee-asr';
+    else if (prayerName === 'इशा') colorClass = 'marquee-isha';
+
+    return `<span class="${colorClass}">${prefix} इंशाअल्लाह ${prayerName} की अज़ान ${formatDisplayTime(to12Hour(times.azan))} और जमात ${formatDisplayTime(to12Hour(times.jamah))} पर होगी</span>`;
 }
 
 function updateTimingChangeMarquee(messages) {
@@ -164,11 +169,11 @@ function updateTimingChangeMarquee(messages) {
 
     if (!messages.length) {
         marquee.style.display = 'none';
-        text.innerText = '';
+        text.innerHTML = '';
         return;
     }
 
-    text.innerText = messages.join('     |     ');
+    text.innerHTML = messages.join('');
     marquee.style.display = 'block';
 }
 
@@ -653,12 +658,12 @@ function updateClock() {
     if (hijriEl) {
         let hijriNow = new Date(now);
         let jumpNextDay = false;
-        
+
         if (todayMaghrib) {
             const [mh, mm] = todayMaghrib.split(":").map(Number);
             const maghribTime = new Date(now);
             maghribTime.setHours(mh, mm + 60, 0, 0); // 1 hour after Maghrib
-            
+
             if (now > maghribTime) {
                 jumpNextDay = true;
                 hijriNow.setDate(hijriNow.getDate() + 1);
