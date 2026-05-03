@@ -180,6 +180,8 @@
       // Simple validation - in production use proper authentication
       const validUsername = 'admin';
       const validPassword = 'admin123';
+      const superUsername = 'superadmin';
+      const superPassword = 'superpassword';
 
       btn.disabled = true;
       btn.innerHTML = '<span class="loading"></span>Logging in...';
@@ -188,7 +190,16 @@
       setTimeout(() => {
         if (username === validUsername && password === validPassword) {
           localStorage.setItem('adminLogged', 'true');
+          localStorage.removeItem('superLogged');
           messageEl.textContent = 'Login successful! Redirecting...';
+          messageEl.className = 'message success show';
+          setTimeout(() => {
+            window.location.href = '/admin-panel.html';
+          }, 1000);
+        } else if (username === superUsername && password === superPassword) {
+          localStorage.setItem('adminLogged', 'true');
+          localStorage.setItem('superLogged', 'true');
+          messageEl.textContent = 'Super Admin Login successful! Redirecting...';
           messageEl.className = 'message success show';
           setTimeout(() => {
             window.location.href = '/admin-panel.html';

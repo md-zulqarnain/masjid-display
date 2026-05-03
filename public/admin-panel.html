@@ -430,6 +430,7 @@
             <button class="tab-btn active" onclick="switchTab('quick-times', this)">Quick Times</button>
             <button class="tab-btn" onclick="switchTab('verses', this)">Manage Verses</button>
             <button class="tab-btn" onclick="switchTab('settings', this)">Settings</button>
+            <button class="tab-btn" onclick="switchTab('maintenance', this)">Maintenance</button>
         </div>
 
         <!-- Quick Times Tab -->
@@ -515,6 +516,18 @@
                 </div>
 
                 <div id="settingsMessage" class="message"></div>
+            </div>
+        </div>
+
+        <div id="maintenance" class="tab-content">
+            <div class="section">
+                <h2>System Maintenance</h2>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="pullCode()" id="pullCodeBtn">Pull Latest Code</button>
+                    <button class="btn-danger" onclick="rebootSystem()" id="rebootBtn">Restart Device</button>
+                </div>
+                <div id="maintenanceMessage" class="message"></div>
+                <div id="maintenanceOutput" style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.5); color: #0f0; font-family: monospace; border-radius: 5px; display: none; white-space: pre-wrap; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
@@ -786,12 +799,19 @@
 
         function logout() {
             localStorage.removeItem('adminLogged');
+            localStorage.removeItem('superLogged');
             window.location.href = '/login.html';
         }
 
         // Initialize
         if (!localStorage.getItem('adminLogged')) {
             window.location.href = '/login.html';
+        }
+
+        // Hide maintenance tab if not super admin
+        if (!localStorage.getItem('superLogged')) {
+            const maintBtn = document.querySelector('.tab-btn[onclick="switchTab(\\\'maintenance\\\', this)"]');
+            if (maintBtn) maintBtn.style.display = 'none';
         }
 
         // Tab Switching
@@ -939,6 +959,65 @@
             });
 
             showMessage('settingsMessage', 'Settings saved successfully!', 'success');
+        }
+
+        async function pullCode() {
+            const btn = document.getElementById('pullCodeBtn');
+            const originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading"></span>';
+            btn.disabled = true;
+            const outputDiv = document.getElementById('maintenanceOutput');
+            outputDiv.style.display = 'none';
+            outputDiv.textContent = '';
+
+            try {
+                const res = await fetch('/api/maintenance/pull', { method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Git pull executed successfully!', 'success');
+                    if (data.stdout) {
+                        outputDiv.textContent = data.stdout;
+                        outputDiv.style.display = 'block';
+                    }
+                } else {
+                    showMessage('maintenanceMessage', 'Error: ' + (data.error || 'Unknown error'), 'error');
+                    if (data.stderr) {
+                        outputDiv.textContent = data.stderr;
+                        outputDiv.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function rebootSystem() {
+            if (!confirm("Are you sure you want to restart the Raspberry Pi? This will drop the connection.")) return;
+            
+            const btn = document.getElementById('rebootBtn');
+            const originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading"></span>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/maintenance/reboot', { method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Device is rebooting... Please wait 1-2 minutes and refresh the page.', 'success');
+                } else {
+                    showMessage('maintenanceMessage', 'Error: ' + (data.error || 'Unknown error'), 'error');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                // Network error is expected if the device reboots immediately
+                showMessage('maintenanceMessage', 'Device is rebooting... Please wait 1-2 minutes and refresh the page.', 'success');
+            }
         }
 
         window.addEventListener("load", loadVersesList);
