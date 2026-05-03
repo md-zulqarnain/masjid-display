@@ -212,6 +212,27 @@ app.put('/api/verses/:index', (req, res) => {
   }
 });
 
+// --- MAINTENANCE ENDPOINTS ---
+app.post('/api/maintenance/pull', (req, res) => {
+  exec('git pull', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return res.status(500).json({ error: error.message, stderr });
+    }
+    res.json({ message: "Pulled successfully", stdout });
+  });
+});
+
+app.post('/api/maintenance/reboot', (req, res) => {
+  exec('sudo reboot', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return res.status(500).json({ error: error.message, stderr });
+    }
+    res.json({ message: "Rebooting..." });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 
