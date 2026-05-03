@@ -170,6 +170,11 @@
             margin-bottom: 5px;
         }
 
+        .time-input-group input:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
         .button-group {
             display: flex;
             gap: 10px;
@@ -564,6 +569,7 @@
 
             prayers.forEach(prayer => {
                 const times = quickTimesData[prayer] || { azan: '00:00', jamah: '00:00' };
+                const jamahAfterAzan = getJamahAfterAzanValue(times, prayer);
 
                 const card = document.createElement('div');
                 card.className = 'prayer-card';
@@ -572,11 +578,20 @@
 
                 // ===== FAJR EXTRA OPTIONS =====
                 if (prayer === 'fajr') {
+                    const useCustomTime = times.useCustomTime || false;
                     const enabled = times.specialEnabled || false;
                     const sahriMinutes = times.azanAfterSahri || 0;
-                    const jamahAfterAzan = times.jamahAfterAzan || 0;
 
                     extraFields = `
+        <div class="time-input-group">
+          <label>
+            <input type="checkbox" id="fajr-use-custom-time" 
+              ${useCustomTime ? 'checked' : ''} 
+              onchange="toggleFajrCustomTime()">
+            Use custom time
+          </label>
+        </div>
+
         <div class="time-input-group">
           <label>
             <input type="checkbox" id="fajr-special-toggle" 
@@ -591,10 +606,6 @@
             <label>Azan After Sahri (minutes):</label>
             <input type="number" min="0" id="fajr-azan-after-sahri" value="${sahriMinutes}">
           </div>
-          <div class="time-input-group">
-            <label>Jamah After Azan (minutes):</label>
-            <input type="number" min="0" id="fajr-jamah-after-azan" value="${jamahAfterAzan}">
-          </div>
         </div>
       `;
                 }
@@ -602,23 +613,21 @@
                 // ===== MAGHRIB EXTRA OPTION =====
                 if (prayer === 'maghrib') {
                     const enabled = times.specialEnabled || false;
-                    const jamahAfterAzan = times.jamahAfterAzan || 0;
+
+
+                }
+
+                if (prayer === 'asr' || prayer === 'isha') {
+                    const useCustomTime = times.useCustomTime || false;
 
                     extraFields = `
         <div class="time-input-group">
           <label>
-            <input type="checkbox" id="maghrib-special-toggle" 
-              ${enabled ? 'checked' : ''} 
-              onchange="toggleMaghribSpecial()">
-            Enable Jamah After Azan
+            <input type="checkbox" id="${prayer}-use-custom-time" 
+              ${useCustomTime ? 'checked' : ''} 
+              onchange="togglePrayerCustomTime('${prayer}')">
+            Use custom time
           </label>
-        </div>
-
-        <div id="maghrib-special-fields" style="display:${enabled ? 'block' : 'none'};">
-          <div class="time-input-group">
-            <label>Jamah After Azan (minutes):</label>
-            <input type="number" min="0" id="maghrib-jamah-after-azan" value="${jamahAfterAzan}">
-          </div>
         </div>
       `;
                 }
@@ -628,12 +637,12 @@
 
       <div class="time-input-group">
         <label>Azan Time:</label>
-        <input type="time" id="quick-${prayer}-azan" value="${convertTo24Hour(times.azan)}">
+        <input type="time" id="quick-${prayer}-azan" value="${convertTo24Hour(times.azan)}" ${['fajr', 'asr', 'isha'].includes(prayer) && !times.useCustomTime ? 'disabled' : ''}>
       </div>
 
       <div class="time-input-group">
-        <label>Jamah Time:</label>
-        <input type="time" id="quick-${prayer}-jamah" value="${convertTo24Hour(times.jamah)}">
+        <label>Jamah After Azan (minutes):</label>
+        <input type="number" min="0" id="quick-${prayer}-jamah-after-azan" value="${jamahAfterAzan}">
       </div>
 
       ${extraFields}
@@ -671,6 +680,41 @@
             return String(hours).padStart(2, '0') + ':' + minutes + ' ' + modifier;
         }
 
+        function timeToMinutes(time24) {
+            const [hours, minutes] = time24.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function addMinutesToTime(time24, minutesToAdd) {
+            const total = (timeToMinutes(time24) + minutesToAdd) % (24 * 60);
+            const hours = Math.floor(total / 60);
+            const minutes = total % 60;
+            return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+        }
+
+        function getMinutesBetweenTimes(start24, end24) {
+            const start = timeToMinutes(start24);
+            const end = timeToMinutes(end24);
+            return (end - start + 24 * 60) % (24 * 60);
+        }
+
+        function getDefaultJamahAfterAzan(prayer) {
+            if (prayer === 'fajr') return 30;
+            if (prayer === 'maghrib') return 5;
+            return 15;
+        }
+
+        function getJamahAfterAzanValue(times, prayer) {
+            const savedMinutes = parseInt(times.jamahAfterAzan);
+            if (!Number.isNaN(savedMinutes)) return savedMinutes;
+
+            if (times.azan && times.jamah) {
+                return getMinutesBetweenTimes(convertTo24Hour(times.azan), convertTo24Hour(times.jamah));
+            }
+
+            return getDefaultJamahAfterAzan(prayer);
+        }
+
         // Save quick times
         async function saveQuickTimes() {
             const btn = document.getElementById('quickSaveBtn');
@@ -681,24 +725,23 @@
             const updatedTimes = {};
             prayers.forEach(prayer => {
                 const azanEl = document.getElementById(`quick-${prayer}-azan`);
-                const jamahEl = document.getElementById(`quick-${prayer}-jamah`);
+                const jamahAfterAzan = parseInt(document.getElementById(`quick-${prayer}-jamah-after-azan`).value) || 0;
 
                 updatedTimes[prayer] = {
                     azan: convertTo12Hour(azanEl.value),
-                    jamah: convertTo12Hour(jamahEl.value)
+                    jamah: convertTo12Hour(addMinutesToTime(azanEl.value, jamahAfterAzan)),
+                    jamahAfterAzan
                 };
 
                 // Special logic for Fajr
                 if (prayer === 'fajr') {
+                    updatedTimes[prayer].useCustomTime = document.getElementById('fajr-use-custom-time')?.checked || false;
                     const enabled = document.getElementById('fajr-special-toggle')?.checked || false;
                     updatedTimes[prayer].specialEnabled = enabled;
 
                     if (enabled) {
                         updatedTimes[prayer].azanAfterSahri =
                             parseInt(document.getElementById('fajr-azan-after-sahri').value) || 0;
-
-                        updatedTimes[prayer].jamahAfterAzan =
-                            parseInt(document.getElementById('fajr-jamah-after-azan').value) || 0;
                     }
                 }
 
@@ -707,10 +750,10 @@
                     const enabled = document.getElementById('maghrib-special-toggle')?.checked || false;
                     updatedTimes[prayer].specialEnabled = enabled;
 
-                    if (enabled) {
-                        updatedTimes[prayer].jamahAfterAzan =
-                            parseInt(document.getElementById('maghrib-jamah-after-azan').value) || 0;
-                    }
+                }
+
+                if (prayer === 'asr' || prayer === 'isha') {
+                    updatedTimes[prayer].useCustomTime = document.getElementById(`${prayer}-use-custom-time`)?.checked || false;
                 }
             });
 
@@ -763,6 +806,18 @@
         loadQuickTimes();
 
 
+        function toggleFajrCustomTime() {
+            const checked = document.getElementById('fajr-use-custom-time').checked;
+            document.getElementById('quick-fajr-azan').disabled = !checked;
+            document.getElementById('quick-fajr-jamah-after-azan').disabled = false;
+        }
+
+        function togglePrayerCustomTime(prayer) {
+            const checked = document.getElementById(`${prayer}-use-custom-time`).checked;
+            document.getElementById(`quick-${prayer}-azan`).disabled = !checked;
+            document.getElementById(`quick-${prayer}-jamah-after-azan`).disabled = false;
+        }
+
         function toggleFajrSpecial() {
             const checked = document.getElementById('fajr-special-toggle').checked;
             document.getElementById('fajr-special-fields').style.display = checked ? 'block' : 'none';
@@ -770,7 +825,8 @@
 
         function toggleMaghribSpecial() {
             const checked = document.getElementById('maghrib-special-toggle').checked;
-            document.getElementById('maghrib-special-fields').style.display = checked ? 'block' : 'none';
+            const fields = document.getElementById('maghrib-special-fields');
+            if (fields) fields.style.display = checked ? 'block' : 'none';
         }
 
         async function saveVerse() {

@@ -183,6 +183,40 @@ tbody .active-row td:nth-child(4) {
   font-style: italic;
 }
 
+.timing-change-marquee {
+  /* width: 82%; */
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #fff7c2;
+  font-weight: 700;
+  background: #ff0000;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  z-index: 9;
+  padding: 10px 0;
+}
+
+.timing-change-marquee span {
+  display: inline-block;
+  min-width: 100%;
+  padding-left: 100%;
+  animation: timing-marquee 18s linear infinite;
+  font-size: 80px;
+}
+
+@keyframes timing-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
 /* AM PM smaller */
 #ampm {
   font-size: 2vw;

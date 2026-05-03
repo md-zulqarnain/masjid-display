@@ -55,6 +55,121 @@ function addMinutesToHM(timeStr, minutes) {
     return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
 }
 
+function normalizeToHM(timeStr) {
+    if (!timeStr) return null;
+    if (timeStr.includes('AM') || timeStr.includes('PM')) return to24Hour(timeStr);
+    return timeStr;
+}
+
+function hmToMinutes(timeStr) {
+    const { h, m } = parseHM(normalizeToHM(timeStr));
+    return h * 60 + m;
+}
+
+function minutesBetweenHM(startTime, endTime) {
+    return (hmToMinutes(endTime) - hmToMinutes(startTime) + 24 * 60) % (24 * 60);
+}
+
+function getDefaultJamahAfterAzan(prayer) {
+    if (prayer === 'fajr') return 30;
+    if (prayer === 'maghrib') return 5;
+    return 15;
+}
+
+function getJamahAfterAzan(config, prayer) {
+    const savedMinutes = parseInt(config?.jamahAfterAzan);
+    if (!Number.isNaN(savedMinutes)) return savedMinutes;
+
+    return getDefaultJamahAfterAzan(prayer);
+}
+
+function roundHMDownToMinutes(timeStr, intervalMinutes) {
+    const { h, m } = parseHM(timeStr);
+    const roundedMinutes = Math.floor(m / intervalMinutes) * intervalMinutes;
+    return String(h).padStart(2, '0') + ':' + String(roundedMinutes).padStart(2, '0');
+}
+
+function roundHMUpToMinutes(timeStr, intervalMinutes) {
+    const { h, m } = parseHM(timeStr);
+    const totalMinutes = h * 60 + m;
+    const roundedTotal = Math.ceil(totalMinutes / intervalMinutes) * intervalMinutes;
+    const hh = Math.floor(roundedTotal / 60) % 24;
+    const mm = roundedTotal % 60;
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+}
+
+function getQuarterHourAzanAndJamah(baseTime, jamahAfterAzan = 15) {
+    const azan = roundHMUpToMinutes(addMinutesToHM(baseTime, 2), 15);
+    return {
+        azan,
+        jamah: addMinutesToHM(azan, jamahAfterAzan)
+    };
+}
+
+function getAutoFajrTimes(dayObj, fajrConfig) {
+    const jamahAfterAzan = getJamahAfterAzan(fajrConfig, 'fajr');
+
+    if (fajrConfig?.specialEnabled === true) {
+        const azan = addMinutesToHM(dayObj.Sahri, fajrConfig.azanAfterSahri || 0);
+        return {
+            azan,
+            jamah: addMinutesToHM(azan, jamahAfterAzan)
+        };
+    }
+
+    const azan = roundHMDownToMinutes(addMinutesToHM(dayObj.Sunrise, -60), 5);
+    return {
+        azan,
+        jamah: addMinutesToHM(azan, jamahAfterAzan)
+    };
+}
+
+function getTimingDayFromData(data, day) {
+    return Array.isArray(data)
+        ? (data.find(d => d.day === day) || data[day - 1])
+        : null;
+}
+
+async function getTimingDayForDate(date, currentMonth, currentMonthData) {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const data = month === currentMonth
+        ? currentMonthData
+        : await fetch(`/api/timings/${month}`).then(res => res.ok ? res.json() : null);
+
+    return getTimingDayFromData(data, day);
+}
+
+function samePrayerTimes(first, second) {
+    return first?.azan === second?.azan && first?.jamah === second?.jamah;
+}
+
+function isBeforeHM(timeStr, date = new Date()) {
+    const { h, m } = parseHM(timeStr);
+    const targetMinutes = h * 60 + m;
+    const currentMinutes = date.getHours() * 60 + date.getMinutes();
+    return currentMinutes < targetMinutes;
+}
+
+function buildTimingChangeMessage(prefix, prayerName, times) {
+    return `${prefix} इंशाअल्लाह ${prayerName} की अज़ान ${formatDisplayTime(to12Hour(times.azan))} और जमात ${formatDisplayTime(to12Hour(times.jamah))} पर होगी`;
+}
+
+function updateTimingChangeMarquee(messages) {
+    const marquee = document.getElementById('timingChangeMarquee');
+    const text = document.getElementById('timingChangeText');
+    if (!marquee || !text) return;
+
+    if (!messages.length) {
+        marquee.style.display = 'none';
+        text.innerText = '';
+        return;
+    }
+
+    text.innerText = messages.join('     |     ');
+    marquee.style.display = 'block';
+}
+
 function to12Hour(time24) {
     // time24 may be 'HH:MM' or already 'hh:mm AM'
     if (time24.includes('AM') || time24.includes('PM')) return time24;
@@ -167,9 +282,7 @@ async function loadPrayerTimesForToday() {
         if (!mresp.ok) return false;
 
         const mdata = await mresp.json();
-        const dayObj = Array.isArray(mdata)
-            ? (mdata.find(d => d.day === day) || mdata[day - 1])
-            : null;
+        const dayObj = getTimingDayFromData(mdata, day);
 
         if (!dayObj) return false;
 
@@ -199,45 +312,40 @@ async function loadPrayerTimesForToday() {
         const fajrStart24_normal = addMinutesToHM(sahri, 11);
         const fajrEnd24 = addMinutesToHM(sunrise, -2);
 
-        if (quickData?.fajr?.specialEnabled === true) {
+        if (quickData?.fajr?.useCustomTime === true) {
 
-            // 🔵 SAHRI BASED MODE
+            // Custom Fajr time from admin panel
 
-            const fajrAzan24 = addMinutesToHM(
-                sahri,
-                quickData.fajr.azanAfterSahri || 0
-            );
-
-            const fajrJamah24 = addMinutesToHM(
-                fajrAzan24,
-                quickData.fajr.jamahAfterAzan || 0
-            );
+            const defaultFajrAzan24 = roundHMDownToMinutes(addMinutesToHM(sunrise, -60), 5);
+            const fajrAzan24 = normalizeToHM(quickData.fajr.azan) || defaultFajrAzan24;
+            const fajrJamah24 = addMinutesToHM(fajrAzan24, getJamahAfterAzan(quickData.fajr, 'fajr'));
 
             prayerData.fajr.start = to12Hour(fajrStart24_normal);
             prayerData.fajr.azan = to12Hour(fajrAzan24);
             prayerData.fajr.jamah = to12Hour(fajrJamah24);
             prayerData.fajr.end = to12Hour(fajrEnd24);
 
-        } else {
+        } else if (quickData?.fajr?.specialEnabled === true) {
 
-            // 🟢 NORMAL MODE (Use timings.json if available)
+            // Sahri based Fajr timing from existing admin settings
+
+            const fajrTimes = getAutoFajrTimes(dayObj, quickData?.fajr);
 
             prayerData.fajr.start = to12Hour(fajrStart24_normal);
+            prayerData.fajr.azan = to12Hour(fajrTimes.azan);
+            prayerData.fajr.jamah = to12Hour(fajrTimes.jamah);
             prayerData.fajr.end = to12Hour(fajrEnd24);
 
-            if (quickData?.fajr?.azan) {
-                prayerData.fajr.azan = quickData.fajr.azan;
-            } else {
-                prayerData.fajr.azan = to12Hour(fajrStart24_normal);
-            }
+        } else {
 
-            if (quickData?.fajr?.jamah) {
-                prayerData.fajr.jamah = quickData.fajr.jamah;
-            } else {
-                prayerData.fajr.jamah = to12Hour(
-                    addMinutesToHM(fajrStart24_normal, 15)
-                );
-            }
+            // Automatic Fajr time from today's Sunrise
+
+            const fajrTimes = getAutoFajrTimes(dayObj, quickData?.fajr);
+
+            prayerData.fajr.start = to12Hour(fajrStart24_normal);
+            prayerData.fajr.azan = to12Hour(fajrTimes.azan);
+            prayerData.fajr.jamah = to12Hour(fajrTimes.jamah);
+            prayerData.fajr.end = to12Hour(fajrEnd24);
         }
 
         // ==============================
@@ -257,11 +365,7 @@ async function loadPrayerTimesForToday() {
             prayerData.dhuhr.azan = to12Hour(zoharStart24);
         }
 
-        if (quickData?.dhuhr?.jamah) {
-            prayerData.dhuhr.jamah = quickData.dhuhr.jamah;
-        } else {
-            prayerData.dhuhr.jamah = to12Hour(addMinutesToHM(zoharStart24, 15));
-        }
+        prayerData.dhuhr.jamah = to12Hour(addMinutesToHM(normalizeToHM(prayerData.dhuhr.azan), getJamahAfterAzan(quickData?.dhuhr, 'dhuhr')));
 
         // ==============================
         // ASR
@@ -269,21 +373,18 @@ async function loadPrayerTimesForToday() {
 
         const asrStart24 = asr;
         const asrEnd24 = maghrib;
+        const asrAutoTimes = getQuarterHourAzanAndJamah(asrStart24, getJamahAfterAzan(quickData?.asr, 'asr'));
 
         prayerData.asr.start = to12Hour(asrStart24);
         prayerData.asr.end = to12Hour(asrEnd24);
 
-        if (quickData?.asr?.azan) {
+        if (quickData?.asr?.useCustomTime === true && quickData?.asr?.azan) {
             prayerData.asr.azan = quickData.asr.azan;
         } else {
-            prayerData.asr.azan = to12Hour(asrStart24);
+            prayerData.asr.azan = to12Hour(asrAutoTimes.azan);
         }
 
-        if (quickData?.asr?.jamah) {
-            prayerData.asr.jamah = quickData.asr.jamah;
-        } else {
-            prayerData.asr.jamah = to12Hour(addMinutesToHM(asrStart24, 15));
-        }
+        prayerData.asr.jamah = to12Hour(addMinutesToHM(normalizeToHM(prayerData.asr.azan), getJamahAfterAzan(quickData?.asr, 'asr')));
 
         // ==============================
         // MAGHRIB
@@ -291,7 +392,8 @@ async function loadPrayerTimesForToday() {
 
         const maghribStart24 = maghrib; // from monthly file (HH:MM 24h)
         const maghribAzanDefault24 = addMinutesToHM(maghribStart24, 2);
-        const maghribJamahDefault24 = addMinutesToHM(maghribStart24, 5);
+        const maghribJamahAfterAzan = getJamahAfterAzan(quickData?.maghrib, 'maghrib');
+        const maghribJamahDefault24 = addMinutesToHM(maghribAzanDefault24, maghribJamahAfterAzan);
         const maghribEnd24 = addMinutesToHM(isha, -2);
 
         prayerData.maghrib.start = to12Hour(maghribAzanDefault24);
@@ -312,16 +414,7 @@ async function loadPrayerTimesForToday() {
             // 2️⃣ Get jamah
             let jamah24;
 
-            if (quickData.maghrib.jamahAfterAzan != null) {
-                jamah24 = addMinutesToHM(
-                    azan24,
-                    parseInt(quickData.maghrib.jamahAfterAzan)
-                );
-            } else if (quickData.maghrib.jamah) {
-                jamah24 = to24Hour(quickData.maghrib.jamah);
-            } else {
-                jamah24 = maghribJamahDefault24;
-            }
+            jamah24 = addMinutesToHM(azan24, maghribJamahAfterAzan);
 
             prayerData.maghrib.azan = to12Hour(azan24);
             prayerData.maghrib.jamah = to12Hour(jamah24);
@@ -342,17 +435,76 @@ async function loadPrayerTimesForToday() {
         prayerData.isha.start = to12Hour(isha);
         prayerData.isha.end = to12Hour(sahri);
 
-        if (quickData?.isha?.azan) {
+        const ishaAutoTimes = getQuarterHourAzanAndJamah(isha, getJamahAfterAzan(quickData?.isha, 'isha'));
+
+        if (quickData?.isha?.useCustomTime === true && quickData?.isha?.azan) {
             prayerData.isha.azan = quickData.isha.azan;
         } else {
-            prayerData.isha.azan = to12Hour(isha);
+            prayerData.isha.azan = to12Hour(ishaAutoTimes.azan);
         }
 
-        if (quickData?.isha?.jamah) {
-            prayerData.isha.jamah = quickData.isha.jamah;
-        } else {
-            prayerData.isha.jamah = to12Hour(addMinutesToHM(isha, 15));
+        prayerData.isha.jamah = to12Hour(addMinutesToHM(normalizeToHM(prayerData.isha.azan), getJamahAfterAzan(quickData?.isha, 'isha')));
+
+        const timingMessages = [];
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const tomorrowObj = await getTimingDayForDate(tomorrow, month, mdata);
+        const yesterdayObj = await getTimingDayForDate(yesterday, month, mdata);
+
+        if (quickData?.fajr?.useCustomTime !== true) {
+            const todayFajrTimes = getAutoFajrTimes(dayObj, quickData?.fajr);
+            let fajrMessageAdded = false;
+
+            if (yesterdayObj) {
+                const yesterdayFajrTimes = getAutoFajrTimes(yesterdayObj, quickData?.fajr);
+                if (!samePrayerTimes(yesterdayFajrTimes, todayFajrTimes) && isBeforeHM(fajrStart24_normal, now)) {
+                    timingMessages.push(buildTimingChangeMessage('आज से', 'फ़जर', todayFajrTimes));
+                    fajrMessageAdded = true;
+                }
+            }
+
+            if (!fajrMessageAdded && tomorrowObj) {
+                const tomorrowFajrTimes = getAutoFajrTimes(tomorrowObj, quickData?.fajr);
+                if (!samePrayerTimes(todayFajrTimes, tomorrowFajrTimes)) {
+                    timingMessages.push(buildTimingChangeMessage('कल से', 'फ़जर', tomorrowFajrTimes));
+                }
+            }
         }
+
+        if (quickData?.asr?.useCustomTime !== true) {
+            const asrJamahAfterAzan = getJamahAfterAzan(quickData?.asr, 'asr');
+            const todayAsrTimes = getQuarterHourAzanAndJamah(dayObj.Asr, asrJamahAfterAzan);
+            let asrMessageAdded = false;
+
+            if (yesterdayObj) {
+                const yesterdayAsrTimes = getQuarterHourAzanAndJamah(yesterdayObj.Asr, asrJamahAfterAzan);
+                if (!samePrayerTimes(yesterdayAsrTimes, todayAsrTimes) && isBeforeHM(dayObj.Asr, now)) {
+                    timingMessages.push(buildTimingChangeMessage('आज से', 'असर', todayAsrTimes));
+                    asrMessageAdded = true;
+                }
+            }
+
+            if (!asrMessageAdded && tomorrowObj) {
+                const tomorrowAsrTimes = getQuarterHourAzanAndJamah(tomorrowObj.Asr, asrJamahAfterAzan);
+                if (!samePrayerTimes(todayAsrTimes, tomorrowAsrTimes)) {
+                    timingMessages.push(buildTimingChangeMessage('कल से', 'असर', tomorrowAsrTimes));
+                }
+            }
+        }
+
+        if (yesterdayObj && quickData?.isha?.useCustomTime !== true) {
+            const ishaJamahAfterAzan = getJamahAfterAzan(quickData?.isha, 'isha');
+            const yesterdayIshaTimes = getQuarterHourAzanAndJamah(yesterdayObj.Isha, ishaJamahAfterAzan);
+            const todayIshaTimes = getQuarterHourAzanAndJamah(dayObj.Isha, ishaJamahAfterAzan);
+            if (!samePrayerTimes(yesterdayIshaTimes, todayIshaTimes) && isBeforeHM(dayObj.Isha, now)) {
+                timingMessages.push(buildTimingChangeMessage('आज से', 'इशा', todayIshaTimes));
+            }
+        }
+
+        updateTimingChangeMarquee(timingMessages);
 
         // ==============================
         // EXTRA ISLAMIC TIMES (moved here to use loaded data)
