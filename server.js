@@ -3,6 +3,7 @@ const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const bodyParser = require("body-parser");
+const os = require("os");
 const VERSES_FILE = 'verses.json';
 const SETTINGS_FILE = './data/settings.json';
 
@@ -253,8 +254,33 @@ app.post('/api/maintenance/shutdown', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.get('/api/ip', (req, res) => {
+  const interfaces = os.networkInterfaces();
+  let ips = [];
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        ips.push(iface.address);
+      }
+    }
+  }
+  const hostname = os.hostname();
+  res.json({ ips, hostname });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running locally on http://localhost:${PORT}`);
+  
+  // Get and log local network IPs
+  const interfaces = os.networkInterfaces();
+  console.log("App is also accessible on your network at:");
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        console.log(`  http://${iface.address}:${PORT}`);
+      }
+    }
+  }
 
   const chromePath = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"`;
 

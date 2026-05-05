@@ -1302,3 +1302,31 @@ async function loadVerses() {
 }
 
 loadVerses();
+
+// Function to fetch and display the device IP on screen
+async function updateDeviceIpDisplay() {
+    try {
+        const res = await fetch('/api/ip');
+        const data = await res.json();
+        if (data.ips && data.ips.length > 0) {
+            let ipContainer = document.getElementById('device-ip');
+            if (!ipContainer) {
+                ipContainer = document.createElement('div');
+                ipContainer.id = 'device-ip';
+                ipContainer.style.position = 'fixed';
+                ipContainer.style.bottom = '5px';
+                ipContainer.style.left = '5px';
+                ipContainer.style.fontSize = '12px';
+                ipContainer.style.color = '#fff';
+                ipContainer.style.opacity = '0.3';
+                ipContainer.style.zIndex = '9999';
+                document.body.appendChild(ipContainer);
+            }
+            ipContainer.innerText = "Admin IP: " + data.ips.join(', ');
+        }
+    } catch (e) {
+        console.error("Could not fetch IP");
+    }
+}
+updateDeviceIpDisplay();
+setInterval(updateDeviceIpDisplay, 30000);
