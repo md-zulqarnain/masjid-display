@@ -1297,10 +1297,10 @@ async function loadVerses() {
 
         setTimeout(() => {
             textEl.innerText = verse.text;
-            
+
             contentEl.classList.remove('fade-out');
             contentEl.classList.add('fade-in');
-            
+
             index = (index + 1) % verses.length;
         }, 1000);
     }
