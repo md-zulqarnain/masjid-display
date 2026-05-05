@@ -526,6 +526,7 @@
                     <button class="btn-primary" onclick="pullCode()" id="pullCodeBtn">Pull Latest Code</button>
                     <button class="btn-primary" onclick="stashAndPullCode()" id="stashPullBtn" style="background: #eab308; color: #0c1d15;">Stash & Pull</button>
                     <button class="btn-danger" onclick="rebootSystem()" id="rebootBtn">Restart Device</button>
+                    <button class="btn-danger" onclick="shutdownSystem()" id="shutdownBtn" style="background: #991b1b;">Shutdown Device</button>
                 </div>
                 <div id="maintenanceMessage" class="message"></div>
                 <div id="maintenanceOutput" style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.5); color: #0f0; font-family: monospace; border-radius: 5px; display: none; white-space: pre-wrap; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
@@ -1054,6 +1055,30 @@
             } catch (err) {
                 // Network error is expected if the device reboots immediately
                 showMessage('maintenanceMessage', 'Device is rebooting... Please wait 1-2 minutes and refresh the page.', 'success');
+            }
+        }
+
+        async function shutdownSystem() {
+            if (!confirm("Are you sure you want to SHUTDOWN the Raspberry Pi? You will need to manually turn it back on.")) return;
+            
+            const btn = document.getElementById('shutdownBtn');
+            const originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading"></span>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/maintenance/shutdown', { method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Device is shutting down... The screen will turn off shortly.', 'success');
+                } else {
+                    showMessage('maintenanceMessage', 'Error: ' + (data.error || 'Unknown error'), 'error');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Device is shutting down... The screen will turn off shortly.', 'success');
             }
         }
 

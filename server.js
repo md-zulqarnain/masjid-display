@@ -243,6 +243,16 @@ app.post('/api/maintenance/reboot', (req, res) => {
   });
 });
 
+app.post('/api/maintenance/shutdown', (req, res) => {
+  exec('sudo shutdown now', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return res.status(500).json({ error: error.message, stderr });
+    }
+    res.json({ message: "Shutting down..." });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 
