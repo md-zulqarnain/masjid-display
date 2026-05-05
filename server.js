@@ -223,6 +223,16 @@ app.post('/api/maintenance/pull', (req, res) => {
   });
 });
 
+app.post('/api/maintenance/stash-pull', (req, res) => {
+  exec('git stash && git pull', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return res.status(500).json({ error: error.message, stderr });
+    }
+    res.json({ message: "Stashed and pulled successfully", stdout });
+  });
+});
+
 app.post('/api/maintenance/reboot', (req, res) => {
   exec('sudo reboot', (error, stdout, stderr) => {
     if (error) {

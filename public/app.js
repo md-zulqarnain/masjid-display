@@ -23,6 +23,8 @@ let jamahBeeped = {};
 let HIJRI_OFFSET = 0;
 let todaySahri = null;
 let todayMaghrib = null;
+let tomorrowSahri = null;
+let tomorrowMaghrib = null;
 
 const islamicMonths = [
     "मुहर्रम",
@@ -152,7 +154,12 @@ function isBeforeHM(timeStr, date = new Date()) {
 }
 
 function buildTimingChangeMessage(prefix, prayerName, times) {
-    return `${prefix} इंशाअल्लाह ${prayerName} की अज़ान ${formatDisplayTime(to12Hour(times.azan))} और जमात ${formatDisplayTime(to12Hour(times.jamah))} पर होगी`;
+    let colorClass = '';
+    if (prayerName === 'फ़जर') colorClass = 'marquee-fajr';
+    else if (prayerName === 'असर') colorClass = 'marquee-asr';
+    else if (prayerName === 'इशा') colorClass = 'marquee-isha';
+
+    return `<span class="${colorClass}">${prefix} इंशाअल्लाह ${prayerName} की अज़ान ${formatDisplayTime(to12Hour(times.azan))} और जमात ${formatDisplayTime(to12Hour(times.jamah))} पर होगी</span>`;
 }
 
 function updateTimingChangeMarquee(messages) {
@@ -162,11 +169,11 @@ function updateTimingChangeMarquee(messages) {
 
     if (!messages.length) {
         marquee.style.display = 'none';
-        text.innerText = '';
+        text.innerHTML = '';
         return;
     }
 
-    text.innerText = messages.join('     |     ');
+    text.innerHTML = messages.join('');
     marquee.style.display = 'block';
 }
 
@@ -454,6 +461,14 @@ async function loadPrayerTimesForToday() {
         const tomorrowObj = await getTimingDayForDate(tomorrow, month, mdata);
         const yesterdayObj = await getTimingDayForDate(yesterday, month, mdata);
 
+        if (tomorrowObj) {
+            tomorrowSahri = tomorrowObj.Sahri;
+            tomorrowMaghrib = addMinutesToHM(tomorrowObj.Maghrib, 2);
+        } else {
+            tomorrowSahri = null;
+            tomorrowMaghrib = null;
+        }
+
         if (quickData?.fajr?.useCustomTime !== true) {
             const todayFajrTimes = getAutoFajrTimes(dayObj, quickData?.fajr);
             let fajrMessageAdded = false;
@@ -641,12 +656,25 @@ function updateClock() {
     }
 
     if (hijriEl) {
+        let hijriNow = new Date(now);
+        let jumpNextDay = false;
+
+        if (todayMaghrib) {
+            const [mh, mm] = todayMaghrib.split(":").map(Number);
+            const maghribTime = new Date(now);
+            maghribTime.setHours(mh, mm + 60, 0, 0); // 1 hour after Maghrib
+
+            if (now > maghribTime) {
+                jumpNextDay = true;
+                hijriNow.setDate(hijriNow.getDate() + 1);
+            }
+        }
 
         const islamicDate = new Intl.DateTimeFormat('hi-IN-u-ca-islamic', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
-        }).formatToParts(now);
+        }).formatToParts(hijriNow);
 
         const formatter = new Intl.DateTimeFormat('en-u-ca-islamic', {
             day: 'numeric',
@@ -654,7 +682,7 @@ function updateClock() {
             year: 'numeric'
         });
 
-        const parts = formatter.formatToParts(now);
+        const parts = formatter.formatToParts(hijriNow);
 
         let day, month, year;
 
@@ -685,12 +713,15 @@ function updateClock() {
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
 
-        if (sahriEl && todaySahri) {
-            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(todaySahri))}`;
+        const displaySahri = jumpNextDay && tomorrowSahri ? tomorrowSahri : todaySahri;
+        const displayMaghrib = jumpNextDay && tomorrowMaghrib ? tomorrowMaghrib : todayMaghrib;
+
+        if (sahriEl && displaySahri) {
+            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(displaySahri))}`;
         }
 
-        if (iftarEl && todayMaghrib) {
-            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(to12Hour(todayMaghrib))}`;
+        if (iftarEl && displayMaghrib) {
+            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(to12Hour(displayMaghrib))}`;
         }
     }
 }
@@ -845,29 +876,68 @@ function formatDiff(ms) {
 
 let popupShown = false;
 
-function showJamatPopup(prayerKey) {
+function getTrueIslamicDate(dateObj) {
+    let hijriNow = new Date(dateObj);
+    if (todayMaghrib) {
+        const [mh, mm] = todayMaghrib.split(":").map(Number);
+        const maghribTime = new Date(dateObj);
+        maghribTime.setHours(mh, mm, 0, 0);
+        if (dateObj >= maghribTime) {
+            hijriNow.setDate(hijriNow.getDate() + 1);
+        }
+    }
+    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic', {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric'
+    });
+    const parts = formatter.formatToParts(hijriNow);
+    let day, month, year;
+    parts.forEach(part => {
+        if (part.type === "day") day = parseInt(part.value);
+        if (part.type === "month") month = parseInt(part.value);
+        if (part.type === "year") year = parseInt(part.value);
+    });
+    day = day + HIJRI_OFFSET;
+    if (day <= 0) {
+        day = 30 + day;
+        month -= 1;
+        if (month <= 0) {
+            month = 12;
+            year -= 1;
+        }
+    }
+    return { day, month, year };
+}
 
+function showJamatPopup(prayerKey) {
     const popup = document.getElementById("jamatPopup");
     if (!popup) return;
 
+    let showTakbeer = false;
+    const islamicDate = getTrueIslamicDate(new Date());
+    if (islamicDate.month === 12) {
+        if (islamicDate.day === 9 && ['fajr', 'dhuhr', 'juma', 'asr'].includes(prayerKey)) {
+            showTakbeer = true;
+        } else if ([10, 11, 12].includes(islamicDate.day)) {
+            showTakbeer = true;
+        } else if (islamicDate.day === 13 && ['maghrib', 'isha', 'fajr', 'dhuhr', 'juma', 'asr'].includes(prayerKey)) {
+            showTakbeer = true;
+        }
+    }
 
-    document.getElementById("popupClock").innerText = formatDisplayTime(prayerData[prayerKey].jamah);
-
-    const prayerName =
-        prayerData[prayerKey].arabic + " - " + prayerData[prayerKey].name;
-
-    document.getElementById("popupPrayerName").innerText =
-        prayerName + " जमाअत";
+    if (!showTakbeer) {
+        return;
+    }
 
     popup.style.display = "flex";
-
     popupShown = true;
 
-    // Hide after 2 minutes
+    // Show for 10 minutes
     setTimeout(() => {
         popup.style.display = "none";
         popupShown = false;
-    }, 1000 * 60 * 5);
+    }, 1000 * 60 * 10);
 }
 
 
@@ -936,7 +1006,7 @@ function getUpcomingEvents() {
 
         if (jmdiff <= 0 && jmdiff > -2000 && !popupShown) {
             setTimeout(() => {
-                showJamatPopup(key);
+                showJamatPopup('juma');
             }, 1000); // slight delay to ensure it doesn't clash with the beep
         }
 
@@ -981,6 +1051,13 @@ function updateNextPrayerCountdown() {
             let shouldBeep = false;
 
             const jamatTime = parseTime(jumaData.jamat);
+
+            const jmdiff = now - jamatTime;
+            if (jmdiff <= 0 && jmdiff > -2000 && !popupShown) {
+                setTimeout(() => {
+                    showJamatPopup('juma');
+                }, 1000);
+            }
 
             // If Jamat time has passed, keep the Jamat event highlighted
             if (now >= jamatTime) {
@@ -1215,7 +1292,7 @@ function checkIfRamadan() {
 function mainLoop() {
 
     updateClock();
-    updateNextPrayerCountdown();
+    // removed updateNextPrayerCountdown() to prevent double execution
     highlightNextPrayer();
     updateCurrentAndNextPrayerTimes();
     scheduleSwitcher();

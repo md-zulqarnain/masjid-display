@@ -190,21 +190,36 @@ tbody .active-row td:nth-child(4) {
   white-space: nowrap;
   color: #fff7c2;
   font-weight: 700;
-  background: #ff0000;
   position: fixed;
   width: 100%;
   bottom: 0;
   left: 0;
   z-index: 9;
-  padding: 10px 0;
 }
 
-.timing-change-marquee span {
+.timing-change-marquee > span {
   display: inline-block;
   min-width: 100%;
   padding-left: 100%;
   animation: timing-marquee 18s linear infinite;
-  font-size: 80px;
+  font-size: 65px;
+  /* background: #13261d; */
+}
+.timing-change-marquee > span > span {
+  padding: 20px 40px;
+  display: inline-block;
+}
+.marquee-fajr {
+  background-color: #facc15;
+  color: #13261d;
+}
+.marquee-asr {
+  color: #facc15;
+  background-color: #13261d;
+}
+.marquee-isha {
+  color: #0c1d15;
+  background-color: #fff3bf;
 }
 
 @keyframes timing-marquee {
@@ -537,7 +552,7 @@ div#nextPrayerCountdown {
   align-items: center;
   text-align: center;
   z-index: 9999;
-  background: rgba(12, 29, 21, 0.85);
+  background: rgba(12, 29, 21, 0.97);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
