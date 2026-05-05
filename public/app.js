@@ -1274,31 +1274,48 @@ function updateCurrentAndNextPrayerTimes() {
 
 
 async function loadVerses() {
-    const res = await fetch('/api/verses');
+    const res = await fetch('/api/short-verses');
     const verses = await res.json();
 
-    if (!verses.length) return;
+    if (!verses.length) {
+        const container = document.querySelector('.verse-slider-container');
+        if (container) container.style.display = 'none';
+        return;
+    }
 
     let index = 0;
+    const contentEl = document.getElementById('verseSliderContent');
 
     function showVerse() {
         const verse = verses[index];
-
-        const refEl = document.getElementById('verseReference');
         const textEl = document.getElementById('verseText');
 
-        if (!refEl || !textEl) return; // stop if elements not found
+        if (!textEl || !contentEl) return;
 
-        refEl.innerText = verse.reference;
+        contentEl.classList.remove('fade-in');
+        contentEl.classList.add('fade-out');
+
+        setTimeout(() => {
+            textEl.innerText = verse.text;
+            
+            contentEl.classList.remove('fade-out');
+            contentEl.classList.add('fade-in');
+            
+            index = (index + 1) % verses.length;
+        }, 1000);
+    }
+
+    // Initial load
+    const verse = verses[index];
+    const textEl = document.getElementById('verseText');
+    if (textEl && contentEl) {
         textEl.innerText = verse.text;
-
+        contentEl.classList.add('fade-in');
         index = (index + 1) % verses.length;
     }
 
-    showVerse();
-
-    // Rotate every 20 seconds
-    setInterval(showVerse, 20000);
+    // Rotate every 15 seconds
+    setInterval(showVerse, 15000);
 }
 
 loadVerses();

@@ -512,22 +512,29 @@ div#nextPrayerCountdown {
 .juma-section-container {
   margin-top: 2vh;
   margin-bottom: 2vh;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
 }
 
 .juma-header-card {
-  background: linear-gradient(to right, #ca8a04, #facc15);
+  background: linear-gradient(to bottom, #ca8a04, #facc15);
   color: #0c1d15;
-  padding: 1.5vh 2vw;
-  border-radius: 15px 15px 0 0;
+  padding: 1vh 1vw;
+  border-radius: 0 15px 15px 0;
   font-size: 1.8vw;
   font-weight: bold;
   text-align: center;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  gap: 1vw;
+  align-items: center;
+  gap: 1vh;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
 }
 
-.juma-header .juma-arabic {
+.juma-header-card .juma-arabic {
   font-size: 1.8vw;
 }
 
@@ -538,9 +545,64 @@ div#nextPrayerCountdown {
   background: rgba(15, 32, 26, 0.4);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0 0 15px 15px;
+  border-left: none;
+  border-radius: 0 15px 15px 0;
   overflow: hidden;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  flex: 1;
+}
+
+/* Verse Slider Section */
+.verse-slider-container {
+    margin-top: 1vh;
+    margin-bottom: 1.5vh;
+    background: rgba(15, 32, 26, 0.4);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1vh 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* overflow: hidden; */
+}
+
+.verse-slider-content {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1vw;
+  /* white-space: nowrap; */
+  opacity: 0;
+}
+
+.verse-slider-content.fade-in {
+  animation: fadeVerseIn 1s forwards;
+}
+
+.verse-slider-content.fade-out {
+  animation: fadeVerseOut 1s forwards;
+}
+
+.verse-text {
+    color: #facc15;
+    font-size: 4.6vw;
+    font-weight: bold;
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis; */
+}
+
+@keyframes fadeVerseIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeVerseOut {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
 
 .juma-time-box {

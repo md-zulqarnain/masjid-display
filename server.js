@@ -145,6 +145,15 @@ app.get('/api/verses', (req, res) => {
   const verses = readVersesFile();
   res.json(verses);
 });
+
+app.get('/api/short-verses', (req, res) => {
+  try {
+    const data = fs.readFileSync('short-verses.json', "utf8");
+    res.json(JSON.parse(data));
+  } catch (err) {
+    res.json([]);
+  }
+});
 // ADD new verse
 app.post('/api/verses', (req, res) => {
   try {
