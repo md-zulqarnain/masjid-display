@@ -41,36 +41,7 @@ const islamicMonths = [
     "ज़िलहिज्जा"
 ];
 
-function parseHM(timeStr) {
-    // accepts 'HH:MM' or 'H:MM'
-    const [h, m] = timeStr.split(':').map(s => parseInt(s, 10));
-    return { h, m };
-}
 
-function addMinutesToHM(timeStr, minutes) {
-    const { h, m } = parseHM(timeStr);
-    const dt = new Date();
-    dt.setHours(h, m, 0, 0);
-    dt.setMinutes(dt.getMinutes() + minutes);
-    const hh = dt.getHours();
-    const mm = dt.getMinutes();
-    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
-}
-
-function normalizeToHM(timeStr) {
-    if (!timeStr) return null;
-    if (timeStr.includes('AM') || timeStr.includes('PM')) return to24Hour(timeStr);
-    return timeStr;
-}
-
-function hmToMinutes(timeStr) {
-    const { h, m } = parseHM(normalizeToHM(timeStr));
-    return h * 60 + m;
-}
-
-function minutesBetweenHM(startTime, endTime) {
-    return (hmToMinutes(endTime) - hmToMinutes(startTime) + 24 * 60) % (24 * 60);
-}
 
 function getDefaultJamahAfterAzan(prayer) {
     if (prayer === 'fajr') return 30;
@@ -85,20 +56,7 @@ function getJamahAfterAzan(config, prayer) {
     return getDefaultJamahAfterAzan(prayer);
 }
 
-function roundHMDownToMinutes(timeStr, intervalMinutes) {
-    const { h, m } = parseHM(timeStr);
-    const roundedMinutes = Math.floor(m / intervalMinutes) * intervalMinutes;
-    return String(h).padStart(2, '0') + ':' + String(roundedMinutes).padStart(2, '0');
-}
 
-function roundHMUpToMinutes(timeStr, intervalMinutes) {
-    const { h, m } = parseHM(timeStr);
-    const totalMinutes = h * 60 + m;
-    const roundedTotal = Math.ceil(totalMinutes / intervalMinutes) * intervalMinutes;
-    const hh = Math.floor(roundedTotal / 60) % 24;
-    const mm = roundedTotal % 60;
-    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
-}
 
 function getQuarterHourAzanAndJamah(baseTime, jamahAfterAzan = 15) {
     const azan = roundHMUpToMinutes(addMinutesToHM(baseTime, 2), 15);
@@ -146,12 +104,7 @@ function samePrayerTimes(first, second) {
     return first?.azan === second?.azan && first?.jamah === second?.jamah;
 }
 
-function isBeforeHM(timeStr, date = new Date()) {
-    const { h, m } = parseHM(timeStr);
-    const targetMinutes = h * 60 + m;
-    const currentMinutes = date.getHours() * 60 + date.getMinutes();
-    return currentMinutes < targetMinutes;
-}
+
 
 function buildTimingChangeMessage(prefix, prayerName, times) {
     let colorClass = '';
@@ -177,20 +130,7 @@ function updateTimingChangeMarquee(messages) {
     marquee.style.display = 'block';
 }
 
-function to12Hour(time24) {
-    // time24 may be 'HH:MM' or already 'hh:mm AM'
-    if (time24.includes('AM') || time24.includes('PM')) return time24;
-    const [h, m] = time24.split(':').map(s => parseInt(s, 10));
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    let hh = h % 12;
-    if (hh === 0) hh = 12;
-    return String(hh).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' ' + ampm;
-}
 
-function formatDisplayTime(timeStr) {
-    // Converts "04:30 AM" → "04:30"
-    return timeStr.replace(" AM", "").replace(" PM", "");
-}
 
 // ============================================
 // MASJID DISPLAY BEEP SYSTEM (Stable Version)
@@ -762,42 +702,7 @@ function renderTable() {
     highlightNextPrayer();
 }
 
-function parseTime(timeStr) {
-    const now = new Date();
-    const [time, modifier] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":");
-    hours = parseInt(hours);
 
-    if (modifier === "PM" && hours !== 12) hours += 12;
-    if (modifier === "AM" && hours === 12) hours = 0;
-
-    const date = new Date(now);
-    date.setHours(hours);
-    date.setMinutes(parseInt(minutes));
-    date.setSeconds(0);
-
-    return date;
-}
-
-function to24Hour(timeStr) {
-
-    const [time, modifier] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":");
-
-    hours = parseInt(hours);
-
-    if (modifier === "PM" && hours !== 12) hours += 12;
-    if (modifier === "AM" && hours === 12) hours = 0;
-
-    return String(hours).padStart(2, '0') + ":" + minutes;
-
-}
-
-// helper: convert a 12‑hour string to minutes-since-midnight
-function toMinutes(timeStr) {
-    const d = parseTime(timeStr);
-    return d.getHours() * 60 + d.getMinutes();
-}
 
 function highlightNextPrayer() {
     const now = new Date();
@@ -863,15 +768,7 @@ function highlightNextPrayer() {
 }
 
 // Update next prayer countdown every second
-function formatDiff(ms) {
-    if (ms <= 0) return '00:00:00';
-    let total = Math.floor(ms / 1000);
-    const hours = Math.floor(total / 3600);
-    total %= 3600;
-    const minutes = Math.floor(total / 60);
-    const seconds = total % 60;
-    return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-}
+
 
 
 let popupShown = false;
@@ -1296,7 +1193,7 @@ function mainLoop() {
     highlightNextPrayer();
     updateCurrentAndNextPrayerTimes();
     scheduleSwitcher();
-
+    updateDynamicBackground();
 }
 
 setInterval(mainLoop, 1000);
@@ -1305,6 +1202,30 @@ setInterval(mainLoop, 1000);
 // ==============================
 // EXTRA ISLAMIC TIMES - Updates from prayer loader above
 // ==============================
+
+// Dynamic Background
+function updateDynamicBackground() {
+    const now = new Date();
+    const hours = now.getHours();
+    let themeClass = '';
+
+    if (hours >= 5 && hours < 8) {
+        themeClass = 'theme-morning';
+    } else if (hours >= 8 && hours < 16) {
+        themeClass = 'theme-day';
+    } else if (hours >= 16 && hours < 19) {
+        themeClass = 'theme-evening';
+    } else {
+        themeClass = 'theme-night';
+    }
+
+    if (!document.body.classList.contains(themeClass)) {
+        // Remove old themes
+        document.body.classList.remove('theme-morning', 'theme-day', 'theme-evening', 'theme-night');
+        // Add new theme
+        document.body.classList.add(themeClass);
+    }
+}
 
 // Update current and next prayer times  
 function updateCurrentAndNextPrayerTimes() {

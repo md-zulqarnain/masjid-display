@@ -8,10 +8,9 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* background: #0c1d15;
-            overflow: hidden;
-            color: #ffd700;
-        }  */
+        body#juma-body {
+            background: #0c1d15 !important;
+        }
 
         /* body::before {
             content: "";
@@ -326,7 +325,7 @@
     </style>
 </head>
 
-<body>
+<body id="juma-body">
     <div class="bg-main"></div>
     <div class="juma-wrapper">
 
@@ -676,8 +675,10 @@
 
     <div id="jamatPopup" class="jamat-popup" style="display:none;">
         <div class="jamat-popup-content" style="padding: 40px; text-align: center; max-width: 900px; line-height: 1.6;">
-            <div style="font-size: 55px; color: #ffd700; font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">तक्बीरे तशरीक़</div>
-            
+            <div
+                style="font-size: 55px; color: #ffd700; font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
+                तक्बीरे तशरीक़</div>
+
             <div style="font-size: 32px; margin-bottom: 25px; color: #ffffff;">
                 <span style="color: #ffd700; font-weight: bold;">वक़्त:</span><br>
                 9 ज़िल हिज्जा (फजर) से 13 ज़िल हिज्जा (असर) तक
@@ -799,6 +800,7 @@
         });
     </script>
 
+    <script src="utils.js"></script>
     <script src="app.js"></script>
 
 </body>
