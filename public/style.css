@@ -550,6 +550,7 @@ div#nextPrayerCountdown {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, rgb(0 0 0 / 32%), rgb(0 0 0 / 30%));
 }
 
 /* ensure right-hand card stacks hijri header and times */
