@@ -138,6 +138,8 @@ function updateTimingChangeMarquee(messages) {
 
 let lastBeepWindow = false;
 let beepAudio;
+let BEEP_VOLUME = 1;
+let DISPLAY_THEME = "auto";
 
 window.addEventListener("DOMContentLoaded", () => {
     beepAudio = document.getElementById("beepSound");
@@ -172,7 +174,8 @@ function playLongBeep() {
 
     beepAudio.pause();
     beepAudio.currentTime = 0;
-    beepAudio.volume = 1;
+    beepAudio.playbackRate = 1;
+    beepAudio.volume = BEEP_VOLUME;
 
     beepAudio.play().catch(err => {
         console.log("Beep blocked", err);
@@ -199,6 +202,19 @@ async function loadHijriOffset() {
             HIJRI_OFFSET = data.hijriOffset;
         }
 
+        if (typeof data.beepVolume !== "undefined") {
+            const volume = Number(data.beepVolume);
+            if (!Number.isNaN(volume)) {
+                BEEP_VOLUME = Math.min(1, Math.max(0, volume));
+                if (beepAudio) beepAudio.volume = BEEP_VOLUME;
+            }
+        }
+
+        if (typeof data.displayTheme === "string") {
+            DISPLAY_THEME = data.displayTheme;
+            updateDynamicBackground();
+        }
+
     } catch (e) {
         console.error("Error refreshing Hijri offset");
     }
@@ -206,9 +222,54 @@ async function loadHijriOffset() {
 
 loadHijriOffset();
 
-// setInterval(async () => {
-//     loadHijriOffset();
-// }, 5000);
+setInterval(async () => {
+    loadHijriOffset();
+}, 60000);
+
+function connectRemoteBeepEvents() {
+    if (!window.EventSource) return;
+
+    const source = new EventSource('/api/display/events');
+
+    source.addEventListener('beep', event => {
+        try {
+            const data = JSON.parse(event.data || '{}');
+            if (typeof data.volume !== "undefined") {
+                const volume = Number(data.volume);
+                if (!Number.isNaN(volume)) {
+                    BEEP_VOLUME = Math.min(1, Math.max(0, volume));
+                    if (beepAudio) beepAudio.volume = BEEP_VOLUME;
+                }
+            }
+        } catch (e) {
+            console.error("Error reading beep event");
+        }
+
+        startBeepSequence();
+    });
+
+    source.addEventListener('theme', event => {
+        try {
+            const data = JSON.parse(event.data || '{}');
+            if (typeof data.displayTheme === "string") {
+                DISPLAY_THEME = data.displayTheme;
+                updateDynamicBackground();
+            }
+        } catch (e) {
+            console.error("Error reading theme event");
+        }
+    });
+
+    source.addEventListener('reload', () => {
+        window.location.reload();
+    });
+
+    source.onerror = () => {
+        console.error("Beep event connection interrupted; browser will retry automatically");
+    };
+}
+
+connectRemoteBeepEvents();
 
 // Load prayer times either from quick-times or monthly timing-data files
 async function loadPrayerTimesForToday() {
@@ -1209,7 +1270,9 @@ function updateDynamicBackground() {
     const hours = now.getHours();
     let themeClass = '';
 
-    if (hours >= 5 && hours < 8) {
+    if (DISPLAY_THEME && DISPLAY_THEME !== "auto") {
+        themeClass = `theme-${DISPLAY_THEME}`;
+    } else if (hours >= 5 && hours < 8) {
         themeClass = 'theme-morning';
     } else if (hours >= 8 && hours < 16) {
         themeClass = 'theme-day';

@@ -11,6 +11,7 @@ const SETTINGS_FILE = './data/settings.json';
 
 const app = express();
 const PORT = 3000;
+const displayClients = new Set();
 
 if (!fs.existsSync(VERSES_FILE)) {
   fs.writeFileSync(VERSES_FILE, JSON.stringify([], null, 2));
@@ -20,16 +21,93 @@ app.use(express.static("public"));
 app.use(bodyParser.json());
 
 
-// GET Hijri offset
+function readSettings() {
+  try {
+    if (!fs.existsSync(SETTINGS_FILE)) {
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ hijriOffset: 0, beepVolume: 1 }, null, 2));
+    }
+
+    const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"));
+    return {
+      hijriOffset: typeof data.hijriOffset === "number" ? data.hijriOffset : 0,
+      beepVolume: typeof data.beepVolume === "number" ? data.beepVolume : 1,
+      displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto"
+    };
+  } catch (err) {
+    return { hijriOffset: 0, beepVolume: 1 };
+  }
+}
+
+function saveSettings(updates) {
+  const current = readSettings();
+  const next = { ...current, ...updates };
+  next.hijriOffset = Number.isFinite(Number(next.hijriOffset)) ? Number(next.hijriOffset) : 0;
+  next.beepVolume = Math.min(1, Math.max(0, Number(next.beepVolume) || 0));
+  if (!["auto", "morning", "day", "evening", "night"].includes(next.displayTheme)) {
+    next.displayTheme = "auto";
+  }
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2));
+  return next;
+}
+
+function sendDisplayEvent(eventName, payload = {}) {
+  const data = JSON.stringify({ ...payload, at: Date.now() });
+
+  displayClients.forEach(client => {
+    client.write(`event: ${eventName}\n`);
+    client.write(`data: ${data}\n\n`);
+  });
+}
+
+// GET settings
 app.get('/api/settings', (req, res) => {
-    const data = JSON.parse(fs.readFileSync(SETTINGS_FILE));
-    res.json(data);
+    res.json(readSettings());
 });
 
-// UPDATE Hijri offset
+// UPDATE settings
 app.post('/api/settings', (req, res) => {
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(req.body, null, 2));
-    res.json({ message: "Settings saved successfully" });
+    const settings = saveSettings(req.body || {});
+    res.json({ message: "Settings saved successfully", settings });
+});
+
+app.post('/api/beep/test', (req, res) => {
+  sendDisplayEvent("beep", { type: "test", volume: readSettings().beepVolume });
+
+  res.json({ message: "Beep test sent to display", clients: displayClients.size });
+});
+
+app.post('/api/display/theme', (req, res) => {
+  const settings = saveSettings({ displayTheme: req.body?.displayTheme });
+  sendDisplayEvent("theme", { displayTheme: settings.displayTheme });
+  res.json({ message: "Display theme updated", settings, clients: displayClients.size });
+});
+
+app.post('/api/display/reload', (req, res) => {
+  sendDisplayEvent("reload", { reason: "admin" });
+  res.json({ message: "Display reload sent", clients: displayClients.size });
+});
+
+app.get('/api/display/events', (req, res) => {
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no"
+  });
+
+  res.write(`event: ready\n`);
+  res.write(`data: ${JSON.stringify({ at: Date.now() })}\n\n`);
+
+  const keepAlive = setInterval(() => {
+    res.write(`: keep-alive ${Date.now()}\n\n`);
+  }, 30000);
+
+  displayClients.add(res);
+
+  req.on("close", () => {
+    clearInterval(keepAlive);
+    displayClients.delete(res);
+  });
 });
 
 /* ===== Get Quick Prayer Times ===== */

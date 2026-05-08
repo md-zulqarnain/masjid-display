@@ -1,3 +1,5 @@
 {
-  "hijriOffset": -1
+  "hijriOffset": -1,
+  "beepVolume": 1,
+  "displayTheme": "evening"
 }

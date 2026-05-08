@@ -522,6 +522,33 @@
         <div id="maintenance" class="tab-content">
             <div class="section">
                 <h2>System Maintenance</h2>
+                <div class="form-group" style="max-width: 520px;">
+                    <label>Display Beep Volume</label>
+                    <input type="range" id="beepVolumeInput" min="0" max="100" step="5" value="100"
+                        oninput="updateBeepVolumeLabel()" />
+                    <small id="beepVolumeLabel" style="color:#bbb;">100%</small>
+                </div>
+                <div class="button-group" style="margin-bottom: 25px;">
+                    <button class="btn-primary" onclick="saveBeepSettings()" id="saveBeepBtn">Save Beep Volume</button>
+                    <button class="btn-primary" onclick="testDisplayBeep()" id="testBeepBtn"
+                        style="background:#22c55e; color:#0c1d15;">Test Beep on Display</button>
+                </div>
+                <div class="form-group" style="max-width: 520px;">
+                    <label>Display Theme</label>
+                    <select id="displayThemeInput">
+                        <option value="auto">Auto by Time</option>
+                        <option value="morning">Morning</option>
+                        <option value="day">Day</option>
+                        <option value="evening">Evening</option>
+                        <option value="night">Night</option>
+                    </select>
+                    <small style="color:#bbb;">Auto follows the Raspberry Pi time schedule.</small>
+                </div>
+                <div class="button-group" style="margin-bottom: 25px;">
+                    <button class="btn-primary" onclick="saveDisplayTheme()" id="saveThemeBtn">Apply Theme</button>
+                    <button class="btn-primary" onclick="refreshDisplayPage()" id="refreshDisplayBtn"
+                        style="background:#38bdf8; color:#0c1d15;">Refresh Display Page</button>
+                </div>
                 <div class="button-group">
                     <button class="btn-primary" onclick="pullCode()" id="pullCodeBtn">Pull Latest Code</button>
                     <button class="btn-primary" onclick="stashAndPullCode()" id="stashPullBtn" style="background: #eab308; color: #0c1d15;">Stash & Pull</button>
@@ -562,6 +589,8 @@
             } else if (tab === 'quick-times') {
                 loadQuickTimes();
             } else if (tab === 'settings') {
+                loadSettings();
+            } else if (tab === 'maintenance') {
                 loadSettings();
             }
         }
@@ -949,6 +978,15 @@
             const res = await fetch('/api/settings');
             const data = await res.json();
             document.getElementById('hijriOffsetInput').value = data.hijriOffset || 0;
+            const beepInput = document.getElementById('beepVolumeInput');
+            if (beepInput) {
+                beepInput.value = Math.round((typeof data.beepVolume === 'number' ? data.beepVolume : 1) * 100);
+                updateBeepVolumeLabel();
+            }
+            const themeInput = document.getElementById('displayThemeInput');
+            if (themeInput) {
+                themeInput.value = data.displayTheme || 'auto';
+            }
         }
 
         async function saveSettings() {
@@ -961,6 +999,131 @@
             });
 
             showMessage('settingsMessage', 'Settings saved successfully!', 'success');
+        }
+
+        function updateBeepVolumeLabel() {
+            const input = document.getElementById('beepVolumeInput');
+            const label = document.getElementById('beepVolumeLabel');
+            if (!input || !label) return;
+            label.textContent = input.value + '%';
+        }
+
+        async function saveBeepSettings() {
+            const btn = document.getElementById('saveBeepBtn');
+            const originalText = btn.textContent;
+            const volume = parseInt(document.getElementById('beepVolumeInput').value, 10) / 100;
+
+            btn.innerHTML = '<span class="loading"></span>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ beepVolume: volume })
+                });
+
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Beep volume saved. Display will update within 5 seconds.', 'success');
+                } else {
+                    showMessage('maintenanceMessage', 'Could not save beep volume.', 'error');
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function testDisplayBeep() {
+            const btn = document.getElementById('testBeepBtn');
+            const originalText = btn.textContent;
+            const volume = parseInt(document.getElementById('beepVolumeInput').value, 10) / 100;
+
+            btn.innerHTML = '<span class="loading" style="border-color: rgba(0,0,0,0.3); border-top-color: #0c1d15;"></span>';
+            btn.disabled = true;
+
+            try {
+                const saveRes = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ beepVolume: volume })
+                });
+
+                if (!saveRes.ok) {
+                    showMessage('maintenanceMessage', 'Could not save beep volume.', 'error');
+                    return;
+                }
+
+                const res = await fetch('/api/beep/test', { method: 'POST' });
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Volume saved and test beep sent to Raspberry Pi display.', 'success');
+                } else {
+                    showMessage('maintenanceMessage', 'Could not send test beep.', 'error');
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 1200);
+            }
+        }
+
+        async function saveDisplayTheme() {
+            const btn = document.getElementById('saveThemeBtn');
+            const originalText = btn.textContent;
+            const displayTheme = document.getElementById('displayThemeInput').value;
+
+            btn.innerHTML = '<span class="loading"></span>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/display/theme', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ displayTheme })
+                });
+
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Theme applied on Raspberry Pi display.', 'success');
+                } else {
+                    showMessage('maintenanceMessage', 'Could not apply theme.', 'error');
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function refreshDisplayPage() {
+            const btn = document.getElementById('refreshDisplayBtn');
+            const originalText = btn.textContent;
+
+            if (!confirm("Refresh the Raspberry Pi display page now?")) return;
+
+            btn.innerHTML = '<span class="loading" style="border-color: rgba(0,0,0,0.3); border-top-color: #0c1d15;"></span>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/display/reload', { method: 'POST' });
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Refresh command sent to Raspberry Pi display.', 'success');
+                } else {
+                    showMessage('maintenanceMessage', 'Could not refresh display.', 'error');
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 1200);
+            }
         }
 
         async function pullCode() {
