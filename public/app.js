@@ -23,6 +23,8 @@ let jamahBeeped = {};
 let HIJRI_OFFSET = 0;
 let todaySahri = null;
 let todayMaghrib = null;
+let tomorrowSahri = null;
+let tomorrowMaghrib = null;
 
 const islamicMonths = [
     "मुहर्रम",
@@ -454,6 +456,14 @@ async function loadPrayerTimesForToday() {
         const tomorrowObj = await getTimingDayForDate(tomorrow, month, mdata);
         const yesterdayObj = await getTimingDayForDate(yesterday, month, mdata);
 
+        if (tomorrowObj) {
+            tomorrowSahri = tomorrowObj.Sahri;
+            tomorrowMaghrib = addMinutesToHM(tomorrowObj.Maghrib, 2);
+        } else {
+            tomorrowSahri = null;
+            tomorrowMaghrib = null;
+        }
+
         if (quickData?.fajr?.useCustomTime !== true) {
             const todayFajrTimes = getAutoFajrTimes(dayObj, quickData?.fajr);
             let fajrMessageAdded = false;
@@ -641,12 +651,25 @@ function updateClock() {
     }
 
     if (hijriEl) {
+        let hijriNow = new Date(now);
+        let jumpNextDay = false;
+        
+        if (todayMaghrib) {
+            const [mh, mm] = todayMaghrib.split(":").map(Number);
+            const maghribTime = new Date(now);
+            maghribTime.setHours(mh, mm + 60, 0, 0); // 1 hour after Maghrib
+            
+            if (now > maghribTime) {
+                jumpNextDay = true;
+                hijriNow.setDate(hijriNow.getDate() + 1);
+            }
+        }
 
         const islamicDate = new Intl.DateTimeFormat('hi-IN-u-ca-islamic', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
-        }).formatToParts(now);
+        }).formatToParts(hijriNow);
 
         const formatter = new Intl.DateTimeFormat('en-u-ca-islamic', {
             day: 'numeric',
@@ -654,7 +677,7 @@ function updateClock() {
             year: 'numeric'
         });
 
-        const parts = formatter.formatToParts(now);
+        const parts = formatter.formatToParts(hijriNow);
 
         let day, month, year;
 
@@ -685,12 +708,15 @@ function updateClock() {
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
 
-        if (sahriEl && todaySahri) {
-            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(todaySahri))}`;
+        const displaySahri = jumpNextDay && tomorrowSahri ? tomorrowSahri : todaySahri;
+        const displayMaghrib = jumpNextDay && tomorrowMaghrib ? tomorrowMaghrib : todayMaghrib;
+
+        if (sahriEl && displaySahri) {
+            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(displaySahri))}`;
         }
 
-        if (iftarEl && todayMaghrib) {
-            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(to12Hour(todayMaghrib))}`;
+        if (iftarEl && displayMaghrib) {
+            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(to12Hour(displayMaghrib))}`;
         }
     }
 }
@@ -1215,7 +1241,7 @@ function checkIfRamadan() {
 function mainLoop() {
 
     updateClock();
-    updateNextPrayerCountdown();
+    // removed updateNextPrayerCountdown() to prevent double execution
     highlightNextPrayer();
     updateCurrentAndNextPrayerTimes();
     scheduleSwitcher();
