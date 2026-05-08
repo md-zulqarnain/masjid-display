@@ -20,7 +20,6 @@ body {
   padding: 0;
   overflow: hidden;
   height: 100%;
-  font-family: "Poppins", "Roboto", sans-serif;
   font-family: "Roboto", sans-serif;
   color: #facc15;
   background-size: cover;
@@ -31,19 +30,55 @@ body {
 
 /* Dynamic Themes */
 body.theme-morning {
-  background: linear-gradient(135deg, #1d3557, #457b9d, #e63946);
-  background: linear-gradient(135deg, #1e3c72, #2a5298, #ff7e5f);
+  background:
+    radial-gradient(
+      circle at 18% 12%,
+      rgba(255, 196, 112, 0.62),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(125, 211, 252, 0.48),
+      transparent 34%
+    ),
+    linear-gradient(135deg, #12355b 0%, #256d85 48%, #f59e6c 100%);
 }
 body.theme-day {
-  background: linear-gradient(135deg, #134e4a, #0f766e, #065f46);
-      background: linear-gradient(135deg, #172554 0%, #1e3a8a 30%, #2563eb 65%, #7dd3fc 100%);
+  background:
+    radial-gradient(
+      circle at 78% 14%,
+      rgba(186, 230, 253, 0.58),
+      transparent 28%
+    ),
+    linear-gradient(135deg, #0f4c5c 0%, #168aad 42%, #52b788 100%);
 }
 body.theme-evening {
- background: linear-gradient(135deg, #7c6f64, #a68a64, #3e3e3e);
-  
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      rgba(251, 191, 36, 0.5),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 86% 78%,
+      rgba(124, 58, 237, 0.34),
+      transparent 34%
+    ),
+    linear-gradient(135deg, #42275a 0%, #734b6d 38%, #d97745 100%);
 }
 body.theme-night {
-      background: linear-gradient(135deg, #020617, #0f172a, #1e293b);
+  background:
+    radial-gradient(
+      circle at 22% 18%,
+      rgba(45, 212, 191, 0.18),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 82% 10%,
+      rgba(99, 102, 241, 0.24),
+      transparent 28%
+    ),
+    linear-gradient(135deg, #07111f 0%, #102a43 48%, #1b4332 100%);
 }
 
 .container {
@@ -75,7 +110,9 @@ body.theme-night {
   border-radius: 50%;
   border: 3px solid rgba(255, 255, 255, 0.8);
   object-fit: cover;
-  box-shadow: 0 0 20px rgba(250, 204, 21, 0.4), inset 0 0 10px rgba(255,255,255,0.5);
+  box-shadow:
+    0 0 20px rgba(250, 204, 21, 0.4),
+    inset 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 /* Clock */
@@ -156,10 +193,14 @@ tbody .active-row td:nth-child(4) {
 }
 
 .active-row {
-  background: linear-gradient(90deg, rgba(22, 163, 74, 0.9), rgba(34, 197, 94, 0.7)) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(22, 163, 74, 0.9),
+    rgba(34, 197, 94, 0.7)
+  ) !important;
   color: white;
   font-weight: bold;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
   transform: scale(1.02);
 }
 
@@ -228,18 +269,25 @@ tbody .active-row td:nth-child(4) {
   bottom: 0;
   left: 0;
   z-index: 9;
+  contain: layout paint style;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  pointer-events: none;
 }
 
 .timing-change-marquee > span {
   display: inline-block;
   min-width: 100%;
   padding-left: 100%;
-  animation: timing-marquee 18s linear infinite;
-  font-size: 65px;
+  animation: timing-marquee 26s linear infinite;
+  font-size: clamp(46px, 5vw, 65px);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   /* background: #13261d; */
 }
 .timing-change-marquee > span > span {
-  padding: 20px 40px;
+  padding: 16px 40px;
   display: inline-block;
 }
 .marquee-fajr {
@@ -257,11 +305,11 @@ tbody .active-row td:nth-child(4) {
 
 @keyframes timing-marquee {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   to {
-    transform: translateX(-100%);
+    transform: translate3d(-100%, 0, 0);
   }
 }
 
@@ -315,7 +363,7 @@ tbody .active-row td:nth-child(4) {
 #hijri .hijri-month {
   display: block;
   font-size: 2.4vw;
-  font-family: 'Amiri', serif;
+  font-family: "Amiri", serif;
 }
 
 #hijri .hijri-date {
@@ -448,9 +496,15 @@ div#nextPrayerCountdown {
   color: #ffffff;
   font-size: 4.9vw;
   font-weight: 800;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.5));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(0, 0, 0, 0.5)
+  );
   backdrop-filter: blur(8px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
 .nextPrayerAndHijri {
@@ -484,7 +538,9 @@ div#nextPrayerCountdown {
   padding: 1.5vh 2vw;
   box-sizing: border-box;
   width: 100%;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
   min-width: 0; /* Prevent flex blowout */
 }
 
@@ -537,7 +593,7 @@ div#nextPrayerCountdown {
   gap: 1vh;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  box-shadow: inset 0 0 10px rgba(255,255,255,0.4);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 .juma-header-card .juma-arabic {
@@ -560,17 +616,23 @@ div#nextPrayerCountdown {
 
 /* Verse Slider Section */
 .verse-slider-container {
-    margin-top: 1vh;
-    margin-bottom: 1.5vh;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 1.5vh 20px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  margin-top: 1vh;
+  margin-bottom: 1.5vh;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 1.5vh 20px;
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .verse-slider-content {
@@ -593,21 +655,33 @@ div#nextPrayerCountdown {
 }
 
 .verse-text {
-    color: #ffffff;
-    font-size: 4.6vw;
-    font-weight: bold;
-    /* overflow: hidden; */
-    /* text-overflow: ellipsis; */
+  color: #ffffff;
+  font-size: 4.6vw;
+  font-weight: bold;
+  /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
 }
 
 @keyframes fadeVerseIn {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeVerseOut {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-10px); }
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
 .juma-time-box {
@@ -702,7 +776,8 @@ div#nextPrayerCountdown {
   background-repeat: no-repeat;
   background-position: center;
   z-index: 0;
-  opacity: 0.2;
+  opacity: 0.13;
+  filter: saturate(0.82) contrast(0.9);
 }
 .prayerTimeingContainer {
   display: flex;
@@ -734,14 +809,26 @@ div#nextPrayerCountdown {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
-.extraPrayerCard.card-1 { border-left: 4px solid #60a5fa; }
-.extraPrayerCard.card-2 { border-left: 4px solid #facc15; }
-.extraPrayerCard.card-3 { border-left: 4px solid #4ade80; }
-.extraPrayerCard.card-4 { border-left: 4px solid #f87171; }
-.extraPrayerCard.card-5 { border-left: 4px solid #c084fc; }
+.extraPrayerCard.card-1 {
+  border-left: 4px solid #60a5fa;
+}
+.extraPrayerCard.card-2 {
+  border-left: 4px solid #facc15;
+}
+.extraPrayerCard.card-3 {
+  border-left: 4px solid #4ade80;
+}
+.extraPrayerCard.card-4 {
+  border-left: 4px solid #f87171;
+}
+.extraPrayerCard.card-5 {
+  border-left: 4px solid #c084fc;
+}
 .extraPrayerLabel {
   font-size: 3.35vw;
   color: rgb(255 255 255 / 54%);
@@ -752,6 +839,53 @@ div#nextPrayerCountdown {
   font-size: 4.2vw;
   color: white;
   font-weight: bold;
+}
+
+/* Index readability: stronger surfaces than the glass defaults */
+#index-body table,
+#index-body .card,
+#index-body .juma-times,
+#index-body .verse-slider-container,
+#index-body .extraPrayerCard {
+  background: linear-gradient(135deg, rgb(0 0 0 / 32%), rgb(0 0 0 / 30%));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 8px 26px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+#index-body tbody tr:nth-child(odd) {
+  background: rgba(5, 22, 34, 0);
+}
+
+#index-body tbody tr:nth-child(even) {
+  background: rgba(13, 45, 58, 0.46);
+}
+
+#index-body th,
+#index-body td {
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+}
+
+#index-body .juma-time-box {
+  background: rgba(4, 22, 32, 0);
+}
+
+#index-body .remainingTimeHeading,
+#index-body .juma-label,
+#index-body .extraPrayerLabel,
+#index-body .nextPrayerAndHijri .card-heading,
+#index-body .sahri-iftar-label {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+#index-body .verse-text,
+#index-body .juma-time,
+#index-body .extraPrayerTime,
+#index-body .countdown {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 /* Portrait mode tweaks for display (narrow, tall screens) */
 @media (orientation: portrait) {
