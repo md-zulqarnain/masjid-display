@@ -190,21 +190,21 @@ tbody .active-row td:nth-child(4) {
   white-space: nowrap;
   color: #fff7c2;
   font-weight: 700;
-  background: #ff0000;
+  background: #facc15;
   position: fixed;
   width: 100%;
   bottom: 0;
   left: 0;
   z-index: 9;
-  padding: 10px 0;
+  padding: 20px 0;
 }
-
 .timing-change-marquee span {
   display: inline-block;
   min-width: 100%;
   padding-left: 100%;
   animation: timing-marquee 18s linear infinite;
-  font-size: 80px;
+  font-size: 65px;
+  color: #0c1d15;
 }
 
 @keyframes timing-marquee {
