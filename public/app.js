@@ -708,8 +708,13 @@ function updateClock() {
 
         const monthName = islamicMonths[month - 1];
 
-        // month will be shown as a large header, date+year beneath it
-        hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${monthName}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
+        if (hijriEl.hasAttribute('data-format') && hijriEl.getAttribute('data-format') === 'simple') {
+            hijriEl.innerHTML = `${monthName} ${day}, ${year} AH`;
+        } else {
+            // month will be shown as a large header, date+year beneath it
+            hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${monthName}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
+        }
+        
         // 🔥 Show Sahri & Iftar
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
@@ -718,19 +723,47 @@ function updateClock() {
         const displayMaghrib = jumpNextDay && tomorrowMaghrib ? tomorrowMaghrib : todayMaghrib;
 
         if (sahriEl && displaySahri) {
-            sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(displaySahri))}`;
+            if (sahriEl.hasAttribute('data-format') && sahriEl.getAttribute('data-format') === 'simple') {
+                sahriEl.innerHTML = formatDisplayTime(to12Hour(displaySahri));
+            } else {
+                sahriEl.innerHTML = `<div class="sahri-iftar-label">सहरी</div> ${formatDisplayTime(to12Hour(displaySahri))}`;
+            }
         }
 
         if (iftarEl && displayMaghrib) {
-            iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(to12Hour(displayMaghrib))}`;
+            if (iftarEl.hasAttribute('data-format') && iftarEl.getAttribute('data-format') === 'simple') {
+                iftarEl.innerHTML = formatDisplayTime(to12Hour(displayMaghrib));
+            } else {
+                iftarEl.innerHTML = `<div class="sahri-iftar-label">इफ़्तार</div> ${formatDisplayTime(to12Hour(displayMaghrib))}`;
+            }
         }
     }
 }
 
 updateClock();
 
+// Load selected theme
+async function loadSelectedTheme() {
+    try {
+        const res = await fetch('/api/settings?t=' + Date.now(), { cache: 'no-store' });
+        const data = await res.json();
+        const selectedTheme = data.theme || 'index';
+        
+        // If a specific theme is selected (not index), redirect to it
+        if (selectedTheme !== 'index' && selectedTheme.startsWith('theme-')) {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            if (!currentPage.includes(selectedTheme)) {
+                window.location.href = '/' + selectedTheme + '.html';
+            }
+        }
+    } catch (err) {
+        console.log('Error loading theme settings:', err);
+    }
+}
+
 // Load prayer times on page load and then render table
 async function initializePage() {
+    await loadSelectedTheme();
     await loadPrayerTimesForToday();
     renderTable();
     updateCurrentAndNextPrayerTimes();
@@ -740,25 +773,48 @@ initializePage();
 
 function renderTable() {
     const table = document.getElementById("prayerTable");
+    const cardsContainer = document.getElementById("prayerCards");
 
-    if (!table) {
-        return;
-    }
+    if (table) {
+        table.innerHTML = "";
 
-    table.innerHTML = "";
+        Object.keys(prayerData).forEach(key => {
+            const row = document.createElement("tr");
+            row.id = key;
 
-    Object.keys(prayerData).forEach(key => {
-        const row = document.createElement("tr");
-        row.id = key;
-
-        row.innerHTML = `
+            row.innerHTML = `
       <td>${prayerData[key].name}</td>
       <td>${formatDisplayTime(prayerData[key].azan)}</td>
       <td>${formatDisplayTime(prayerData[key].jamah)}</td>
     `;
 
-        table.appendChild(row);
-    });
+            table.appendChild(row);
+        });
+    }
+
+    if (cardsContainer) {
+        cardsContainer.innerHTML = "";
+        
+        Object.keys(prayerData).forEach(key => {
+            const card = document.createElement("div");
+            card.id = key;
+            card.className = "prayer-card";
+            card.innerHTML = `
+                <div class="prayer-name">${prayerData[key].name}</div>
+                <div class="prayer-times-wrap">
+                    <div class="prayer-time-box">
+                        <div class="time-label">AZAAN</div>
+                        <div class="time-value azan-time">${formatDisplayTime(prayerData[key].azan)}</div>
+                    </div>
+                    <div class="prayer-time-box">
+                        <div class="time-label">JAMAAT</div>
+                        <div class="time-value jamah-time">${formatDisplayTime(prayerData[key].jamah)}</div>
+                    </div>
+                </div>
+            `;
+            cardsContainer.appendChild(card);
+        });
+    }
 
     highlightNextPrayer();
 }
@@ -775,7 +831,7 @@ function highlightNextPrayer() {
     let minDiff = Infinity;
 
     // clear previous active rows
-    document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('active-row'));
+    document.querySelectorAll('tbody tr, .prayer-card').forEach(r => r.classList.remove('active-row'));
     // clear any juma highlights
     document.querySelectorAll('.juma-time-box').forEach(el => el.classList.remove('active-row'));
 
@@ -1054,7 +1110,11 @@ function updateNextPrayerCountdown() {
             }
             const nameEl = document.getElementById('nextPrayerName');
             if (nameEl && closestType) {
-                nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> अगली ${closestType}</span><span class="prayer">जुमा</span>`;
+                if (nameEl.hasAttribute('data-format') && nameEl.getAttribute('data-format') === 'simple') {
+                    nameEl.innerHTML = `जुमा`;
+                } else {
+                    nameEl.innerHTML = `<span class="prefix card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> अगली ${closestType}</span><span class="prayer">जुमा</span>`;
+                }
 
                 const hours = Math.floor(Math.max(0, minDiff) / (1000 * 60 * 60));
                 const minutes = Math.floor((Math.max(0, minDiff) % (1000 * 60 * 60)) / (1000 * 60));
@@ -1108,17 +1168,23 @@ function updateNextPrayerCountdown() {
 
             const nameEl = document.getElementById("nextPrayerName");
 
-            nameEl.innerHTML =
-                `<span class="prefix card-heading">
-        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-clock w-4 h-4 text-gold">
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-        </svg> अगली ${closest.type}</span>
-        <span class="prayer">${closest.name}</span>`;
+            if (nameEl) {
+                if (nameEl.hasAttribute('data-format') && nameEl.getAttribute('data-format') === 'simple') {
+                    nameEl.innerHTML = `${closest.name}`;
+                } else {
+                    nameEl.innerHTML =
+                        `<span class="prefix card-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-clock w-4 h-4 text-gold">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+                </svg> अगली ${closest.type}</span>
+                <span class="prayer">${closest.name}</span>`;
+                }
+            }
 
             const hours = Math.floor(minDiff / (1000 * 60 * 60));
             const minutes = Math.floor((minDiff % (1000 * 60 * 60)) / (1000 * 60));
@@ -1340,11 +1406,14 @@ async function loadVerses() {
     const res = await fetch('/api/short-verses');
     const verses = await res.json();
 
+    const container = document.querySelector('.verse-slider-container');
+
     if (!verses.length) {
-        const container = document.querySelector('.verse-slider-container');
         if (container) container.style.display = 'none';
         return;
     }
+    
+    if (container) container.style.display = '';
 
     let index = 0;
     const contentEl = document.getElementById('verseSliderContent');

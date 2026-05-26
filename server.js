@@ -24,17 +24,18 @@ app.use(bodyParser.json());
 function readSettings() {
   try {
     if (!fs.existsSync(SETTINGS_FILE)) {
-      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ hijriOffset: 0, beepVolume: 1 }, null, 2));
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ hijriOffset: 0, beepVolume: 1, theme: 'index' }, null, 2));
     }
 
     const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"));
     return {
       hijriOffset: typeof data.hijriOffset === "number" ? data.hijriOffset : 0,
       beepVolume: typeof data.beepVolume === "number" ? data.beepVolume : 1,
-      displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto"
+      displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto",
+      theme: typeof data.theme === "string" ? data.theme : "index"
     };
   } catch (err) {
-    return { hijriOffset: 0, beepVolume: 1 };
+    return { hijriOffset: 0, beepVolume: 1, theme: 'index' };
   }
 }
 
@@ -45,6 +46,10 @@ function saveSettings(updates) {
   next.beepVolume = Math.min(1, Math.max(0, Number(next.beepVolume) || 0));
   if (!["auto", "morning", "day", "evening", "night"].includes(next.displayTheme)) {
     next.displayTheme = "auto";
+  }
+  // Validate theme
+  if (!["index", "theme-1", "theme-2", "theme-3", "theme-4"].includes(next.theme)) {
+    next.theme = "index";
   }
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2));
   return next;
@@ -85,6 +90,12 @@ app.post('/api/display/theme', (req, res) => {
 app.post('/api/display/reload', (req, res) => {
   sendDisplayEvent("reload", { reason: "admin" });
   res.json({ message: "Display reload sent", clients: displayClients.size });
+});
+
+app.post('/api/theme', (req, res) => {
+  const settings = saveSettings({ theme: req.body?.theme });
+  sendDisplayEvent("theme-change", { theme: settings.theme });
+  res.json({ message: "Theme saved successfully", settings });
 });
 
 app.get('/api/display/events', (req, res) => {

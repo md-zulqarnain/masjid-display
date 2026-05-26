@@ -501,6 +501,29 @@
 
         <div id="settings" class="tab-content">
             <div class="section">
+                <h2>Display Theme</h2>
+
+                <div class="form-group">
+                    <label>Select Theme</label>
+                    <select id="themeSelector">
+                        <option value="theme-1">Theme 1: Modern Gradient (Pink/Purple)</option>
+                        <option value="theme-2">Theme 2: Minimalist Dark (Grayscale)</option>
+                        <option value="theme-3">Theme 3: Premium Glass (Cyan Blue)</option>
+                        <option value="theme-4">Theme 4: Vibrant Neon (Green/Cyan)</option>
+                    </select>
+                    <small style="color:#bbb;">
+                        Select a theme from the list and apply it to the display.
+                    </small>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="applyTheme()">Apply Theme</button>
+                </div>
+
+                <div id="themeMessage" class="message"></div>
+
+                <hr style="margin: 30px 0;">
+
                 <h2>Hijri Date Settings</h2>
 
                 <div class="form-group">
@@ -987,6 +1010,10 @@
             if (themeInput) {
                 themeInput.value = data.displayTheme || 'auto';
             }
+            const themeSelector = document.getElementById('themeSelector');
+            if (themeSelector) {
+                themeSelector.value = data.theme || 'index';
+            }
         }
 
         async function saveSettings() {
@@ -1245,7 +1272,38 @@
             }
         }
 
-        window.addEventListener("load", loadVersesList);
+        async function applyTheme() {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            const theme = document.getElementById('themeSelector').value;
+
+            btn.innerHTML = '<span class="loading"></span>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/theme', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ theme })
+                });
+
+                if (res.ok) {
+                    showMessage('themeMessage', 'Theme applied successfully! The display will update.', 'success');
+                } else {
+                    showMessage('themeMessage', 'Could not apply theme.', 'error');
+                }
+            } catch (err) {
+                showMessage('themeMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        window.addEventListener("load", () => {
+            loadVersesList();
+            loadSettings();
+        });
         document.getElementById('verseSaveBtn').addEventListener('click', saveVerse);
     </script>
 

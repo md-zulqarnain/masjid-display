@@ -1,0 +1,569 @@
+/* Theme 2: Minimalist Dark - Clean, minimal, focus on readability */
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto-VariableFont.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto-Italic-VariableFont.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-style: italic;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  font-family: "Roboto", sans-serif;
+  color: #e0e0e0;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: background 2s ease;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+}
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 3vw 0;
+  box-sizing: border-box;
+}
+
+/* Top Bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arabic-title {
+  font-size: 2vw;
+  text-align: center;
+  flex: 1;
+  font-weight: 700;
+  color: #e0e0e0;
+  letter-spacing: 2px;
+}
+
+.corner-img {
+  width: 6vw;
+  height: 6vw;
+  border-radius: 50%;
+  border: 2px solid rgba(224, 224, 224, 0.5);
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(224, 224, 224, 0.2);
+}
+
+/* Clock */
+.clock-section {
+  text-align: center;
+  margin-top: 2vh;
+}
+
+#clock {
+  font-size: 6vw;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.clock-time {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5vw;
+}
+
+#hours {
+  font-size: 6vw;
+  color: #e0e0e0;
+}
+
+#seconds {
+  font-size: 2vw;
+  opacity: 0.7;
+  color: #c0c0c0;
+}
+
+#ampm {
+  font-size: 2vw;
+  margin-left: 0.5vw;
+  color: #a0a0a0;
+}
+
+#date, #hijri {
+  font-size: 1.5vw;
+  margin-top: 0.5vh;
+  color: #d0d0d0;
+}
+
+/* Table */
+.table-container {
+  flex: 1;
+}
+
+table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  font-size: 1.5vw;
+  background: rgba(30, 30, 30, 0.9);
+  border: 1px solid rgba(224, 224, 224, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th,
+td {
+  text-align: center;
+  padding: 1vh;
+  color: #d0d0d0;
+  border-bottom: 1px solid rgba(224, 224, 224, 0.1);
+}
+
+th {
+  color: #0a0a0a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: #b0b0b0;
+}
+
+thead {
+  background: #b0b0b0;
+  color: #0a0a0a;
+}
+
+tbody tr {
+  transition: all 0.3s ease;
+}
+
+tbody tr:nth-child(odd) {
+  background: rgba(40, 40, 40, 0.5);
+}
+
+tbody tr:nth-child(even) {
+  background: rgba(50, 50, 50, 0.5);
+}
+
+tbody td:nth-child(2) {
+  color: #b0b0b0;
+  font-weight: 600;
+}
+
+tbody td:nth-child(3) {
+  color: #90d090;
+}
+
+tbody .active-row td:nth-child(3) {
+  color: #b0b0b0;
+}
+
+.active-row {
+  background: linear-gradient(90deg, rgba(100, 100, 100, 0.6), rgba(80, 80, 80, 0.5)) !important;
+  color: #e0e0e0;
+  font-weight: bold;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3);
+  transform: scale(1.01);
+}
+
+/* Next prayer countdown */
+#nextPrayer {
+  text-align: center;
+}
+
+#nextPrayerName {
+  font-weight: 700;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+#nextPrayerName .prayer {
+  font-size: 3.5vw;
+  display: block;
+  margin-top: 0.2vh;
+}
+
+.remainingTimeHeading {
+  font-size: 4vw;
+  margin: 10px 0 0;
+  color: #a0a0a0;
+}
+
+#nextPrayerCountdown {
+  margin-top: 0.4vh;
+  opacity: 0.9;
+  font-size: 1.5vw;
+  color: #d0d0d0;
+}
+
+#hijri {
+  font-weight: 700;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  margin-bottom: 0.8vh;
+  line-height: 1.2;
+}
+
+#hijri .hijri-month {
+  display: block;
+  font-size: 2.4vw;
+}
+
+#hijri .hijri-date {
+  display: block;
+  font-size: 8.6vw;
+  opacity: 0.85;
+}
+
+#ramadanTimes {
+  font-weight: bold;
+  color: #c0c0c0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1vw;
+}
+
+/* Cards */
+.card {
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(224, 224, 224, 0.1);
+  border-radius: 12px;
+  padding: 1vh 2vw;
+  box-sizing: border-box;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  min-width: 0;
+}
+
+.nextPrayerAndHijri {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+}
+
+.nextPrayerAndHijri .card {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nextPrayerAndHijriDate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.countdown {
+  border: 1px solid rgba(224, 224, 224, 0.2);
+  border-radius: 8px;
+  padding: 4px 12px;
+  display: inline-block;
+  color: #e0e0e0;
+  font-size: 4.9vw;
+  font-weight: 800;
+  background: rgba(50, 50, 50, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Juma Section */
+.juma-section-container {
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.juma-header-card {
+  background: #b0b0b0;
+  color: #0a0a0a;
+  padding: 1vh 1vw;
+  border-radius: 0 12px 12px 0;
+  font-size: 1.8vw;
+  font-weight: 800;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1vh;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.juma-times {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  background: rgba(30, 30, 30, 0.9);
+  border: 1px solid rgba(224, 224, 224, 0.15);
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  flex: 1;
+}
+
+.juma-time-box {
+  padding: 2.5vh 1vw;
+  text-align: center;
+  border-right: 1px solid rgba(224, 224, 224, 0.1);
+  background: rgba(40, 40, 40, 0.5);
+  transition: all 0.3s ease;
+}
+
+.juma-time-box:last-child {
+  border-right: none;
+}
+
+.juma-label {
+  font-size: 1.2vw;
+  color: #a0a0a0;
+  margin-bottom: 0.5vh;
+}
+
+.juma-time {
+  font-size: 2.2vw;
+  font-weight: bold;
+  color: #e0e0e0;
+}
+
+/* Verse Slider */
+.verse-slider-container {
+  margin-top: 0.5vh;
+  margin-bottom: 1.5vh;
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(224, 224, 224, 0.1);
+  border-radius: 12px;
+  padding: 1.5vh 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.verse-slider-content {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1vw;
+  opacity: 0;
+}
+
+.verse-slider-content.fade-in {
+  animation: fadeVerseIn 1s forwards;
+}
+
+.verse-slider-content.fade-out {
+  animation: fadeVerseOut 1s forwards;
+}
+
+.verse-text {
+  color: #e0e0e0;
+  font-size: 4.6vw;
+  font-weight: bold;
+}
+
+@keyframes fadeVerseIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeVerseOut {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 1.5vh 0;
+  color: #a0a0a0;
+  font-size: 1.2vw;
+  margin-top: auto;
+  border-top: 1px solid rgba(224, 224, 224, 0.15);
+  position: relative;
+}
+
+.brand-log {
+  position: absolute;
+  bottom: 1.3vh;
+  right: 0;
+}
+
+.brand-log img {
+  max-width: 11vw;
+  opacity: 0.7;
+}
+
+.footer p {
+  margin: 0;
+  font-style: italic;
+}
+
+.timing-change-marquee {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #d0d0d0;
+  font-weight: 700;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  z-index: 9;
+  contain: layout paint style;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+.timing-change-marquee > span {
+  display: inline-block;
+  min-width: 100%;
+  padding-left: 100%;
+  animation: timing-marquee 26s linear infinite;
+  font-size: clamp(46px, 5vw, 65px);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+@keyframes timing-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-100%, 0, 0); }
+}
+
+/* Extra Prayer Cards */
+.prayerTimeingContainer {
+  display: flex;
+  gap: 15px;
+  margin-top: 1vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.extraPrayerCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+}
+
+.extraPrayerCard {
+  border-radius: 12px;
+  padding: 6px 19px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(40, 40, 40, 0.6);
+  border: 1px solid rgba(224, 224, 224, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.extraPrayerCard.card-1 {
+  border-left: 3px solid #b0b0b0;
+}
+
+.extraPrayerCard.card-2 {
+  border-left: 3px solid #a0a0a0;
+}
+
+.extraPrayerCard.card-3 {
+  border-left: 3px solid #909090;
+}
+
+.extraPrayerCard.card-4 {
+  border-left: 3px solid #808080;
+}
+
+.extraPrayerCard.card-5 {
+  border-left: 3px solid #707070;
+}
+
+.extraPrayerLabel {
+  font-size: 3.35vw;
+  color: #808080;
+  font-weight: 600;
+  margin-bottom: 0.5vh;
+}
+
+.extraPrayerTime {
+  font-size: 4.2vw;
+  color: #e0e0e0;
+  font-weight: bold;
+}
+
+/* Popup */
+.jamat-popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 79%;
+  color: #d0d0d0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+  background: rgba(15, 15, 15, 0.98);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(224, 224, 224, 0.1);
+}
+
+/* Portrait mode tweaks */
+@media (orientation: portrait) {
+  .container {
+    padding: 2vh 4vw 0;
+  }
+
+  .top-bar .corner-img {
+    width: 12vw;
+    height: 12vw;
+  }
+
+  .arabic-title {
+    font-size: 5vw;
+  }
+
+  #clock {
+    font-size: 10vw;
+  }
+
+  #hours {
+    font-size: 14vw;
+    font-weight: 900;
+    line-height: 13vw;
+  }
+
+  #seconds, #ampm {
+    font-size: 6vw;
+  }
+
+  table {
+    font-size: 5vw;
+  }
+}

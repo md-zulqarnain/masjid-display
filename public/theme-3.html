@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Masjid Display - Premium Glass Theme</title>
+  <link rel="stylesheet" href="theme-3.css">
+</head>
+
+<body id="index-body" class="theme-3">
+
+  <div class="container">
+
+    <!-- Top Arabic Header -->
+    <div class="top-bar">
+      <img src="images/roza.webp" class="corner-img">
+      <div class="arabic-title">
+        لا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَّسُولُ اللهِ
+      </div>
+
+      <img src="images/kaaba.jpg" class="corner-img ">
+    </div>
+
+    <!-- Clock Section -->
+    <div id="clock">
+      <div class="clock-time">
+        <span id="hours"></span>
+        <span id="seconds"></span>
+        <span id="ampm"></span>
+      </div>
+      <div class="date-row">
+        <div id="date" class="date-left"></div>
+      </div>
+      <div class="nextPrayerAndHijri">
+        <div id="nextPrayer" class="date-center card">
+          <div>
+            <div id="nextPrayerName"></div>
+            <h4 class="remainingTimeHeading">बाक़ी रह गया वक़्त</h4>
+            <div id="nextPrayerCountdown">
+              <span id="countHours" class="countdown">00</span> :
+              <span id="countMinutes" class="countdown">00</span> :
+              <span id="countSeconds" class="countdown">00</span>
+            </div>
+
+          </div>
+        </div>
+        <div class="nextPrayerAndHijriDate card">
+          <div>
+            <div id="hijri" class="date-right"></div>
+            <div id="ramadanTimes">
+              <span id="sahriTime"></span>
+              <span id="iftarTime"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prayer Table -->
+    <div class="prayerTimeingContainer">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>नमाज़</th>
+              <th>अज़ान</th>
+              <th>जमाअत</th>
+            </tr>
+          </thead>
+          <tbody id="prayerTable"></tbody>
+        </table>
+      </div>
+      <div class="extraPrayerCol">
+        <div class="extraPrayerCard card-1">
+          <div class="extraPrayerLabel" id="currentPrayerLabel">करेंट नमाज़ का अंत</div>
+          <div id="currentPrayerEndTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-2">
+          <div class="extraPrayerLabel" id="nextPrayerLabel">अगली नमाज़</div>
+          <div id="nextPrayerStartTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-3">
+          <div class="extraPrayerLabel">तहज्जुद</div>
+          <div id="tahajjudTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-4">
+          <div class="extraPrayerLabel">इश्राक़</div>
+          <div id="ishraqTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-5">
+          <div class="extraPrayerLabel">चाश्त</div>
+          <div id="chashtTime" class="extraPrayerTime"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Juma Section -->
+    <div class="juma-section-container">
+      <div class="juma-header-card">
+        <span>जुमा</span>
+        <span class="juma-arabic">جمعة</span>
+      </div>
+      <div class="juma-times">
+        <div class="juma-time-box">
+          <div class="juma-label">अज़ान</div>
+          <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
+        </div>
+        <div class="juma-time-box">
+          <div class="juma-label">खु़त्बा</div>
+          <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
+        </div>
+        <div class="juma-time-box">
+          <div class="juma-label">जमाअत</div>
+          <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verse Slider Section -->
+    <div class="verse-slider-container">
+      <div id="verseSliderContent" class="verse-slider-content">
+        <span id="verseText" class="verse-text"></span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div id="timingChangeMarquee" class="timing-change-marquee" style="display:none;">
+        <span id="timingChangeText"></span>
+      </div>
+      <p>जामा मस्जिद झिरन्या शेख</p>
+      <div class="brand-log">
+        <img src="images/logo.jpg" />
+      </div>
+    </footer>
+
+  </div>
+
+
+  <!-- Black Screen -->
+  <audio id="beepSound" preload="auto">
+    <source src="audio/beep_long.wav" type="audio/wav" muted>
+  </audio>
+
+  <div id="jamatPopup" class="jamat-popup" style="display:none;">
+    <div class="jamat-popup-content" style="padding: 40px; text-align: center; max-width: 900px; line-height: 1.6;">
+      <div
+        style="font-size: 70px; color: #00bfff; font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid #00bfff; padding-bottom: 10px;">
+        تك्बीरे तशरीक़</div>
+
+      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
+        <span style="color: #00bfff; font-weight: bold;">वक़्त:</span><br>
+        9 ज़िल हिज्जा (फजर) से 13 ज़िल हिज्जा (असर) तक
+      </div>
+
+      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
+        <span style="color: #00bfff; font-weight: bold;">हुक्म (वाजिब):</span><br>
+        मर्द: बुलंद आवाज़ से पढ़ें<br>
+        औरतें: आहिस्ता आवाज़ से पढ़ें
+      </div>
+
+      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
+        <span style="color: #00bfff; font-weight: bold;">कब पढ़ें:</span><br>
+        हर फ़र्ज़ नमाज़ के बाद, सलाम फेरते ही फ़ौरन
+      </div>
+
+      <div class="divider" style="margin: 30px 0;">
+        <div class="divider-line"></div>
+        <div class="divider-star">☪</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <div style="font-size: 61px; color: #00bfff; font-weight: bold; margin-top: 25px; line-height: 1.8;">
+        अल्लाहु अकबर, अल्लाहु अकबर,<br>
+        ला इलाहा इल्लल्लाहु वल्लाहु अकबर,<br>
+        अल्लाहु अकबर, व लिल्लाहिल हम्द
+      </div>
+    </div>
+  </div>
+
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

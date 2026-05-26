@@ -1,5 +1,6 @@
 {
   "hijriOffset": -1,
   "beepVolume": 1,
-  "displayTheme": "evening"
+  "displayTheme": "auto",
+  "theme": "index"
 }

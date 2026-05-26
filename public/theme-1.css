@@ -1,0 +1,346 @@
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/Roboto-VariableFont.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 75% 100%;
+  font-style: normal;
+}
+
+:root {
+  --bg-dark: #0b0f19;
+  --card-bg: rgba(15, 23, 42, 0.6);
+  --card-border: rgba(51, 65, 85, 0.5);
+  --text-cyan: #38bdf8;
+  --text-purple: #c084fc;
+  --text-white: #ffffff;
+  --text-gray: #94a3b8;
+  --font-base: "Roboto", sans-serif;
+  --gradient-active: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(192, 132, 252, 0.3));
+  --border-active: rgba(192, 132, 252, 0.6);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  font-family: var(--font-base);
+  color: var(--text-white);
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 2vh 3vw;
+  box-sizing: border-box;
+  gap: 1.5vh;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.text-blue { color: var(--text-cyan); }
+.text-purple { color: var(--text-purple); }
+
+/* Top Date Box */
+.top-date-box {
+  display: flex;
+  justify-content: space-between;
+  padding: 1vh 2vw;
+  font-size: 1.5vw;
+  font-weight: 600;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+
+/* Kalima */
+.arabic-title {
+  text-align: center;
+  font-size: 2.2vw;
+  font-weight: 700;
+  margin: 0.5vh 0;
+}
+
+/* Live Time Card */
+.live-time-card {
+  padding: 2vh 3vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  justify-content: space-around;
+}
+
+.live-time-label {
+  color: var(--text-gray);
+  font-size: 1.2vw;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+}
+
+.clock-display {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  margin: 1vh 0;
+}
+
+#hours {
+  font-size: 14vw;
+  font-weight: 900;
+  line-height: 0.8em;
+  background: linear-gradient(to right, #60a5fa, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.clock-sec-ampm {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1vw;
+  font-weight: bold;
+}
+
+#seconds {
+  font-size: 4vw;
+  color: var(--text-cyan);
+  line-height: 1;
+}
+
+#ampm {
+  font-size: 2.5vw;
+  color: var(--text-purple);
+  line-height: 1;
+  margin-top: 0.5vh;
+}
+
+.live-time-footer {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  text-align: center;
+  padding-top: 2vh;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-col {
+  flex: 1;
+}
+
+.footer-label {
+  color: var(--text-gray);
+  font-size: 1vw;
+  margin-bottom: 0.5vh;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.footer-value {
+  font-size: 2vw;
+  font-weight: 700;
+}
+
+.prayer-name-override {
+  font-size: 2.5vw !important;
+}
+
+/* Prayer Cards Container */
+.prayer-cards-container {
+  display: flex;
+  gap: 1vw;
+  flex: 1;
+}
+
+.prayer-card {
+  flex: 1;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5vh 0;
+  transition: all 0.3s ease;
+  gap: 2vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.prayer-card.active-row {
+  background: linear-gradient(180deg, rgba(56,189,248,0.1) 0%, rgba(192,132,252,0.15) 100%);
+  border-color: rgba(192, 132, 252, 0.4);
+  box-shadow: inset 4px 0 0 0 #38bdf8, 0 0 20px rgba(56,189,248,0.1);
+  transform: none;
+}
+
+.prayer-card.active-row .prayer-name {
+  font-weight: 800;
+}
+
+.prayer-name {
+  font-size: 2.2vw;
+  font-weight: 800;
+  color: var(--text-white);
+  margin-bottom: 0.5vh;
+}
+
+.prayer-times-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5vh;
+}
+
+.prayer-time-box {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vh;
+}
+
+.time-label {
+  font-size: 0.9vw;
+  color: var(--text-gray);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.time-value {
+  font-size: 3vw;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.azan-time { color: var(--text-cyan); }
+.jamah-time { color: var(--text-purple); }
+
+/* Extra Prayers Grid */
+.extra-prayers-grid {
+  display: flex;
+  gap: 1vw;
+}
+
+.extra-card {
+  flex: 1;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1.5vh 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.extra-label {
+  font-size: 1.1vw;
+  color: var(--text-gray);
+  margin-bottom: 0.5vh;
+}
+
+.extra-time {
+  font-size: 1.8vw;
+  font-weight: 700;
+}
+
+/* Juma Section */
+.juma-row {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+  height: 8vh;
+}
+
+.juma-title {
+  padding: 0 2vw;
+  font-size: 1.8vw;
+  font-weight: 800;
+  background: linear-gradient(to right, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.05em;
+  width: 15vw;
+}
+
+.juma-times {
+  display: flex;
+  flex: 1;
+  height: 100%;
+}
+
+.juma-time-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vw;
+  border-left: 1px solid var(--card-border);
+}
+
+.juma-time-box.active-row {
+  background: var(--gradient-active);
+  box-shadow: inset 0 0 10px rgba(192, 132, 252, 0.2);
+}
+
+.juma-label {
+  font-size: 1vw;
+  color: var(--text-gray);
+}
+
+.juma-val {
+  font-size: 2vw;
+  font-weight: 700;
+}
+
+/* Portrait adjustments */
+@media (orientation: portrait) {
+  .top-date-box { font-size: 3vw; }
+  .arabic-title { font-size: 5vw; }
+  .live-time-label { font-size: 3vw; }
+  #hours { font-size: 24vw; }
+  #seconds { font-size: 8vw; }
+  #ampm { font-size: 5vw; }
+  .footer-label { font-size: 2.5vw; }
+  .footer-value { font-size: 4vw; }
+  .prayer-name-override { font-size: 5vw !important; }
+  .prayer-cards-container { flex-direction: row; }
+  .prayer-card { padding: 1vh 0; gap: 1vh; }
+  .prayer-name { font-size: 3.5vw; margin-bottom: 0.5vh; text-align: center; width: 100%; }
+  .prayer-times-wrap { flex-direction: column; width: 100%; gap: 1vh; }
+  .time-label { font-size: 1.8vw; }
+  .time-value { font-size: 4.5vw; }
+  .extra-prayers-grid { flex-wrap: nowrap; gap: 1vw; }
+  .extra-card { flex: 1; padding: 1vh 0; }
+  .extra-label { font-size: 1.5vw; }
+  .extra-time { font-size: 2.5vw; }
+  .juma-title { font-size: 4vw; width: auto; padding: 2vh; }
+  .juma-label { font-size: 2.5vw; }
+  .juma-val { font-size: 4vw; }
+  .juma-row { height: auto; flex-direction: column; }
+  .juma-times { flex-direction: column; width: 100%; }
+  .juma-time-box { border-left: none; border-top: 1px solid var(--card-border); padding: 1.5vh 0; }
+}
+
+.timing-change-marquee {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--text-cyan);
+  color: var(--bg-dark);
+  font-weight: bold;
+  padding: 0.5vh 0;
+  font-size: 1.5vw;
+}
