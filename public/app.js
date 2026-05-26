@@ -1257,6 +1257,10 @@ function minutesUntilNextAzanJamah() {
 }
 
 function scheduleSwitcher() {
+    if (popupShown) {
+        scheduleLastSwitch = Date.now();
+        return;
+    }
     const now = new Date();
     const elapsed = now - scheduleLastSwitch;
 

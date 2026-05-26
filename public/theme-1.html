@@ -18,15 +18,10 @@
       <div id="hijri" data-format="simple" class="date-right text-purple"></div>
     </div>
 
-    <!-- Kalima -->
-    <div class="arabic-title text-blue">
-      لا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَّسُولُ اللهِ
-    </div>
 
     <!-- Live Time Card -->
     <div class="live-time-card card">
-      <div class="live-time-label">लाइव टाइम</div>
-      
+
       <div class="clock-display">
         <span id="hours" class="clock-gradient"></span>
         <div class="clock-sec-ampm">
@@ -124,6 +119,42 @@
   <audio id="beepSound" preload="auto">
     <source src="audio/beep_long.wav" type="audio/wav" muted>
   </audio>
+
+  <div id="jamatPopup" class="jamat-popup" style="display:none;">
+    <div class="jamat-popup-content" style="padding: 40px; text-align: center; max-width: 900px; line-height: 1.6;">
+      <div
+        style="font-size: 70px; color: #ffd700; font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
+        तक्बीरे तशरीक़</div>
+
+      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
+        <span style="color: #ffd700; font-weight: bold;">वक़्त:</span><br>
+        9 ज़िल हिज्जा (फजर) से 13 ज़िल हिज्जा (असर) तक
+      </div>
+
+      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
+        <span style="color: #ffd700; font-weight: bold;">हुक्म (वाजिब):</span><br>
+        मर्द: बुलंद आवाज़ से पढ़ें<br>
+        औरतें: आहिस्ता आवाज़ से पढ़ें
+      </div>
+
+      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
+        <span style="color: #ffd700; font-weight: bold;">कब पढ़ें:</span><br>
+        हर फ़र्ज़ नमाज़ के बाद, सलाम फेरते ही फ़ौरन
+      </div>
+
+      <div class="divider" style="margin: 30px 0;">
+        <div class="divider-line"></div>
+        <div class="divider-star">☪</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <div style="font-size: 61px; color: #ffd700; font-weight: bold; margin-top: 25px; line-height: 1.8;">
+        अल्लाहु अकबर, अल्लाहु अकबर,<br>
+        ला इलाहा इल्लल्लाहु वल्लाहु अकबर,<br>
+        अल्लाहु अकबर, व लिल्लाहिल हम्द
+      </div>
+    </div>
+  </div>
 
   <script src="utils.js"></script>
   <script src="app.js"></script>
