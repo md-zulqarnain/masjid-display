@@ -749,12 +749,16 @@ async function loadSelectedTheme() {
         const res = await fetch('/api/settings?t=' + Date.now(), { cache: 'no-store' });
         const data = await res.json();
         const selectedTheme = data.theme || 'index';
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         
-        // If a specific theme is selected (not index), redirect to it
+        // If a specific theme is selected, redirect to it; if index is selected, ensure we are on index.html
         if (selectedTheme !== 'index' && selectedTheme.startsWith('theme-')) {
-            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
             if (!currentPage.includes(selectedTheme)) {
                 window.location.href = '/' + selectedTheme + '.html';
+            }
+        } else if (selectedTheme === 'index') {
+            if (currentPage.startsWith('theme-')) {
+                window.location.href = '/index.html';
             }
         }
     } catch (err) {
