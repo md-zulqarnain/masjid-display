@@ -1,126 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Masjid Display - Premium Glass Theme</title>
+  <!-- Google Fonts for Outfit and Amiri -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="theme-3.css">
 </head>
 
 <body id="index-body" class="theme-3">
 
-  <div class="container">
+  <!-- Background flourishes -->
+  <div class="bg-flourish">
+    <div class="flourish-top"></div>
+    <div class="flourish-bottom"></div>
+  </div>
 
-    <!-- Top Arabic Header -->
-    <div class="top-bar">
-      <img src="images/roza.webp" class="corner-img">
-      <div class="arabic-title">
-        لا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَّسُولُ اللهِ
+  <div class="container relative z-10">
+
+    <!-- Top Date Strip (Before Clock) -->
+    <header class="top-date-strip card">
+      <span id="date" class="date-gregorian">--</span>
+      <span id="hijri" class="date-hijri">--</span>
+    </header>
+
+    <!-- Header Clock & Sahri/Iftar Timings -->
+    <section class="clock-section">
+      <div id="clock">
+        <div class="clock-display">
+          <span id="hours" class="clock-time">12:00</span>
+          <span id="seconds" class="clock-sec">:00</span>
+          <span id="ampm" class="clock-ampm">AM</span>
+        </div>
+        
+        <!-- Sahri / Iftar Timings (Added data-format="simple" to prevent double Sahri text) -->
+        <div class="ramadan-times-row font-sans">
+          <span class="ramadan-label">सहरी:</span> <span id="sahriTime" data-format="simple" class="ramadan-val">--:--</span>
+          <span class="date-separator"></span>
+          <span class="ramadan-label">इफ़्तार:</span> <span id="iftarTime" data-format="simple" class="ramadan-val">--:--</span>
+        </div>
       </div>
+    </section>
 
-      <img src="images/kaaba.jpg" class="corner-img ">
+    <!-- NEXT PRAYER COUNTDOWN - Placed BEFORE the prayer table -->
+    <section id="nextPrayer" class="countdown-bar card animate-soft-glow">
+      <div class="countdown-bar-content">
+        <div class="prayer-info">
+          <div id="nextPrayerName"></div>
+        </div>
+        <div id="nextPrayerCountdown" class="countdown-timer">
+          <span id="countHours" class="countdown-num">00</span>
+          <span class="countdown-colon">:</span>
+          <span id="countMinutes" class="countdown-num">00</span>
+          <span class="countdown-colon">:</span>
+          <span id="countSeconds" class="countdown-num">00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRAYER TABLE - FULL WIDTH (Added 4th Column for Waqt Shuru/End) -->
+    <div class="table-container card">
+      <div class="table-header-row">
+        <div>नमाज़</div>
+        <div class="text-center">अज़ान</div>
+        <div class="text-center">जमाअत</div>
+        <div class="text-center" id="table-limit-header">वक़्त शुरू</div>
+      </div>
+      <table class="w-full">
+        <tbody id="prayerTable"></tbody>
+      </table>
     </div>
 
-    <!-- Clock Section -->
-    <div id="clock">
-      <div class="clock-time">
-        <span id="hours"></span>
-        <span id="seconds"></span>
-        <span id="ampm"></span>
+    <!-- BOTTOM SECTION: Side-by-Side Sliders (Grid) -->
+    <div class="bottom-slides-grid">
+      <!-- Left Slide: Juma & Nafl Prayers (Tahajjud, Ishraq, Chasht in 3 columns) -->
+      <div class="slide-card left-slide no-card">
+        <!-- Hidden elements to prevent JS errors -->
+        <span id="left-slide-badge" style="display: none;"></span>
+        <div id="left-slide-dots" style="display: none;"></div>
+        
+        <div class="slide-content-area" id="left-slide-content">
+          <!-- Content loaded dynamically -->
+        </div>
       </div>
-      <div class="date-row">
-        <div id="date" class="date-left"></div>
-      </div>
-      <div class="nextPrayerAndHijri">
-        <div id="nextPrayer" class="date-center card">
-          <div>
-            <div id="nextPrayerName"></div>
-            <h4 class="remainingTimeHeading">बाक़ी रह गया वक़्त</h4>
-            <div id="nextPrayerCountdown">
-              <span id="countHours" class="countdown">00</span> :
-              <span id="countMinutes" class="countdown">00</span> :
-              <span id="countSeconds" class="countdown">00</span>
-            </div>
 
-          </div>
+      <!-- Right Slide: Quran, Hadith, Short Verses (Natively powered by app.js) -->
+      <div class="slide-card right-slide card verse-slider-container">
+        <div class="slide-header">
+          <span class="slide-badge" id="right-slide-badge" style="color: var(--emerald-soft);">हदीस शरीफ़</span>
         </div>
-        <div class="nextPrayerAndHijriDate card">
-          <div>
-            <div id="hijri" class="date-right"></div>
-            <div id="ramadanTimes">
-              <span id="sahriTime"></span>
-              <span id="iftarTime"></span>
-            </div>
-          </div>
+        <div class="slide-content-area" id="verseSliderContent">
+          <span id="verseText" class="slide-text"></span>
         </div>
-      </div>
-    </div>
-
-    <!-- Prayer Table -->
-    <div class="prayerTimeingContainer">
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>नमाज़</th>
-              <th>अज़ान</th>
-              <th>जमाअत</th>
-            </tr>
-          </thead>
-          <tbody id="prayerTable"></tbody>
-        </table>
-      </div>
-      <div class="extraPrayerCol">
-        <div class="extraPrayerCard card-1">
-          <div class="extraPrayerLabel" id="currentPrayerLabel">करेंट नमाज़ का अंत</div>
-          <div id="currentPrayerEndTime" class="extraPrayerTime"></div>
-        </div>
-        <div class="extraPrayerCard card-2">
-          <div class="extraPrayerLabel" id="nextPrayerLabel">अगली नमाज़</div>
-          <div id="nextPrayerStartTime" class="extraPrayerTime"></div>
-        </div>
-        <div class="extraPrayerCard card-3">
-          <div class="extraPrayerLabel">तहज्जुद</div>
-          <div id="tahajjudTime" class="extraPrayerTime"></div>
-        </div>
-        <div class="extraPrayerCard card-4">
-          <div class="extraPrayerLabel">इश्राक़</div>
-          <div id="ishraqTime" class="extraPrayerTime"></div>
-        </div>
-        <div class="extraPrayerCard card-5">
-          <div class="extraPrayerLabel">चाश्त</div>
-          <div id="chashtTime" class="extraPrayerTime"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Juma Section -->
-    <div class="juma-section-container">
-      <div class="juma-header-card">
-        <span>जुमा</span>
-        <span class="juma-arabic">جمعة</span>
-      </div>
-      <div class="juma-times">
-        <div class="juma-time-box">
-          <div class="juma-label">अज़ान</div>
-          <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
-        </div>
-        <div class="juma-time-box">
-          <div class="juma-label">खु़त्बा</div>
-          <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
-        </div>
-        <div class="juma-time-box">
-          <div class="juma-label">जमाअत</div>
-          <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Verse Slider Section -->
-    <div class="verse-slider-container">
-      <div id="verseSliderContent" class="verse-slider-content">
-        <span id="verseText" class="verse-text"></span>
       </div>
     </div>
 
@@ -129,39 +102,39 @@
       <div id="timingChangeMarquee" class="timing-change-marquee" style="display:none;">
         <span id="timingChangeText"></span>
       </div>
-      <p>जामा मस्जिद झिरन्या शेख</p>
-      <div class="brand-log">
-        <img src="images/logo.jpg" />
+      <div class="footer-content">
+        <span>लाइव · ऑटो-अपडेट</span>
+        <span>1080 × 1920 प्रीमियम डिस्प्ले</span>
       </div>
     </footer>
 
   </div>
 
-
-  <!-- Black Screen -->
+  <!-- Audio Beep -->
   <audio id="beepSound" preload="auto">
     <source src="audio/beep_long.wav" type="audio/wav" muted>
   </audio>
 
+  <!-- Takbeer-e-Tashreeq Popup -->
   <div id="jamatPopup" class="jamat-popup" style="display:none;">
     <div class="jamat-popup-content" style="padding: 40px; text-align: center; max-width: 900px; line-height: 1.6;">
       <div
-        style="font-size: 70px; color: #00bfff; font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid #00bfff; padding-bottom: 10px;">
-        تك्बीरे तशरीक़</div>
+        style="font-size: 70px; color: var(--gold-soft); font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid var(--gold-soft); padding-bottom: 10px;">
+        तक्बीरे तशरीक़</div>
 
       <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
-        <span style="color: #00bfff; font-weight: bold;">वक़्त:</span><br>
+        <span style="color: var(--gold-soft); font-weight: bold;">वक़्त:</span><br>
         9 ज़िल हिज्जा (फजर) से 13 ज़िल हिज्जा (असर) तक
       </div>
 
       <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
-        <span style="color: #00bfff; font-weight: bold;">हुक्म (वाजिब):</span><br>
+        <span style="color: var(--gold-soft); font-weight: bold;">हुक्म (वाजिब):</span><br>
         मर्द: बुलंद आवाज़ से पढ़ें<br>
         औरतें: आहिस्ता आवाज़ से पढ़ें
       </div>
 
       <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
-        <span style="color: #00bfff; font-weight: bold;">कब पढ़ें:</span><br>
+        <span style="color: var(--gold-soft); font-weight: bold;">कब पढ़ें:</span><br>
         हर फ़र्ज़ नमाज़ के बाद, सलाम फेरते ही फ़ौरन
       </div>
 
@@ -171,7 +144,7 @@
         <div class="divider-line"></div>
       </div>
 
-      <div style="font-size: 61px; color: #00bfff; font-weight: bold; margin-top: 25px; line-height: 1.8;">
+      <div style="font-size: 61px; color: var(--gold-soft); font-weight: bold; margin-top: 25px; line-height: 1.8;">
         अल्लाहु अकबर, अल्लाहु अकबर,<br>
         ला इलाहा इल्लल्लाहु वल्लाहु अकबर,<br>
         अल्लाहु अकबर, व लिल्लाहिल हम्द
@@ -179,8 +152,213 @@
     </div>
   </div>
 
+  <!-- Hidden targets container so app.js can write updates successfully without affecting other pages -->
+  <div style="display: none;">
+    <span id="currentPrayerLabel"></span>
+    <span id="currentPrayerEndTime"></span>
+    <span id="nextPrayerLabel"></span>
+    <span id="nextPrayerStartTime"></span>
+    <span id="tahajjudTime"></span>
+    <span id="ishraqTime"></span>
+    <span id="chashtTime"></span>
+    <span id="jumaAzanTime"></span>
+    <span id="jumaKhutbaTime"></span>
+    <span id="jumaJamatTime"></span>
+  </div>
+
   <script src="utils.js"></script>
   <script src="app.js"></script>
+
+  <!-- Script to handle custom sliding components and translation -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Dynamic Hindi Translation & Overlap Prevention Observer
+      const observer = new MutationObserver(() => {
+        observer.disconnect();
+
+        const prayerEl = document.querySelector("#nextPrayerName .prayer");
+        const prefixEl = document.querySelector("#nextPrayerName .prefix.card-heading");
+        
+        if (prayerEl) {
+          const text = prayerEl.textContent.toLowerCase();
+          let englishName = "";
+          if (text.includes("fajr") || text.includes("फ़जर") || text.includes("फजर") || text.includes("फ़ज्र")) {
+            englishName = "Fajr";
+          } else if (text.includes("zuhr") || text.includes("dhuhr") || text.includes("ज़ोهر") || text.includes("ज़ोहर") || text.includes("जोहर") || text.includes("ज़ोहर")) {
+            englishName = "Zuhr";
+          } else if (text.includes("asr") || text.includes("असर")) {
+            englishName = "Asr";
+          } else if (text.includes("maghrib") || text.includes("मग़रिब") || text.includes("मगरिब") || text.includes("मग़रिब")) {
+            englishName = "Maghrib";
+          } else if (text.includes("isha") || text.includes("इशा") || text.includes("ईशा")) {
+            englishName = "Isha";
+          } else if (text.includes("juma") || text.includes("जुमा")) {
+            englishName = "Juma";
+          }
+
+          if (!englishName) {
+            englishName = prayerEl.textContent.replace(/^[-\s]+/, "").trim();
+          }
+
+          const hindiTranslations = {
+            "Fajr": "फ़ज्र",
+            "Zuhr": "ज़ोहर",
+            "Asr": "असर",
+            "Maghrib": "मग़रिब",
+            "Isha": "इशा",
+            "Juma": "जुमा"
+          };
+          const hindiName = hindiTranslations[englishName] || englishName;
+
+          const prefixText = prefixEl ? prefixEl.textContent : "";
+          let labelType = "अगली नमाज़";
+          if (prefixText.includes("जमाअत") || prefixText.includes("जमात") || prefixText.includes("Jamaat")) {
+            labelType = "अगली जमाअत";
+          } else if (prefixText.includes("अज़ान") || prefixText.includes("Azan")) {
+            labelType = "अगली अज़ान";
+          }
+
+          const nameContainer = document.getElementById("nextPrayerName");
+          if (nameContainer) {
+            nameContainer.innerHTML = `
+              <span class="prefix card-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                ${labelType}
+              </span>
+              <span class="prayer">
+                ${hindiName}
+              </span>
+            `;
+          }
+        }
+
+        observer.observe(target, { childList: true, subtree: true });
+      });
+      const target = document.getElementById("nextPrayerName");
+      if (target) {
+        observer.observe(target, { childList: true, subtree: true });
+      }
+
+      // 2. Left Slider (Juma & Nafl prayers in 3 columns)
+      let leftSlideIndex = 0;
+      function updateLeftSlider() {
+        const contentArea = document.getElementById("left-slide-content");
+        const badge = document.getElementById("left-slide-badge");
+        const dotsContainer = document.getElementById("left-slide-dots");
+        if (!contentArea) return;
+
+        const totalSlides = 2;
+
+        dotsContainer.innerHTML = "";
+        for (let i = 0; i < totalSlides; i++) {
+          const dot = document.createElement("span");
+          dot.className = `slide-dot ${i === leftSlideIndex ? 'active' : ''}`;
+          dotsContainer.appendChild(dot);
+        }
+
+        const jumaAzan = document.getElementById("jumaAzanTime")?.innerText || "--:--";
+        const jumaKhutba = document.getElementById("jumaKhutbaTime")?.innerText || "--:--";
+        const jumaJamat = document.getElementById("jumaJamatTime")?.innerText || "--:--";
+
+        const tahajjud = document.getElementById("tahajjudTime")?.innerText || "--:--";
+        const ishraq = document.getElementById("ishraqTime")?.innerText || "--:--";
+        const chasht = document.getElementById("chashtTime")?.innerText || "--:--";
+
+        let html = "";
+
+        if (leftSlideIndex === 0) {
+          badge.innerText = "जुमा नमाज़";
+          html = `
+            <div class="juma-slide animate-fade-in">
+              <h3 class="slide-main-title text-gold">जुमा</h3>
+              <div class="slide-times-grid">
+                <div class="slide-time-box">
+                  <span class="slide-time-label">अज़ान</span>
+                  <span class="slide-time-val text-gold">${jumaAzan}</span>
+                </div>
+                <div class="slide-time-box">
+                  <span class="slide-time-label">ख़ुत्बा</span>
+                  <span class="slide-time-val text-gold">${jumaKhutba}</span>
+                </div>
+                <div class="slide-time-box">
+                  <span class="slide-time-label">जमाअत</span>
+                  <span class="slide-time-val text-emerald">${jumaJamat}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (leftSlideIndex === 1) {
+          badge.innerText = "नफ़्ल नमाज़ समय";
+          html = `
+            <div class="extra-prayers-slide animate-fade-in">
+              <h3 class="slide-main-title text-emerald-soft">नफ़्ल नमाज़ें</h3>
+              <div class="slide-times-grid">
+                <div class="slide-time-box">
+                  <span class="slide-time-label">तहज्जुद</span>
+                  <span class="slide-time-val text-gold">${tahajjud}</span>
+                </div>
+                <div class="slide-time-box">
+                  <span class="slide-time-label">इश्राक़</span>
+                  <span class="slide-time-val text-gold">${ishraq}</span>
+                </div>
+                <div class="slide-time-box">
+                  <span class="slide-time-label">चाश्त</span>
+                  <span class="slide-time-val text-gold">${chasht}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        contentArea.innerHTML = html;
+        leftSlideIndex = (leftSlideIndex + 1) % totalSlides;
+      }
+
+      // 4. Dynamic 4th Column inside Table for Waqt Shuru/Khatm toggled every 5 seconds
+      function updateTableLimitsColumn() {
+        const rows = document.querySelectorAll("#prayerTable tr");
+        if (rows.length === 0 || !window.prayerData) return;
+
+        const toggle = Math.floor(Date.now() / 5000) % 2;
+        
+        const headerEl = document.getElementById("table-limit-header");
+        if (headerEl) {
+          headerEl.innerText = toggle === 0 ? "वक़्त शुरू" : "वक़्त ख़त्म";
+        }
+
+        rows.forEach(row => {
+          const key = row.id;
+          const data = window.prayerData[key];
+          if (!data) return;
+
+          let limitsCell = row.cells[3]; 
+          if (!limitsCell) {
+            limitsCell = document.createElement("td");
+            limitsCell.className = "prayer-limit-cell";
+            row.appendChild(limitsCell);
+          }
+
+          const start = formatDisplayTime(data.start);
+          const end = formatDisplayTime(data.end);
+
+          if (toggle === 0) {
+            limitsCell.innerHTML = `<span class="limit-type-label start">शुरू</span> <span class="limit-time-val">${start}</span>`;
+          } else {
+            limitsCell.innerHTML = `<span class="limit-type-label end">ख़त्म</span> <span class="limit-time-val">${end}</span>`;
+          }
+        });
+      }
+
+      updateLeftSlider();
+      setInterval(updateLeftSlider, 8000);
+
+      updateTableLimitsColumn();
+      setInterval(updateTableLimitsColumn, 1000);
+    });
+  </script>
 </body>
 
 </html>

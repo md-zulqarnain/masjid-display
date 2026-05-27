@@ -2,9 +2,10 @@ const prayerData = {
     fajr: { name: "फ़जर ", arabic: "فجر", start: "04:30 AM", azan: "05:00 AM", jamah: "05:15 AM", end: "06:15 AM" },
     dhuhr: { name: "ज़ोहर ", arabic: "ظهر", start: "12:00 PM", azan: "12:30 PM", jamah: "12:45 PM", end: "03:30 PM" },
     asr: { name: "असर ", arabic: "عصر", start: "03:30 PM", azan: "04:00 PM", jamah: "04:15 PM", end: "05:45 PM" },
-    maghrib: { name: "मग़रिब ", arabic: "مغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
+    maghrib: { name: "मग़रिब ", arabic: "मغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
     isha: { name: "इशा ", arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "08:07 PM", end: "10:30 PM" },
 };
+window.prayerData = prayerData;
 
 // default Juma times (can be updated dynamically if needed)
 const jumaData = {
