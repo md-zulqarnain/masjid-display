@@ -524,6 +524,7 @@
                 <h2>System Maintenance</h2>
                 <div class="button-group">
                     <button class="btn-primary" onclick="pullCode()" id="pullCodeBtn">Pull Latest Code</button>
+                    <button class="btn-primary" onclick="stashAndPullCode()" id="stashPullBtn" style="background: #eab308; color: #0c1d15;">Stash & Pull</button>
                     <button class="btn-danger" onclick="rebootSystem()" id="rebootBtn">Restart Device</button>
                 </div>
                 <div id="maintenanceMessage" class="message"></div>
@@ -976,6 +977,42 @@
                 
                 if (res.ok) {
                     showMessage('maintenanceMessage', 'Git pull executed successfully!', 'success');
+                    if (data.stdout) {
+                        outputDiv.textContent = data.stdout;
+                        outputDiv.style.display = 'block';
+                    }
+                } else {
+                    showMessage('maintenanceMessage', 'Error: ' + (data.error || 'Unknown error'), 'error');
+                    if (data.stderr) {
+                        outputDiv.textContent = data.stderr;
+                        outputDiv.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function stashAndPullCode() {
+            if (!confirm("Are you sure you want to stash local changes and pull the latest server code?")) return;
+
+            const btn = document.getElementById('stashPullBtn');
+            const originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading" style="border-color: rgba(0,0,0,0.3); border-top-color: #0c1d15;"></span>';
+            btn.disabled = true;
+            const outputDiv = document.getElementById('maintenanceOutput');
+            outputDiv.style.display = 'none';
+            outputDiv.textContent = '';
+
+            try {
+                const res = await fetch('/api/maintenance/stash-pull', { method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showMessage('maintenanceMessage', 'Git stash and pull executed successfully!', 'success');
                     if (data.stdout) {
                         outputDiv.textContent = data.stdout;
                         outputDiv.style.display = 'block';
