@@ -27,6 +27,10 @@ let todayMaghrib = null;
 let tomorrowSahri = null;
 let tomorrowMaghrib = null;
 
+const prayerSliderOrder = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+let prayerSliderIndex = 0;
+const prayerSliderCycleMs = 6000;
+
 const islamicMonths = [
     "मुहर्रम",
     "सफर",
@@ -715,7 +719,7 @@ function updateClock() {
             // month will be shown as a large header, date+year beneath it
             hijriEl.innerHTML = `<span class="card-heading"><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon w-4 h-4 text-gold"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg> ${monthName}</span> <span class="hijri-date"> ${day}, ${year} AH</span>`;
         }
-        
+
         // 🔥 Show Sahri & Iftar
         const sahriEl = document.getElementById("sahriTime");
         const iftarEl = document.getElementById("iftarTime");
@@ -750,7 +754,7 @@ async function loadSelectedTheme() {
         const data = await res.json();
         const selectedTheme = data.theme || 'index';
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        
+
         // If a specific theme is selected, redirect to it; if index is selected, ensure we are on index.html
         if (selectedTheme !== 'index' && selectedTheme.startsWith('theme-')) {
             if (!currentPage.includes(selectedTheme)) {
@@ -799,7 +803,7 @@ function renderTable() {
 
     if (cardsContainer) {
         cardsContainer.innerHTML = "";
-        
+
         Object.keys(prayerData).forEach(key => {
             const card = document.createElement("div");
             card.id = key;
@@ -1366,6 +1370,30 @@ function updateDynamicBackground() {
 }
 
 // Update current and next prayer times  
+function updateStartEndPrayerSlider() {
+    const key = prayerSliderOrder[prayerSliderIndex];
+    const prayer = prayerData[key];
+    if (!prayer) return;
+
+    const prayerNameEl = document.getElementById('sliderPrayerName');
+    const startTimeEl = document.getElementById('startSliderTime');
+    const startLabelEl = document.getElementById('startSliderLabel');
+    const endTimeEl = document.getElementById('endSliderTime');
+    const endLabelEl = document.getElementById('endSliderLabel');
+
+    const startTime = formatDisplayTime(prayer.start);
+    const endTime = formatDisplayTime(prayer.end);
+    const name = prayer.name.trim();
+
+    if (prayerNameEl) prayerNameEl.innerText = name;
+    if (startTimeEl) startTimeEl.innerText = startTime;
+    if (startLabelEl) startLabelEl.innerText = 'शुरू';
+    if (endTimeEl) endTimeEl.innerText = endTime;
+    if (endLabelEl) endLabelEl.innerText = 'ख़त्म';
+
+    prayerSliderIndex = (prayerSliderIndex + 1) % prayerSliderOrder.length;
+}
+
 function updateCurrentAndNextPrayerTimes() {
     const now = new Date();
     const prayerOrder = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
@@ -1373,7 +1401,6 @@ function updateCurrentAndNextPrayerTimes() {
     let nextPrayer = null;
     let minDiff = Infinity;
 
-    // Find next prayer
     prayerOrder.forEach(key => {
         let prayerTime = parseTime(prayerData[key].jamah);
         if (prayerTime < now) prayerTime.setDate(prayerTime.getDate() + 1);
@@ -1384,13 +1411,11 @@ function updateCurrentAndNextPrayerTimes() {
         }
     });
 
-    // Find current prayer (the one we just passed or are in)
     if (nextPrayer) {
         const nextIndex = prayerOrder.indexOf(nextPrayer);
         currentPrayer = nextIndex > 0 ? prayerOrder[nextIndex - 1] : 'isha';
     }
 
-    // Update display elements
     if (currentPrayer && prayerData[currentPrayer]) {
         const currentEndTime = formatDisplayTime(prayerData[currentPrayer].end);
         const currentLabel = prayerData[currentPrayer].name.trim() + " आख़िर ";
@@ -1421,7 +1446,7 @@ async function loadVerses() {
         if (container) container.style.display = 'none';
         return;
     }
-    
+
     if (container) container.style.display = '';
 
     let index = 0;
@@ -1460,6 +1485,8 @@ async function loadVerses() {
 }
 
 loadVerses();
+updateStartEndPrayerSlider();
+setInterval(updateStartEndPrayerSlider, prayerSliderCycleMs);
 
 // Function to fetch and display the device IP on screen
 async function updateDeviceIpDisplay() {
