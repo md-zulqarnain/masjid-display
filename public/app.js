@@ -536,7 +536,8 @@ async function loadPrayerTimesForToday() {
 
         // Ishraq
         const ishraqStart = addMinutesToHM(sunrise, 15);
-        const ishraqEnd = addMinutesToHM(sunrise, 20);
+        // use a longer Ishraq window that ends when Chasht begins
+        const ishraqEnd = addMinutesToHM(ishraqStart, 180);
 
         // Chasht (Duha)
         const chashtStart = ishraqEnd;
@@ -1103,7 +1104,8 @@ function updateNextPrayerCountdown() {
                         minDiff = diff;
                         closestType = ev.type;
                     }
-                    if (diff > 0 && diff <= 1000) {
+                    const isJumaJamat = ev.type === 'जमाअत' && ev.name === 'जुमा';
+                    if (diff > 0 && diff <= 1000 && !isJumaJamat) {
                         shouldBeep = true;
                     }
                 });
@@ -1161,13 +1163,14 @@ function updateNextPrayerCountdown() {
         events.forEach(ev => {
 
             const diff = ev.time - now;
+            const isJumaJamat = ev.type === 'जमाअत' && ev.name === 'जुमा';
 
             if (diff > 0 && diff < minDiff) {
                 minDiff = diff;
                 closest = ev;
             }
 
-            if (diff > 500 && diff <= 1500) {
+            if (diff > 500 && diff <= 1500 && !isJumaJamat) {
                 shouldBeep = true;
             }
         });

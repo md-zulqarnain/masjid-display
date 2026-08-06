@@ -334,13 +334,17 @@
         }
 
         @media (orientation: portrait) {
+            .juma-time {
+                font-size: 7vw;
+            }
+
             .virtues-list {
                 grid-template-columns: 1fr;
             }
 
             .durood-header,
             .virtues-header {
-                font-size: 3vw;
+                font-size: 4.5vw;
             }
 
             .durood-arabic {
@@ -349,7 +353,8 @@
 
 
             .virtue-text {
-                font-size: 3.5vw;
+                font-size: 5vw;
+                font-weight: 700;
             }
 
             .virtue-icon {
@@ -630,11 +635,7 @@
 
 
             <div class="juma-section-container">
-                <div class="juma-header-card">
-                    <span>जुमा</span>
-                    <span class="juma-arabic">جمعة</span>
-                </div>
-                <div class="juma-times">
+                <div class="juma-times" style="border-radius:20px;">
                     <div class="juma-time-box">
                         <div class="juma-label">अज़ान</div>
                         <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
@@ -785,12 +786,10 @@
             const virtuesList = document.getElementById('virtuesList');
             if (!virtuesList) return;
 
-            // Show first two virtues
+            // Show only one virtue at a time
             virtuesList.innerHTML = '';
-            const item1 = createVirtueElement(virtuesData[0]);
-            const item2 = createVirtueElement(virtuesData[1]);
-            virtuesList.appendChild(item1);
-            virtuesList.appendChild(item2);
+            const item = createVirtueElement(virtuesData[0]);
+            virtuesList.appendChild(item);
             currentVirtueIndex = 0;
         }
 
@@ -807,24 +806,21 @@
             const virtuesList = document.getElementById('virtuesList');
             if (!virtuesList) return;
 
-            // Add exit animation to first item
+            // Add exit animation to current item
             const firstItem = virtuesList.querySelector('.virtue-item:first-child');
             if (firstItem && !firstItem.classList.contains('exit')) {
                 firstItem.classList.add('exit');
 
-                // Wait for animation to complete, then replace items
+                // Wait for animation to complete, then replace item
                 setTimeout(() => {
-                    // Move to next virtue
-                    const nextIndex = (currentVirtueIndex + 2) % virtuesData.length;
+                    const nextIndex = (currentVirtueIndex + 1) % virtuesData.length;
 
-                    // Remove first item
                     firstItem.remove();
 
-                    // Add new item at the end
                     const newItem = createVirtueElement(virtuesData[nextIndex]);
                     virtuesList.appendChild(newItem);
 
-                    currentVirtueIndex = (currentVirtueIndex + 1) % virtuesData.length;
+                    currentVirtueIndex = nextIndex;
                 }, 800);
             }
         }
