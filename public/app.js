@@ -448,7 +448,12 @@ async function loadPrayerTimesForToday() {
         prayerData.isha.start = to12Hour(isha);
         prayerData.isha.end = to12Hour(sahri);
 
-        const ishaAutoTimes = getQuarterHourAzanAndJamah(isha, getJamahAfterAzan(quickData?.isha, 'isha'));
+        const ishaAzanBase24 = addMinutesToHM(isha, 5);
+        const ishaAzanRounded24 = roundHMUpToMinutes(ishaAzanBase24, 15);
+        const ishaAutoTimes = {
+            azan: ishaAzanRounded24,
+            jamah: addMinutesToHM(ishaAzanRounded24, getJamahAfterAzan(quickData?.isha, 'isha'))
+        };
 
         if (quickData?.isha?.useCustomTime === true && quickData?.isha?.azan) {
             prayerData.isha.azan = quickData.isha.azan;
@@ -518,8 +523,14 @@ async function loadPrayerTimesForToday() {
 
         if (yesterdayObj && quickData?.isha?.useCustomTime !== true) {
             const ishaJamahAfterAzan = getJamahAfterAzan(quickData?.isha, 'isha');
-            const yesterdayIshaTimes = getQuarterHourAzanAndJamah(yesterdayObj.Isha, ishaJamahAfterAzan);
-            const todayIshaTimes = getQuarterHourAzanAndJamah(dayObj.Isha, ishaJamahAfterAzan);
+            const yesterdayIshaTimes = {
+                azan: roundHMUpToMinutes(addMinutesToHM(yesterdayObj.Isha, 5), 15),
+                jamah: addMinutesToHM(roundHMUpToMinutes(addMinutesToHM(yesterdayObj.Isha, 5), 15), ishaJamahAfterAzan)
+            };
+            const todayIshaTimes = {
+                azan: roundHMUpToMinutes(addMinutesToHM(dayObj.Isha, 5), 15),
+                jamah: addMinutesToHM(roundHMUpToMinutes(addMinutesToHM(dayObj.Isha, 5), 15), ishaJamahAfterAzan)
+            };
             if (!samePrayerTimes(yesterdayIshaTimes, todayIshaTimes) && isBeforeHM(dayObj.Isha, now)) {
                 timingMessages.push(buildTimingChangeMessage('आज से', 'इशा', todayIshaTimes));
             }
