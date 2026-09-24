@@ -264,12 +264,12 @@ tbody .active-row td:nth-child(4) {
 
 .brand-log {
   position: absolute;
-  bottom: 1.3vh;
+  bottom: 0.8vh;
   right: 0;
 }
 
 .brand-log img {
-  max-width: 11vw;
+  max-width: 16vw;
 }
 
 .footer p {
