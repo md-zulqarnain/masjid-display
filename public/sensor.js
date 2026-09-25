@@ -15,7 +15,7 @@ function updateSensorUI(data) {
   const elHum = document.getElementById('sensor-hum-right') || document.getElementById('sensor-hum') || document.getElementById('sensor-hum-right');
   const elTime = document.getElementById('sensor-time');
 
-  if (!elTemp || !elHum) return;
+  if (!elTemp) return;
 
   if (data && typeof data.temperature === 'number') {
     const newVal = data.temperature.toFixed(1) + ' °C';
@@ -30,15 +30,20 @@ function updateSensorUI(data) {
     elTemp.textContent = 'Err';
   }
 
-  if (data && typeof data.humidity === 'number') {
-    const newValH = data.humidity.toFixed(0) + ' %';
-    if (elHum.textContent !== newValH) {
-      elHum.classList.add('sensor-updated');
-      setTimeout(() => elHum.classList.remove('sensor-updated'), 900);
+  // Humidity: show only when sensor provides it (BME); hide for BMP sensors
+  if (elHum) {
+    if (data && typeof data.humidity === 'number') {
+      const newValH = data.humidity.toFixed(0) + ' %';
+      if (elHum.textContent !== newValH) {
+        elHum.classList.add('sensor-updated');
+        setTimeout(() => elHum.classList.remove('sensor-updated'), 900);
+      }
+      elHum.style.display = '';
+      elHum.textContent = newValH;
+    } else {
+      // hide humidity UI for sensors that don't provide humidity (e.g., BMP280)
+      elHum.style.display = 'none';
     }
-    elHum.textContent = newValH;
-  } else {
-    elHum.textContent = '-- %';
   }
 
   if (elTime) {

@@ -802,56 +802,91 @@ div#nextPrayerCountdown {
 }
 
 /* Sensor widget */
-.sensor-inline-left, .sensor-inline-right {
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
+.sensor-inline-left,
+.sensor-inline-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6vw;
   color: #ffffffee;
-  font-weight:700;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
-  border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  font-weight: 700;
+  padding: 0.6vh 1.2vw;
+  border-radius: 1.6vh;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.04)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
-  font-size: 14px; /* base font-size for badge */
+  font-size: 1.6vw; /* base font-size for badge */
 }
-.sensor-inline-left .s-label, .sensor-inline-right .s-label{
-  font-size:12px;
-  opacity:0.95;
+.sensor-inline-left .s-label,
+.sensor-inline-right .s-label {
+  font-size: 3.1vw;
+  opacity: 0.95;
   color: #e6eef8;
-  font-weight:700;
-  margin-right:4px;
-  text-transform:uppercase;
-  letter-spacing:0.08em;
+  font-weight: 800;
+  margin-right: 0.4vw;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
-.sensor-inline-left .s-value, .sensor-inline-right .s-value{
-  margin-left:4px;
-  font-weight:900;
-  font-size:16px; /* numeric size slightly larger but reasonable */
+.sensor-inline-left .s-value,
+.sensor-inline-right .s-value {
+  margin-left: 0.4vw;
+  font-weight: 900;
+  font-size: 6.2vw; /* numeric size tuned with vw */
   color: #facc15;
+  line-height: 1;
 }
 
-/* Distinct colors for left/right badges */
+/* Distinct colors and highlighted radial background for temperature (left) */
 .sensor-inline-left {
-  background: linear-gradient(90deg, rgba(255,120,90,0.08), rgba(255,60,60,0.04));
-  border-color: rgba(255,80,60,0.12);
+  background:
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 180, 140, 0.26),
+      rgba(255, 90, 60, 0.06)
+    ),
+    linear-gradient(90deg, rgba(255, 120, 90, 0.06), rgba(255, 60, 60, 0.03));
+  border-color: rgba(255, 100, 60, 0.16);
+  box-shadow:
+    0 10px 30px rgba(255, 90, 60, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.45);
 }
-.sensor-inline-left .s-value { color: #ff6b4a; }
+.sensor-inline-left .s-value {
+  color: #ff5a34;
+  text-shadow: 0 2px 8px rgba(255, 120, 90, 0.12);
+}
 .sensor-inline-right {
-  background: linear-gradient(90deg, rgba(80,160,255,0.06), rgba(50,120,255,0.03));
-  border-color: rgba(80,140,255,0.10);
+  background: linear-gradient(
+    90deg,
+    rgba(80, 160, 255, 0.06),
+    rgba(50, 120, 255, 0.03)
+  );
+  border-color: rgba(80, 140, 255, 0.1);
 }
-.sensor-inline-right .s-value { color: #58a6ff; }
+.sensor-inline-right .s-value {
+  color: #58a6ff;
+}
 
 /* subtle pulse when updated */
 .sensor-updated {
   animation: sensorPulse 700ms ease-out;
 }
 @keyframes sensorPulse {
-  0% { transform: translateY(-4px) scale(0.995); opacity: 0.9; }
-  50% { transform: translateY(0) scale(1.02); opacity: 1; }
-  100% { transform: translateY(-2px) scale(1); opacity: 0.99; }
+  0% {
+    transform: translateY(-4px) scale(0.995);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(0) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-2px) scale(1);
+    opacity: 0.99;
+  }
 }
 .prayerTimeingContainer {
   display: flex;
