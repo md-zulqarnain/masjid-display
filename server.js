@@ -352,6 +352,44 @@ app.post('/api/maintenance/shutdown', (req, res) => {
   });
 });
 
+// Sync system time - accepts { iso: '2026-12-31T23:59:00' }
+app.post('/api/maintenance/sync-time', (req, res) => {
+  try {
+    const iso = req.body && req.body.iso;
+    if (!iso || typeof iso !== 'string') {
+      return res.status(400).json({ error: 'Missing iso time string in body' });
+    }
+
+    // Parse and format to a date string suitable for `date -s` on Linux
+    // Example: 2026-09-25T14:30:00 -> "2026-09-25 14:30:00"
+    const m = iso.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/);
+    if (!m) {
+      return res.status(400).json({ error: 'Invalid ISO format. Expect YYYY-MM-DDTHH:MM:SS' });
+    }
+
+    const dateStr = `${m[1]} ${m[2]}`;
+
+    // Only allow this on non-Windows platforms
+    if (process.platform === 'win32') {
+      return res.status(400).json({ error: 'Sync time not supported on Windows host' });
+    }
+
+    // Run the date command with sudo. The server must run as a user with sudo privileges
+    // and the sudoers file should allow `date` without password for the node user for smooth operation.
+    const cmd = `sudo date -s "${dateStr}"`;
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Sync time failed:', error, stderr);
+        return res.status(500).json({ error: error.message, stderr });
+      }
+      return res.json({ message: 'System time updated', stdout });
+    });
+  } catch (err) {
+    console.error('Sync time error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/ip', (req, res) => {
   const interfaces = os.networkInterfaces();
   let ips = [];
