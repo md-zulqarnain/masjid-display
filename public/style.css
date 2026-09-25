@@ -144,6 +144,7 @@ body.theme-night {
 #clock {
   font-size: 6vw;
   font-weight: bold;
+  position: relative;
 }
 
 #date,
@@ -847,6 +848,9 @@ div#nextPrayerCountdown {
   box-shadow:
     0 10px 30px rgba(255, 90, 60, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.45);
+  position: absolute;
+  left: -1vw;
+  top: 3vh;
 }
 .sensor-inline-left .s-value {
   color: #ffffff;
