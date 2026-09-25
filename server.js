@@ -360,29 +360,39 @@ app.post('/api/maintenance/sync-time', (req, res) => {
       return res.status(400).json({ error: 'Missing iso time string in body' });
     }
 
-    // Parse and format to a date string suitable for `date -s` on Linux
-    // Example: 2026-09-25T14:30:00 -> "2026-09-25 14:30:00"
-    const m = iso.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/);
-    if (!m) {
-      return res.status(400).json({ error: 'Invalid ISO format. Expect YYYY-MM-DDTHH:MM:SS' });
+    let dateStr = null;
+    const normalized = iso.trim();
+
+    // Accept both local wall-clock ISO strings and timezone-aware ISO strings.
+    const localMatch = normalized.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})/);
+    if (localMatch) {
+      dateStr = `${localMatch[1]} ${localMatch[2]}`;
+    } else {
+      const date = new Date(normalized);
+      if (!Number.isNaN(date.getTime())) {
+        const pad = (n) => String(n).padStart(2, '0');
+        dateStr = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+      }
     }
 
-    const dateStr = `${m[1]} ${m[2]}`;
+    if (!dateStr) {
+      return res.status(400).json({ error: 'Invalid ISO format. Expect YYYY-MM-DDTHH:MM:SS or ISO with timezone' });
+    }
 
     // Only allow this on non-Windows platforms
     if (process.platform === 'win32') {
       return res.status(400).json({ error: 'Sync time not supported on Windows host' });
     }
 
-    // Run the date command with sudo. The server must run as a user with sudo privileges
-    // and the sudoers file should allow `date` without password for the node user for smooth operation.
-    const cmd = `sudo date -s "${dateStr}"`;
+    // Update both the system clock and the hardware clock so the Pi keeps the same
+    // time after a reboot or power loss.
+    const cmd = `sudo date -s "${dateStr}" && sudo hwclock --systohc`;
     exec(cmd, (error, stdout, stderr) => {
       if (error) {
         console.error('Sync time failed:', error, stderr);
         return res.status(500).json({ error: error.message, stderr });
       }
-      return res.json({ message: 'System time updated', stdout });
+      return res.json({ message: 'System time and hardware clock updated', stdout });
     });
   } catch (err) {
     console.error('Sync time error:', err);

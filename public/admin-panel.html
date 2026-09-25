@@ -1318,14 +1318,17 @@
             btn.disabled = true;
 
             try {
-                // Get current device time in ISO format with seconds
+                // Send the device's local wall-clock time instead of UTC.
+                // Using toISOString() shifts the time by the timezone offset,
+                // which makes the Pi display an earlier/later clock time.
                 const now = new Date();
-                const iso = now.toISOString().split('.')[0]; // YYYY-MM-DDTHH:MM:SS
+                const pad = (n) => String(n).padStart(2, '0');
+                const localIso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
                 const res = await fetch('/api/maintenance/sync-time', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ iso })
+                    body: JSON.stringify({ iso: localIso })
                 });
 
                 const data = await res.json();
