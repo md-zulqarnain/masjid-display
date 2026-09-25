@@ -850,7 +850,7 @@ div#nextPrayerCountdown {
     0 2px 8px rgba(0, 0, 0, 0.45);
   position: absolute;
   left: -1vw;
-  top: 3vh;
+  top: 7vh;
 }
 .sensor-inline-left .s-value {
   color: #ffffff;
