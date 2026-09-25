@@ -804,8 +804,8 @@ div#nextPrayerCountdown {
   gap: 0.6vw;
   color: #ffffffee;
   font-weight: 700;
-  padding: 0.6vh 1.2vw;
-  border-radius: 1.6vh;
+  padding: 0.3vh 0.8vw;
+  border-radius: 0.8vh;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.02),
@@ -814,7 +814,7 @@ div#nextPrayerCountdown {
   border: 1px solid rgba(255, 255, 255, 0.04);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
-  font-size: 1.6vw; /* base font-size for badge */
+  font-size: 1.6vw;
 }
 .sensor-inline-left .s-label,
 .sensor-inline-right .s-label {
@@ -837,7 +837,7 @@ div#nextPrayerCountdown {
 
 /* Distinct colors and highlighted radial background for temperature (left) */
 .sensor-inline-left {
-  background: #dc2626;
+  background: #f47b25cc;
   border-color: rgba(255, 100, 60, 0.16);
   box-shadow:
     0 10px 30px rgba(255, 90, 60, 0.1),
