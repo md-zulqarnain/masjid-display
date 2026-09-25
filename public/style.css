@@ -842,21 +842,18 @@ div#nextPrayerCountdown {
 
 /* Distinct colors and highlighted radial background for temperature (left) */
 .sensor-inline-left {
-  background:
-    radial-gradient(
-      circle at 30% 30%,
-      rgba(255, 180, 140, 0.26),
-      rgba(255, 90, 60, 0.06)
-    ),
-    linear-gradient(90deg, rgba(255, 120, 90, 0.06), rgba(255, 60, 60, 0.03));
+  background: #dc2626;
   border-color: rgba(255, 100, 60, 0.16);
   box-shadow:
     0 10px 30px rgba(255, 90, 60, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.45);
 }
 .sensor-inline-left .s-value {
-  color: #ff5a34;
+  color: #ffffff;
   text-shadow: 0 2px 8px rgba(255, 120, 90, 0.12);
+}
+.temp-icon {
+  width: 5vw;
 }
 .sensor-inline-right {
   background: linear-gradient(
