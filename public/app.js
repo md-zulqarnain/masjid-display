@@ -1196,6 +1196,25 @@ function getUpcomingEvents() {
     return events;
 }
 
+function isScheduledBeepEvent(event) {
+    if (!event || typeof event !== 'object') return false;
+
+    const eventName = (event.name || '').toString();
+    const eventPrayer = (event.prayer || '').toString();
+    const isJumaJamat = event.type === 'जमाअत' && (eventName === 'जुमा' || eventPrayer === 'juma');
+    const isMaghribJamat = event.type === 'जमाअत' && eventPrayer === 'maghrib';
+
+    if (isJumaJamat || isMaghribJamat) return false;
+
+    return event.type === 'सहरी' || event.type === 'अज़ान' || event.type === 'जमाअत' || event.type === 'ख़ुत्बा';
+}
+
+function shouldTriggerScheduledBeep(event, now, minMs = 500, maxMs = 1500) {
+    if (!isScheduledBeepEvent(event)) return false;
+    const diff = event.time - now;
+    return diff > minMs && diff <= maxMs;
+}
+
 function updateNextPrayerCountdown() {
     try {
         const now = new Date();
@@ -1241,9 +1260,9 @@ function updateNextPrayerCountdown() {
             } else {
                 // Otherwise find the next upcoming event
                 const events = [
-                    { type: "अज़ान", time: parseTime(jumaData.azan) },
-                    { type: "ख़ुत्बा", time: parseTime(jumaData.khutba) },
-                    { type: "जमाअत", time: parseTime(jumaData.jamat) }
+                    { name: "जुमा", type: "अज़ान", time: parseTime(jumaData.azan) },
+                    { name: "जुमा", type: "ख़ुत्बा", time: parseTime(jumaData.khutba) },
+                    { name: "जुमा", type: "जमाअत", time: parseTime(jumaData.jamat) }
                 ];
 
                 events.forEach(ev => {
@@ -1254,8 +1273,7 @@ function updateNextPrayerCountdown() {
                         minDiff = diff;
                         closestType = ev.type;
                     }
-                    const isJumaJamat = ev.type === 'जमाअत' && ev.name === 'जुमा';
-                    if (diff > 0 && diff <= 1000 && !isJumaJamat) {
+                    if (shouldTriggerScheduledBeep({ ...ev, time: t }, now)) {
                         shouldBeep = true;
                     }
                 });
@@ -1311,16 +1329,14 @@ function updateNextPrayerCountdown() {
         let closest = null;
 
         events.forEach(ev => {
-
             const diff = ev.time - now;
-            const isJumaJamat = ev.type === 'जमाअत' && ev.name === 'जुमा';
 
             if (diff > 0 && diff < minDiff) {
                 minDiff = diff;
                 closest = ev;
             }
 
-            if (diff > 500 && diff <= 1500 && !isJumaJamat) {
+            if (shouldTriggerScheduledBeep(ev, now)) {
                 shouldBeep = true;
             }
         });
