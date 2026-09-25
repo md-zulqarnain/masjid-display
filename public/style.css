@@ -837,7 +837,7 @@ div#nextPrayerCountdown {
 
 /* Distinct colors and highlighted radial background for temperature (left) */
 .sensor-inline-left {
-  background: #f47b25cc;
+  background: #f47b2547;
   border-color: rgba(255, 100, 60, 0.16);
   box-shadow:
     0 10px 30px rgba(255, 90, 60, 0.1),
@@ -852,6 +852,7 @@ div#nextPrayerCountdown {
 }
 .temp-icon {
   width: 3.8vw;
+  color: #ff1616;
 }
 .sensor-inline-right {
   background: linear-gradient(
