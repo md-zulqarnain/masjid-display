@@ -623,15 +623,20 @@
             <!-- Clock Section -->
             <div id="clock">
                 <div class="clock-time">
-                    <span class="sensor-inline-left" id="sensor-left"><span class="s-label">Temp</span> <span class="s-value" id="sensor-temp-left">-- °C</span></span>
+                        <!-- temp badge moved to date-row for consistent placement -->
                     <span id="hours"></span>
                     <span id="seconds"></span>
                     <span id="ampm"></span>
                     <!-- humidity removed for BMP-only setups -->
                 </div>
-                <div class="date-row">
-                    <div id="date" class="date-left"></div>
-                </div>
+                                <div class="date-row">
+                                        <span class="sensor-inline-left" id="sensor-left"><span class="s-label"><svg class="temp-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="M14 14.76V5a4 4 0 0 0-8 0v9.76a6 6 0 1 0 8 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                            <path d="M10 5v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                            <circle cx="10" cy="18" r="2.5" fill="currentColor" />
+                                                        </svg></span><span class="s-value" id="sensor-temp-left">-- °C</span></span>
+                                        <div id="date" class="date-left"></div>
+                                </div>
 
             </div>
 

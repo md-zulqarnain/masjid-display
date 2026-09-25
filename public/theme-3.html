@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Masjid Display - Premium Glass Theme</title>
   <!-- Google Fonts for Outfit and Amiri -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="theme-3.css">
 </head>
 
@@ -30,18 +32,32 @@
     <section class="clock-section">
       <div id="clock">
         <div class="clock-display">
-            <span class="sensor-inline-left" id="sensor-left"><span class="s-label">Temp</span> <span class="s-value" id="sensor-temp-left">-- °C</span></span>
             <span id="hours" class="clock-time">12:00</span>
             <span id="seconds" class="clock-sec">:00</span>
             <span id="ampm" class="clock-ampm">AM</span>
-            <!-- humidity removed for BMP-only setups -->
+          <span id="hours" class="clock-time">12:00</span>
+          <span id="seconds" class="clock-sec">:00</span>
+          <span id="ampm" class="clock-ampm">AM</span>
+          <!-- humidity removed for BMP-only setups -->
+        </div>
+
+        <div class="date-row">
+          <span class="sensor-inline-left" id="sensor-left"><span class="s-label"><svg class="temp-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 14.76V5a4 4 0 0 0-8 0v9.76a6 6 0 1 0 8 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M10 5v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <circle cx="10" cy="18" r="2.5" fill="currentColor" />
+              </svg></span><span class="s-value" id="sensor-temp-left">-- °C</span></span>
+          <div class="date-row">
+            <div id="date" class="date-left"></div>
           </div>
-        
+
         <!-- Sahri / Iftar Timings (Added data-format="simple" to prevent double Sahri text) -->
         <div class="ramadan-times-row font-sans">
-          <span class="ramadan-label">सहरी:</span> <span id="sahriTime" data-format="simple" class="ramadan-val">--:--</span>
+          <span class="ramadan-label">सहरी:</span> <span id="sahriTime" data-format="simple"
+            class="ramadan-val">--:--</span>
           <span class="date-separator"></span>
-          <span class="ramadan-label">इफ़्तार:</span> <span id="iftarTime" data-format="simple" class="ramadan-val">--:--</span>
+          <span class="ramadan-label">इफ़्तार:</span> <span id="iftarTime" data-format="simple"
+            class="ramadan-val">--:--</span>
         </div>
       </div>
     </section>
@@ -82,7 +98,7 @@
         <!-- Hidden elements to prevent JS errors -->
         <span id="left-slide-badge" style="display: none;"></span>
         <div id="left-slide-dots" style="display: none;"></div>
-        
+
         <div class="slide-content-area" id="left-slide-content">
           <!-- Content loaded dynamically -->
         </div>
@@ -183,7 +199,7 @@
 
         const prayerEl = document.querySelector("#nextPrayerName .prayer");
         const prefixEl = document.querySelector("#nextPrayerName .prefix.card-heading");
-        
+
         if (prayerEl) {
           const text = prayerEl.textContent.toLowerCase();
           let englishName = "";
@@ -328,7 +344,7 @@
         if (rows.length === 0 || !window.prayerData) return;
 
         const toggle = Math.floor(Date.now() / 5000) % 2;
-        
+
         const headerEl = document.getElementById("table-limit-header");
         if (headerEl) {
           headerEl.innerText = toggle === 0 ? "वक़्त शुरू" : "वक़्त ख़त्म";
@@ -339,7 +355,7 @@
           const data = window.prayerData[key];
           if (!data) return;
 
-          let limitsCell = row.cells[3]; 
+          let limitsCell = row.cells[3];
           if (!limitsCell) {
             limitsCell = document.createElement("td");
             limitsCell.className = "prayer-limit-cell";
