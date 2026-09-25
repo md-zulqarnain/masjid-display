@@ -23,11 +23,13 @@
     <div class="live-time-card card">
 
       <div class="clock-display">
+        <span class="sensor-inline-left" id="sensor-left"><span class="s-label">Temp</span> <span class="s-value" id="sensor-temp-left">-- °C</span></span>
         <span id="hours" class="clock-gradient"></span>
         <div class="clock-sec-ampm">
           <span id="seconds" class="clock-cyan"></span>
           <span id="ampm" class="clock-purple"></span>
         </div>
+        <span class="sensor-inline-right" id="sensor-right"><span class="s-label">Humidity</span> <span class="s-value" id="sensor-hum-right">-- %</span></span>
       </div>
 
       <div class="live-time-footer">
@@ -158,6 +160,9 @@
 
   <script src="utils.js"></script>
   <script src="app.js"></script>
+  <script src="sensor.js"></script>
+
+  <!-- floating sensor widget removed; inline badges used beside clock -->
 </body>
 
 </html>

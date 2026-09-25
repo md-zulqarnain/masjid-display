@@ -123,9 +123,11 @@
         <!-- Clock Section -->
         <div id="clock">
             <div class="clock-time">
+                <span class="sensor-inline-left" id="sensor-left"><span class="s-label">Temp</span> <span class="s-value" id="sensor-temp-left">-- °C</span></span>
                 <span id="hours"></span>
                 <span id="seconds"></span>
                 <span id="ampm"></span>
+                <span class="sensor-inline-right" id="sensor-right"><span class="s-label">Humidity</span> <span class="s-value" id="sensor-hum-right">-- %</span></span>
             </div>
             <div class="date-row">
                 <div id="date" class="date-left"></div>
@@ -188,8 +190,10 @@
     <audio id="beepSound" preload="auto">
         <source src="audio/beep_long.wav" type="audio/wav" muted>
     </audio>
-    <script src="utils.js"></script>
-  <script src="app.js"></script>
+        <script src="utils.js"></script>
+    <script src="app.js"></script>
+    <script src="sensor.js"></script>
+    <!-- floating sensor widget removed; inline badges used beside clock -->
     <script>
 
         let verses = [];

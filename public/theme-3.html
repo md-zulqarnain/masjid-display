@@ -30,10 +30,12 @@
     <section class="clock-section">
       <div id="clock">
         <div class="clock-display">
-          <span id="hours" class="clock-time">12:00</span>
-          <span id="seconds" class="clock-sec">:00</span>
-          <span id="ampm" class="clock-ampm">AM</span>
-        </div>
+            <span class="sensor-inline-left" id="sensor-left"><span class="s-label">Temp</span> <span class="s-value" id="sensor-temp-left">-- °C</span></span>
+            <span id="hours" class="clock-time">12:00</span>
+            <span id="seconds" class="clock-sec">:00</span>
+            <span id="ampm" class="clock-ampm">AM</span>
+            <span class="sensor-inline-right" id="sensor-right"><span class="s-label">Humidity</span> <span class="s-value" id="sensor-hum-right">-- %</span></span>
+          </div>
         
         <!-- Sahri / Iftar Timings (Added data-format="simple" to prevent double Sahri text) -->
         <div class="ramadan-times-row font-sans">
@@ -168,6 +170,9 @@
 
   <script src="utils.js"></script>
   <script src="app.js"></script>
+  <script src="sensor.js"></script>
+
+  <!-- floating sensor widget removed; inline badges used beside clock -->
 
   <!-- Script to handle custom sliding components and translation -->
   <script>

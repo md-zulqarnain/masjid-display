@@ -443,6 +443,37 @@ app.get('/api/ip', (req, res) => {
   res.json({ ips, hostname });
 });
 
+// BME280 sensor read endpoint - runs bme280_read.py if present
+app.get('/api/sensor', (req, res) => {
+  try {
+    const scriptPath = path.join(__dirname, 'bme280_read.py');
+
+    if (fs.existsSync(scriptPath)) {
+      const py = (process.env.PYTHON || 'python3');
+      exec(`${py} "${scriptPath}"`, { timeout: 5000 }, (error, stdout, stderr) => {
+        if (error) {
+          console.error('Sensor script error:', error, stderr);
+          return res.status(500).json({ error: 'Sensor read failed', detail: stderr || error.message });
+        }
+
+        try {
+          const data = JSON.parse(stdout.toString());
+          data.at = Date.now();
+          return res.json(data);
+        } catch (err) {
+          console.error('Sensor parse error:', err);
+          return res.status(500).json({ error: 'Invalid sensor output', raw: stdout.toString() });
+        }
+      });
+    } else {
+      return res.json({ temperature: null, humidity: null, pressure: null, at: Date.now(), note: 'bme280_read.py not found' });
+    }
+  } catch (err) {
+    console.error('Sensor endpoint error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running locally on http://localhost:${PORT}`);
 
