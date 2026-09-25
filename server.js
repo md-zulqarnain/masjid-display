@@ -66,13 +66,13 @@ function sendDisplayEvent(eventName, payload = {}) {
 
 // GET settings
 app.get('/api/settings', (req, res) => {
-    res.json(readSettings());
+  res.json(readSettings());
 });
 
 // UPDATE settings
 app.post('/api/settings', (req, res) => {
-    const settings = saveSettings(req.body || {});
-    res.json({ message: "Settings saved successfully", settings });
+  const settings = saveSettings(req.body || {});
+  res.json({ message: "Settings saved successfully", settings });
 });
 
 app.post('/api/beep/test', (req, res) => {
@@ -145,7 +145,7 @@ app.post("/api/quick-times", (req, res) => {
 app.get("/api/timings/:month", (req, res) => {
   const month = req.params.month;
   const filePath = `timing-data-${month}.json`;
-  
+
   try {
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath);
@@ -176,7 +176,7 @@ app.get("/api/available-months", (req, res) => {
 app.post("/api/timings/:month", (req, res) => {
   const month = req.params.month;
   const filePath = `timing-data-${month}.json`;
-  
+
   try {
     fs.writeFileSync(filePath, JSON.stringify(req.body, null, 2));
     res.json({ status: "saved", message: "Prayer times updated successfully" });
@@ -352,6 +352,35 @@ app.post('/api/maintenance/shutdown', (req, res) => {
   });
 });
 
+app.post('/api/terminal/exec', (req, res) => {
+  try {
+    const command = req.body && req.body.command;
+    if (!command || typeof command !== 'string' || !command.trim()) {
+      return res.status(400).json({ error: 'Missing command string in body' });
+    }
+
+    exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+      const output = [stdout, stderr].filter(Boolean).join('\n').trim();
+      if (error) {
+        console.error('Terminal command failed:', command, error.message, stderr);
+        return res.status(500).json({
+          error: stderr ? stderr.trim() : error.message,
+          output: stdout ? stdout.trim() : '',
+          exitCode: error.code ?? 1
+        });
+      }
+
+      return res.json({
+        output: output || 'Command executed successfully with no output.',
+        exitCode: 0
+      });
+    });
+  } catch (err) {
+    console.error('Terminal execution error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Sync system time - accepts { iso: '2026-12-31T23:59:00' }
 app.post('/api/maintenance/sync-time', (req, res) => {
   try {
@@ -416,7 +445,7 @@ app.get('/api/ip', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running locally on http://localhost:${PORT}`);
-  
+
   // Get and log local network IPs
   const interfaces = os.networkInterfaces();
   console.log("App is also accessible on your network at:");

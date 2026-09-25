@@ -431,6 +431,7 @@
             <button class="tab-btn" onclick="switchTab('verses', this)">Manage Verses</button>
             <button class="tab-btn" onclick="switchTab('settings', this)">Settings</button>
             <button class="tab-btn" onclick="switchTab('maintenance', this)">Maintenance</button>
+            <button class="tab-btn" onclick="switchTab('terminal', this)">Terminal</button>
         </div>
 
         <!-- Quick Times Tab -->
@@ -519,7 +520,8 @@
 
                 <div class="button-group">
                     <button class="btn-primary" onclick="applyTheme()">Apply Theme</button>
-                    <button class="btn-secondary" onclick="syncTimeFromClient()" id="syncTimeSettingsBtn" title="Sync time from this browser/device">Sync Time</button>
+                    <button class="btn-secondary" onclick="syncTimeFromClient()" id="syncTimeSettingsBtn"
+                        title="Sync time from this browser/device">Sync Time</button>
                 </div>
 
                 <div id="themeMessage" class="message"></div>
@@ -576,13 +578,40 @@
                 </div>
                 <div class="button-group">
                     <button class="btn-primary" onclick="pullCode()" id="pullCodeBtn">Pull Latest Code</button>
-                    <button class="btn-primary" onclick="stashAndPullCode()" id="stashPullBtn" style="background: #eab308; color: #0c1d15;">Stash & Pull</button>
+                    <button class="btn-primary" onclick="stashAndPullCode()" id="stashPullBtn"
+                        style="background: #eab308; color: #0c1d15;">Stash & Pull</button>
                     <button class="btn-danger" onclick="rebootSystem()" id="rebootBtn">Restart Device</button>
-                    <button class="btn-danger" onclick="shutdownSystem()" id="shutdownBtn" style="background: #991b1b;">Shutdown Device</button>
-                    <button class="btn-secondary" onclick="syncTimeFromClient()" id="syncTimeBtn" title="Sync time from this browser/device">Sync Time</button>
+                    <button class="btn-danger" onclick="shutdownSystem()" id="shutdownBtn"
+                        style="background: #991b1b;">Shutdown Device</button>
+                    <button class="btn-secondary" onclick="syncTimeFromClient()" id="syncTimeBtn"
+                        title="Sync time from this browser/device">Sync Time</button>
                 </div>
                 <div id="maintenanceMessage" class="message"></div>
-                <div id="maintenanceOutput" style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.5); color: #0f0; font-family: monospace; border-radius: 5px; display: none; white-space: pre-wrap; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                <div id="maintenanceOutput"
+                    style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.5); color: #0f0; font-family: monospace; border-radius: 5px; display: none; white-space: pre-wrap; font-size: 0.9em; max-height: 200px; overflow-y: auto;">
+                </div>
+            </div>
+        </div>
+
+        <div id="terminal" class="tab-content">
+            <div class="section">
+                <h2>Superadmin Terminal</h2>
+                <p style="color: #bbb; margin-bottom: 20px;">Run shell commands directly on the Raspberry Pi.</p>
+
+                <div id="terminalOutput"
+                    style="margin-bottom: 15px; min-height: 260px; max-height: 420px; overflow-y: auto; background: rgba(0,0,0,0.65); color: #d1fae5; border: 1px solid #374151; border-radius: 8px; padding: 15px; font-family: Consolas, monospace; white-space: pre-wrap; line-height: 1.5;">
+                    <div>pi@raspberrypi:~$ <span style="color:#a7f3d0;">Connected</span></div>
+                </div>
+
+                <div class="button-group" style="margin-bottom: 15px;">
+                    <button class="btn-primary" onclick="runPiCommand()" id="runPiCommandBtn">Run Command</button>
+                    <button class="btn-secondary" onclick="clearTerminalOutput()">Clear</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Command</label>
+                    <input type="text" id="terminalCommandInput" placeholder="Example: pwd && ls -la" onkeydown="if(event.key === 'Enter'){ runPiCommand(); }" />
+                </div>
             </div>
         </div>
     </div>
@@ -865,10 +894,90 @@
             window.location.href = '/login.html';
         }
 
-        // Hide maintenance tab if not super admin
-        if (!localStorage.getItem('superLogged')) {
+        function isSuperAdmin() {
+            return localStorage.getItem('superLogged') === 'true';
+        }
+
+        function setVisibilityForAdminTabs() {
             const maintBtn = document.querySelector('.tab-btn[onclick="switchTab(\\\'maintenance\\\', this)"]');
-            if (maintBtn) maintBtn.style.display = 'none';
+            const terminalBtn = document.querySelector('.tab-btn[onclick="switchTab(\\\'terminal\\\', this)"]');
+
+            if (!isSuperAdmin()) {
+                if (maintBtn) maintBtn.style.display = 'none';
+                if (terminalBtn) terminalBtn.style.display = 'none';
+            } else {
+                if (maintBtn) maintBtn.style.display = 'inline-block';
+                if (terminalBtn) terminalBtn.style.display = 'inline-block';
+            }
+        }
+
+        setVisibilityForAdminTabs();
+
+        function appendTerminalOutput(text, isError = false) {
+            const output = document.getElementById('terminalOutput');
+            if (!output) return;
+
+            const line = document.createElement('div');
+            line.textContent = text;
+            if (isError) {
+                line.style.color = '#fca5a5';
+            }
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearTerminalOutput() {
+            const output = document.getElementById('terminalOutput');
+            if (!output) return;
+            output.innerHTML = '<div>pi@raspberrypi:~$ <span style="color:#a7f3d0;">Connected</span></div>';
+        }
+
+        async function runPiCommand() {
+            if (!isSuperAdmin()) {
+                appendTerminalOutput('Access denied. Superadmin login required.', true);
+                return;
+            }
+
+            const input = document.getElementById('terminalCommandInput');
+            const command = (input?.value || '').trim();
+            if (!command) {
+                appendTerminalOutput('Please enter a command.', true);
+                return;
+            }
+
+            const runBtn = document.getElementById('runPiCommandBtn');
+            const originalText = runBtn.textContent;
+            runBtn.textContent = 'Running...';
+            runBtn.disabled = true;
+
+            appendTerminalOutput(`pi@raspberrypi:~$ ${command}`);
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/terminal/exec', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    appendTerminalOutput(data.error || 'Command failed.', true);
+                } else {
+                    if (data.output) {
+                        appendTerminalOutput(data.output);
+                    }
+                    if (data.error) {
+                        appendTerminalOutput(data.error, true);
+                    }
+                    appendTerminalOutput(`Exit code: ${data.exitCode ?? 0}`);
+                }
+            } catch (err) {
+                appendTerminalOutput('Network error: ' + err.message, true);
+            } finally {
+                runBtn.textContent = originalText;
+                runBtn.disabled = false;
+            }
         }
 
         // Tab Switching
@@ -1168,7 +1277,7 @@
             try {
                 const res = await fetch('/api/maintenance/pull', { method: 'POST' });
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     showMessage('maintenanceMessage', 'Git pull executed successfully!', 'success');
                     if (data.stdout) {
@@ -1204,7 +1313,7 @@
             try {
                 const res = await fetch('/api/maintenance/stash-pull', { method: 'POST' });
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     showMessage('maintenanceMessage', 'Git stash and pull executed successfully!', 'success');
                     if (data.stdout) {
@@ -1228,7 +1337,7 @@
 
         async function rebootSystem() {
             if (!confirm("Are you sure you want to restart the Raspberry Pi? This will drop the connection.")) return;
-            
+
             const btn = document.getElementById('rebootBtn');
             const originalText = btn.textContent;
             btn.innerHTML = '<span class="loading"></span>';
@@ -1237,7 +1346,7 @@
             try {
                 const res = await fetch('/api/maintenance/reboot', { method: 'POST' });
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     showMessage('maintenanceMessage', 'Device is rebooting... Please wait 1-2 minutes and refresh the page.', 'success');
                 } else {
@@ -1253,7 +1362,7 @@
 
         async function shutdownSystem() {
             if (!confirm("Are you sure you want to SHUTDOWN the Raspberry Pi? You will need to manually turn it back on.")) return;
-            
+
             const btn = document.getElementById('shutdownBtn');
             const originalText = btn.textContent;
             btn.innerHTML = '<span class="loading"></span>';
@@ -1262,7 +1371,7 @@
             try {
                 const res = await fetch('/api/maintenance/shutdown', { method: 'POST' });
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     showMessage('maintenanceMessage', 'Device is shutting down... The screen will turn off shortly.', 'success');
                 } else {
@@ -1308,7 +1417,7 @@
             loadSettings();
         });
         document.getElementById('verseSaveBtn').addEventListener('click', saveVerse);
-        
+
         async function syncTimeFromClient() {
             if (!confirm('Sync Raspberry Pi time with this device now?')) return;
 
