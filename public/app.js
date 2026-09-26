@@ -146,14 +146,18 @@ let lastBeepWindow = false;
 let beepAudio;
 let BEEP_VOLUME = 1;
 let DISPLAY_THEME = "auto";
+let beepSequenceLocked = false;
 
 window.addEventListener("DOMContentLoaded", () => {
     beepAudio = document.getElementById("beepSound");
 
     // Unlock audio automatically
     const unlockAudio = () => {
+        if (!beepAudio) return;
 
         beepAudio.muted = false;
+        beepAudio.volume = Math.min(1, Math.max(0, Number(BEEP_VOLUME) || 1));
+        beepAudio.currentTime = 0;
 
         beepAudio.play()
             .then(() => {
@@ -173,26 +177,44 @@ window.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("keydown", unlockAudio);
 });
 
+function releaseBeepLock() {
+    beepSequenceLocked = false;
+    if (beepAudio) {
+        beepAudio.pause();
+        beepAudio.currentTime = 0;
+    }
+}
 
 function playLongBeep() {
+    if (!beepAudio || beepSequenceLocked) return;
 
-    if (!beepAudio) return;
-
+    beepSequenceLocked = true;
+    beepAudio.muted = false;
     beepAudio.pause();
     beepAudio.currentTime = 0;
     beepAudio.playbackRate = 1;
-    beepAudio.volume = BEEP_VOLUME;
+    beepAudio.volume = Math.min(1, Math.max(0, Number(BEEP_VOLUME) || 1));
 
-    beepAudio.play().catch(err => {
-        console.log("Beep blocked", err);
-    });
+    const playPromise = beepAudio.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(err => {
+            console.log("Beep blocked", err);
+            releaseBeepLock();
+        });
+    }
 
+    beepAudio.onended = () => {
+        beepAudio.currentTime = 0;
+        releaseBeepLock();
+    };
+    beepAudio.onerror = () => {
+        releaseBeepLock();
+    };
 }
 
 function startBeepSequence() {
-
+    if (beepSequenceLocked) return;
     playLongBeep();
-
 }
 
 
