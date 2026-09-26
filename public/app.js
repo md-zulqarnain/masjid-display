@@ -270,8 +270,16 @@ function renderDisplayOverrideDialog(override) {
         return;
     }
 
-    const dialogType = override.dialog || 'message';
+    const dialogType = String(override.dialog || 'message').toLowerCase();
     const message = override.message || 'Testing mode';
+    const titleMap = {
+        message: 'Display Check',
+        announcement: 'Announcement',
+        welcome: 'Welcome',
+        takbir: 'Takbir',
+        tashrik: 'Takbir e Tashrik',
+        'takbir-e-tashrik': 'Takbir e Tashrik'
+    };
 
     if (dialogType === 'black') {
         dialog.style.display = 'block';
@@ -280,11 +288,14 @@ function renderDisplayOverrideDialog(override) {
         return;
     }
 
+    const title = titleMap[dialogType] || 'Display Check';
+    const specialDialog = ['takbir', 'tashrik', 'takbir-e-tashrik'].includes(dialogType);
+
     dialog.style.display = 'flex';
-    dialog.style.background = 'rgba(0,0,0,0.82)';
+    dialog.style.background = specialDialog ? 'radial-gradient(circle at center, rgba(14,116,144,0.75), rgba(2,6,23,0.96))' : 'rgba(0,0,0,0.82)';
     dialog.innerHTML = `
-        <div style="max-width:90vw; padding:32px 48px; border:2px solid rgba(255,255,255,0.3); border-radius:18px; background:rgba(15,23,42,0.9); box-shadow:0 20px 60px rgba(0,0,0,0.4);">
-            <div style="font-size:2.2rem; letter-spacing:0.12em; margin-bottom:18px; text-transform:uppercase; color:#f8fafc;">${dialogType === 'announcement' ? 'Announcement' : 'Display Check'}</div>
+        <div style="max-width:90vw; padding:32px 48px; border:2px solid rgba(255,255,255,0.3); border-radius:18px; background:${specialDialog ? 'rgba(15, 23, 42, 0.7)' : 'rgba(15,23,42,0.9)'}; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+            <div style="font-size:2.2rem; letter-spacing:0.12em; margin-bottom:18px; text-transform:uppercase; color:#f8fafc;">${title}</div>
             <div style="font-size: clamp(2rem, 4vw, 4rem); line-height:1.3; font-weight:700; white-space:pre-wrap;">${message}</div>
         </div>
     `;

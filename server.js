@@ -12,6 +12,8 @@ const SETTINGS_FILE = './data/settings.json';
 const app = express();
 const PORT = 3000;
 const displayClients = new Set();
+const ALLOWED_PAGES = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4'];
+const ALLOWED_DIALOGS = ['message', 'black', 'welcome', 'announcement', 'takbir', 'tashrik', 'takbir-e-tashrik'];
 
 if (!fs.existsSync(VERSES_FILE)) {
   fs.writeFileSync(VERSES_FILE, JSON.stringify([], null, 2));
@@ -20,17 +22,25 @@ if (!fs.existsSync(VERSES_FILE)) {
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
+function normalizeDisplayPage(page, fallback = 'normal') {
+  const normalized = typeof page === 'string' ? page.trim().toLowerCase() : '';
+  return ALLOWED_PAGES.includes(normalized) ? normalized : fallback;
+}
+
+function normalizeDisplayDialogType(dialog, fallback = 'message') {
+  const normalized = typeof dialog === 'string' ? dialog.trim().toLowerCase() : '';
+  return ALLOWED_DIALOGS.includes(normalized) ? normalized : fallback;
+}
 
 function normalizeDisplayOverride(override, fallback = { mode: 'normal', page: null, dialog: null, message: '' }) {
   const safeOverride = override && typeof override === 'object' ? override : {};
   const mode = safeOverride.mode === 'page' || safeOverride.mode === 'dialog' ? safeOverride.mode : 'normal';
-  const allowedPages = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4'];
-  const page = allowedPages.includes(safeOverride.page) ? safeOverride.page : null;
-  const dialog = ['message', 'black', 'welcome', 'announcement'].includes(safeOverride.dialog) ? safeOverride.dialog : null;
+  const page = normalizeDisplayPage(safeOverride.page, 'index');
+  const dialog = normalizeDisplayDialogType(safeOverride.dialog, 'message');
   const message = typeof safeOverride.message === 'string' ? safeOverride.message.trim() : '';
 
   if (mode === 'page') {
-    return { mode: 'page', page: page || 'index', dialog: null, message: '' };
+    return { mode: 'page', page: page === 'normal' ? 'index' : page, dialog: null, message: '' };
   }
 
   if (mode === 'dialog') {
@@ -533,4 +543,11 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, normalizeDisplayOverride, readSettings, saveSettings };
+module.exports = {
+  app,
+  normalizeDisplayOverride,
+  normalizeDisplayPage,
+  normalizeDisplayDialogType,
+  readSettings,
+  saveSettings
+};
