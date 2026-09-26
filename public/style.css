@@ -267,6 +267,10 @@ tbody .active-row td:nth-child(4) {
   position: absolute;
   bottom: 0.8vh;
   right: 0;
+  background: rgb(255 255 255 / 40%);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 14px;
 }
 
 .brand-log img {
