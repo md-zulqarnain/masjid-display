@@ -549,6 +549,39 @@
         <div id="maintenance" class="tab-content">
             <div class="section">
                 <h2>System Maintenance</h2>
+
+                <div class="form-group" style="max-width: 620px; margin-bottom: 24px;">
+                    <label>Display Override</label>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top:12px;">
+                        <select id="displayOverrideMode">
+                            <option value="normal">Normal mode</option>
+                            <option value="page">Force page</option>
+                            <option value="dialog">Force dialog</option>
+                        </select>
+                        <select id="displayOverridePage">
+                            <option value="index">Home screen</option>
+                            <option value="surah-hadith">Surah / Hadith screen</option>
+                            <option value="juma">Juma screen</option>
+                            <option value="ramadan-isha">Ramadan Isha screen</option>
+                            <option value="theme-1">Theme 1</option>
+                            <option value="theme-2">Theme 2</option>
+                            <option value="theme-3">Theme 3</option>
+                            <option value="theme-4">Theme 4</option>
+                        </select>
+                        <select id="displayOverrideDialogType">
+                            <option value="message">Message</option>
+                            <option value="announcement">Announcement</option>
+                            <option value="black">Black screen</option>
+                        </select>
+                    </div>
+                    <textarea id="displayOverrideMessage" rows="3" placeholder="Message to show on the screen" style="width:100%; margin-top:12px; padding:12px; background:rgba(255,255,255,0.1); color:white; border:1px solid #444; border-radius:5px;"></textarea>
+                    <small style="color:#bbb;">This stays active until you switch back to Normal mode.</small>
+                </div>
+                <div class="button-group" style="margin-bottom: 25px;">
+                    <button class="btn-primary" onclick="applyDisplayOverrideFromAdmin()" id="applyDisplayOverrideBtn">Apply Override</button>
+                    <button class="btn-secondary" onclick="clearDisplayOverrideFromAdmin()" id="clearDisplayOverrideBtn">Normal Mode</button>
+                </div>
+
                 <div class="form-group" style="max-width: 520px;">
                     <label>Display Beep Volume</label>
                     <input type="range" id="beepVolumeInput" min="0" max="100" step="5" value="100"
@@ -1127,6 +1160,23 @@
             if (themeSelector) {
                 themeSelector.value = data.theme || 'index';
             }
+            const override = data.displayOverride || { mode: 'normal' };
+            const modeInput = document.getElementById('displayOverrideMode');
+            if (modeInput) {
+                modeInput.value = override.mode || 'normal';
+            }
+            const pageInput = document.getElementById('displayOverridePage');
+            if (pageInput) {
+                pageInput.value = override.page || 'index';
+            }
+            const dialogInput = document.getElementById('displayOverrideDialogType');
+            if (dialogInput) {
+                dialogInput.value = override.dialog || 'message';
+            }
+            const messageInput = document.getElementById('displayOverrideMessage');
+            if (messageInput) {
+                messageInput.value = override.message || '';
+            }
         }
 
         async function saveSettings() {
@@ -1238,6 +1288,47 @@
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
+        }
+
+        async function applyDisplayOverrideFromAdmin() {
+            const mode = document.getElementById('displayOverrideMode').value;
+            const page = document.getElementById('displayOverridePage').value;
+            const dialog = document.getElementById('displayOverrideDialogType').value;
+            const message = document.getElementById('displayOverrideMessage').value.trim();
+
+            const override = {
+                mode,
+                page: mode === 'page' ? page : null,
+                dialog: mode === 'dialog' ? dialog : null,
+                message: mode === 'dialog' ? (message || 'Testing mode') : ''
+            };
+
+            try {
+                const res = await fetch('/api/display/override', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ displayOverride: override })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showMessage('maintenanceMessage', mode === 'normal' ? 'Display is back in normal mode.' : `Display override set to ${mode}.`, 'success');
+                    if (data.override && data.override.mode === 'page') {
+                        showMessage('maintenanceMessage', 'The display will switch to the selected page immediately.', 'success');
+                    }
+                } else {
+                    showMessage('maintenanceMessage', 'Could not update display override.', 'error');
+                }
+            } catch (err) {
+                showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            }
+        }
+
+        async function clearDisplayOverrideFromAdmin() {
+            document.getElementById('displayOverrideMode').value = 'normal';
+            document.getElementById('displayOverridePage').value = 'index';
+            document.getElementById('displayOverrideDialogType').value = 'message';
+            document.getElementById('displayOverrideMessage').value = '';
+            await applyDisplayOverrideFromAdmin();
         }
 
         async function refreshDisplayPage() {

@@ -30,6 +30,7 @@ let tomorrowMaghrib = null;
 const prayerSliderOrder = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 let prayerSliderIndex = 0;
 const prayerSliderCycleMs = 6000;
+let ACTIVE_DISPLAY_OVERRIDE = { mode: 'normal', page: null, dialog: null, message: '' };
 
 const islamicMonths = [
     "मुहर्रम",
@@ -231,6 +232,97 @@ setInterval(async () => {
     loadHijriOffset();
 }, 60000);
 
+function buildPageUrl(pageName) {
+    if (!pageName || pageName === 'normal') return null;
+    if (pageName === 'home' || pageName === 'index') return 'index.html';
+    if (pageName === 'surah-hadith') return 'surah-hadith.html';
+    if (pageName === 'juma') return 'juma.html';
+    if (pageName === 'ramadan-isha') return 'ramadan-isha.html';
+    if (pageName === 'theme-1' || pageName === 'theme-2' || pageName === 'theme-3' || pageName === 'theme-4') return `${pageName}.html`;
+    return null;
+}
+
+function ensureDisplayOverrideDialog() {
+    let dialog = document.getElementById('display-override-dialog');
+    if (!dialog) {
+        dialog = document.createElement('div');
+        dialog.id = 'display-override-dialog';
+        dialog.style.position = 'fixed';
+        dialog.style.inset = '0';
+        dialog.style.zIndex = '99999';
+        dialog.style.display = 'none';
+        dialog.style.background = 'rgba(0,0,0,0.9)';
+        dialog.style.alignItems = 'center';
+        dialog.style.justifyContent = 'center';
+        dialog.style.textAlign = 'center';
+        dialog.style.color = '#fff';
+        dialog.style.fontFamily = 'Arial, sans-serif';
+        document.body.appendChild(dialog);
+    }
+    return dialog;
+}
+
+function renderDisplayOverrideDialog(override) {
+    const dialog = ensureDisplayOverrideDialog();
+    if (!override || override.mode !== 'dialog') {
+        dialog.style.display = 'none';
+        dialog.innerHTML = '';
+        return;
+    }
+
+    const dialogType = override.dialog || 'message';
+    const message = override.message || 'Testing mode';
+
+    if (dialogType === 'black') {
+        dialog.style.display = 'block';
+        dialog.style.background = '#000';
+        dialog.innerHTML = '';
+        return;
+    }
+
+    dialog.style.display = 'flex';
+    dialog.style.background = 'rgba(0,0,0,0.82)';
+    dialog.innerHTML = `
+        <div style="max-width:90vw; padding:32px 48px; border:2px solid rgba(255,255,255,0.3); border-radius:18px; background:rgba(15,23,42,0.9); box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+            <div style="font-size:2.2rem; letter-spacing:0.12em; margin-bottom:18px; text-transform:uppercase; color:#f8fafc;">${dialogType === 'announcement' ? 'Announcement' : 'Display Check'}</div>
+            <div style="font-size: clamp(2rem, 4vw, 4rem); line-height:1.3; font-weight:700; white-space:pre-wrap;">${message}</div>
+        </div>
+    `;
+}
+
+function applyDisplayOverride(override) {
+    ACTIVE_DISPLAY_OVERRIDE = override && override.mode ? { ...override } : { mode: 'normal', page: null, dialog: null, message: '' };
+    if (!override || override.mode === 'normal') {
+        const dialog = document.getElementById('display-override-dialog');
+        if (dialog) dialog.style.display = 'none';
+        return;
+    }
+
+    if (override.mode === 'page' && override.page) {
+        const target = buildPageUrl(override.page);
+        const current = window.location.pathname.split('/').pop() || 'index.html';
+        if (target && current !== target) {
+            window.location.href = target;
+            return;
+        }
+    }
+
+    if (override.mode === 'dialog') {
+        renderDisplayOverrideDialog(override);
+    }
+}
+
+async function loadDisplayOverride() {
+    try {
+        const res = await fetch('/api/display/override?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        applyDisplayOverride(data.override || { mode: 'normal' });
+    } catch (err) {
+        console.error('Failed to load display override', err);
+    }
+}
+
 function connectRemoteBeepEvents() {
     if (!window.EventSource) return;
 
@@ -265,6 +357,15 @@ function connectRemoteBeepEvents() {
         }
     });
 
+    source.addEventListener('display-override', event => {
+        try {
+            const data = JSON.parse(event.data || '{}');
+            applyDisplayOverride(data.override || { mode: 'normal' });
+        } catch (e) {
+            console.error('Error reading display override event', e);
+        }
+    });
+
     source.addEventListener('reload', () => {
         window.location.reload();
     });
@@ -275,6 +376,7 @@ function connectRemoteBeepEvents() {
 }
 
 connectRemoteBeepEvents();
+loadDisplayOverride();
 
 // Load prayer times either from quick-times or monthly timing-data files
 async function loadPrayerTimesForToday() {
@@ -1280,6 +1382,10 @@ function minutesUntilNextAzanJamah() {
 }
 
 function scheduleSwitcher() {
+    if (ACTIVE_DISPLAY_OVERRIDE && ACTIVE_DISPLAY_OVERRIDE.mode !== 'normal') {
+        return;
+    }
+
     if (popupShown) {
         scheduleLastSwitch = Date.now();
         return;

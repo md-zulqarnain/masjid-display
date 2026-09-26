@@ -21,10 +21,34 @@ app.use(express.static("public"));
 app.use(bodyParser.json());
 
 
+function normalizeDisplayOverride(override, fallback = { mode: 'normal', page: null, dialog: null, message: '' }) {
+  const safeOverride = override && typeof override === 'object' ? override : {};
+  const mode = safeOverride.mode === 'page' || safeOverride.mode === 'dialog' ? safeOverride.mode : 'normal';
+  const allowedPages = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4'];
+  const page = allowedPages.includes(safeOverride.page) ? safeOverride.page : null;
+  const dialog = ['message', 'black', 'welcome', 'announcement'].includes(safeOverride.dialog) ? safeOverride.dialog : null;
+  const message = typeof safeOverride.message === 'string' ? safeOverride.message.trim() : '';
+
+  if (mode === 'page') {
+    return { mode: 'page', page: page || 'index', dialog: null, message: '' };
+  }
+
+  if (mode === 'dialog') {
+    return {
+      mode: 'dialog',
+      page: null,
+      dialog: dialog || 'message',
+      message: message || 'Testing mode'
+    };
+  }
+
+  return { mode: 'normal', page: null, dialog: null, message: '' };
+}
+
 function readSettings() {
   try {
     if (!fs.existsSync(SETTINGS_FILE)) {
-      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ hijriOffset: 0, beepVolume: 1, theme: 'index' }, null, 2));
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ hijriOffset: 0, beepVolume: 1, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } }, null, 2));
     }
 
     const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"));
@@ -32,10 +56,11 @@ function readSettings() {
       hijriOffset: typeof data.hijriOffset === "number" ? data.hijriOffset : 0,
       beepVolume: typeof data.beepVolume === "number" ? data.beepVolume : 1,
       displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto",
-      theme: typeof data.theme === "string" ? data.theme : "index"
+      theme: typeof data.theme === "string" ? data.theme : "index",
+      displayOverride: normalizeDisplayOverride(data.displayOverride)
     };
   } catch (err) {
-    return { hijriOffset: 0, beepVolume: 1, theme: 'index' };
+    return { hijriOffset: 0, beepVolume: 1, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } };
   }
 }
 
@@ -47,10 +72,10 @@ function saveSettings(updates) {
   if (!["auto", "morning", "day", "evening", "night"].includes(next.displayTheme)) {
     next.displayTheme = "auto";
   }
-  // Validate theme
   if (!["index", "theme-1", "theme-2", "theme-3", "theme-4"].includes(next.theme)) {
     next.theme = "index";
   }
+  next.displayOverride = normalizeDisplayOverride(next.displayOverride || updates?.displayOverride);
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2));
   return next;
 }
@@ -90,6 +115,16 @@ app.post('/api/display/theme', (req, res) => {
 app.post('/api/display/reload', (req, res) => {
   sendDisplayEvent("reload", { reason: "admin" });
   res.json({ message: "Display reload sent", clients: displayClients.size });
+});
+
+app.get('/api/display/override', (req, res) => {
+  res.json({ override: readSettings().displayOverride });
+});
+
+app.post('/api/display/override', (req, res) => {
+  const settings = saveSettings({ displayOverride: req.body?.displayOverride || { mode: 'normal' } });
+  sendDisplayEvent('display-override', { override: settings.displayOverride });
+  res.json({ message: 'Display override updated', override: settings.displayOverride, clients: displayClients.size });
 });
 
 app.post('/api/theme', (req, res) => {
@@ -474,24 +509,28 @@ app.get('/api/sensor', (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running locally on http://localhost:${PORT}`);
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running locally on http://localhost:${PORT}`);
 
-  // Get and log local network IPs
-  const interfaces = os.networkInterfaces();
-  console.log("App is also accessible on your network at:");
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name]) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        console.log(`  http://${iface.address}:${PORT}`);
+    // Get and log local network IPs
+    const interfaces = os.networkInterfaces();
+    console.log("App is also accessible on your network at:");
+    for (const name of Object.keys(interfaces)) {
+      for (const iface of interfaces[name]) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          console.log(`  http://${iface.address}:${PORT}`);
+        }
       }
     }
-  }
 
-  const chromePath = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"`;
+    const chromePath = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"`;
 
-  // Kill existing chrome first
-  exec(`taskkill /IM chrome.exe /F`, () => {
-    exec(`${chromePath} --start-fullscreen --autoplay-policy=no-user-gesture-required http://localhost:${PORT}`);
+    // Kill existing chrome first
+    exec(`taskkill /IM chrome.exe /F`, () => {
+      exec(`${chromePath} --start-fullscreen --autoplay-policy=no-user-gesture-required http://localhost:${PORT}`);
+    });
   });
-});
+}
+
+module.exports = { app, normalizeDisplayOverride, readSettings, saveSettings };
