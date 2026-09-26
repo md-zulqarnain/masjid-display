@@ -202,9 +202,25 @@
     <script>
 
         let verses = [];
-        let currentIndex = 0;
+        let verseQueue = [];
         let slideTimer = null;
         const content = document.getElementById("content");
+
+        function shuffleArray(items) {
+            const shuffled = [...items];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function getNextVerse() {
+            if (!verseQueue.length) {
+                verseQueue = shuffleArray(verses);
+            }
+            return verseQueue.shift();
+        }
 
         async function loadVersesFromServer() {
             try {
@@ -216,6 +232,7 @@
                     return;
                 }
 
+                verseQueue = shuffleArray(verses);
                 updateVerse();
                 // setInterval(updateVerse, 15000);
 
@@ -250,7 +267,10 @@
 
             setTimeout(() => {
 
-                const current = verses[currentIndex];
+                const current = getNextVerse();
+                if (!current) {
+                    return;
+                }
 
                 document.getElementById("type").innerText =
                     current.type.toUpperCase();
@@ -274,8 +294,6 @@
 
                 displayTime = Math.max(5000, displayTime);
                 displayTime = Math.min(40000, displayTime);
-
-                currentIndex = (currentIndex + 1) % verses.length;
 
                 // ✅ Store timeout reference
                 slideTimer = setTimeout(updateVerse, displayTime);

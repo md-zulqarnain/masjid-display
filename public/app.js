@@ -1463,14 +1463,30 @@ async function loadVerses() {
 
     if (container) container.style.display = '';
 
-    let index = 0;
+    let verseQueue = [];
     const contentEl = document.getElementById('verseSliderContent');
 
+    function shuffleArray(items) {
+        const shuffled = [...items];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function getNextVerse() {
+        if (!verseQueue.length) {
+            verseQueue = shuffleArray(verses);
+        }
+        return verseQueue.shift();
+    }
+
     function showVerse() {
-        const verse = verses[index];
+        const verse = getNextVerse();
         const textEl = document.getElementById('verseText');
 
-        if (!textEl || !contentEl) return;
+        if (!textEl || !contentEl || !verse) return;
 
         contentEl.classList.remove('fade-in');
         contentEl.classList.add('fade-out');
@@ -1480,18 +1496,15 @@ async function loadVerses() {
 
             contentEl.classList.remove('fade-out');
             contentEl.classList.add('fade-in');
-
-            index = (index + 1) % verses.length;
         }, 1000);
     }
 
     // Initial load
-    const verse = verses[index];
+    const initialVerse = getNextVerse();
     const textEl = document.getElementById('verseText');
-    if (textEl && contentEl) {
-        textEl.innerText = verse.text;
+    if (textEl && contentEl && initialVerse) {
+        textEl.innerText = initialVerse.text;
         contentEl.classList.add('fade-in');
-        index = (index + 1) % verses.length;
     }
 
     // Rotate every 15 seconds
