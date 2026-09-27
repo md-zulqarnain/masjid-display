@@ -609,7 +609,7 @@ async function loadPrayerTimesForToday() {
         prayerData.isha.start = to12Hour(isha);
         prayerData.isha.end = to12Hour(sahri);
 
-        const ishaAzanBase24 = addMinutesToHM(isha, 5);
+        const ishaAzanBase24 = addMinutesToHM(isha, 15);
         const ishaAzanRounded24 = roundHMUpToMinutes(ishaAzanBase24, 15);
         const ishaAutoTimes = {
             azan: ishaAzanRounded24,
