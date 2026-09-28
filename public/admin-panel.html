@@ -1514,17 +1514,14 @@
         document.getElementById('verseSaveBtn').addEventListener('click', saveVerse);
 
         async function syncTimeFromClient() {
-            if (!confirm('Sync Raspberry Pi time with this device now?')) return;
-
             const btn = document.getElementById('syncTimeBtn');
             const originalText = btn.textContent;
             btn.innerHTML = '<span class="loading"></span>';
             btn.disabled = true;
 
             try {
-                // Send the device's local wall-clock time instead of UTC.
-                // Using toISOString() shifts the time by the timezone offset,
-                // which makes the Pi display an earlier/later clock time.
+                // Capture the exact timestamp at the moment the user clicks the button,
+                // so the sync happens immediately without any confirmation delay or drift.
                 const now = new Date();
                 const pad = (n) => String(n).padStart(2, '0');
                 const localIso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
