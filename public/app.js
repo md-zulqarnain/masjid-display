@@ -685,12 +685,12 @@ async function loadPrayerTimesForToday() {
         if (yesterdayObj && quickData?.isha?.useCustomTime !== true) {
             const ishaJamahAfterAzan = getJamahAfterAzan(quickData?.isha, 'isha');
             const yesterdayIshaTimes = {
-                azan: roundHMUpToMinutes(addMinutesToHM(yesterdayObj.Isha, 5), 15),
-                jamah: addMinutesToHM(roundHMUpToMinutes(addMinutesToHM(yesterdayObj.Isha, 5), 15), ishaJamahAfterAzan)
+                azan: roundHMUpToMinutes(addMinutesToHM(yesterdayObj.Isha, 15), 15),
+                jamah: addMinutesToHM(roundHMUpToMinutes(addMinutesToHM(yesterdayObj.Isha, 15), 15), ishaJamahAfterAzan)
             };
             const todayIshaTimes = {
-                azan: roundHMUpToMinutes(addMinutesToHM(dayObj.Isha, 5), 15),
-                jamah: addMinutesToHM(roundHMUpToMinutes(addMinutesToHM(dayObj.Isha, 5), 15), ishaJamahAfterAzan)
+                azan: roundHMUpToMinutes(addMinutesToHM(dayObj.Isha, 15), 15),
+                jamah: addMinutesToHM(roundHMUpToMinutes(addMinutesToHM(dayObj.Isha, 15), 15), ishaJamahAfterAzan)
             };
             if (!samePrayerTimes(yesterdayIshaTimes, todayIshaTimes) && isBeforeHM(dayObj.Isha, now)) {
                 timingMessages.push(buildTimingChangeMessage('आज से', 'इशा', todayIshaTimes));
