@@ -4,13 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Masjid Display - Prayer Limits Theme</title>
+  <title>Masjid Display</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    #clock {
-      margin-top: 2vh;
-    }
-  </style>
 </head>
 
 <body id="index-body">
@@ -81,11 +76,39 @@
               <th>नमाज़</th>
               <th>अज़ान</th>
               <th>जमाअत</th>
-              <th id="table-limit-header">वक़्त शुरू</th>
             </tr>
           </thead>
           <tbody id="prayerTable"></tbody>
         </table>
+      </div>
+      <div class="extraPrayerCol">
+        <div class="extraPrayerCard card-special">
+          <div class="combinedSliderContent">
+            <div class="sliderPrayerName" id="sliderPrayerName"></div>
+            <div class="combinedBottomRow">
+              <div class="sliderItem">
+                <div class="sliderLabel" id="startSliderLabel">शुरू</div>
+                <div class="sliderTime" id="startSliderTime"></div>
+              </div>
+              <div class="sliderItem">
+                <div class="sliderLabel" id="endSliderLabel">ख़त्म</div>
+                <div class="sliderTime" id="endSliderTime"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="extraPrayerCard card-3">
+          <div class="extraPrayerLabel">तहज्जुद</div>
+          <div id="tahajjudTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-4">
+          <div class="extraPrayerLabel">इश्राक़</div>
+          <div id="ishraqTime" class="extraPrayerTime"></div>
+        </div>
+        <div class="extraPrayerCard card-5">
+          <div class="extraPrayerLabel">चाश्त</div>
+          <div id="chashtTime" class="extraPrayerTime"></div>
+        </div>
       </div>
     </div>
 
@@ -176,35 +199,6 @@
   <script src="utils.js"></script>
   <script src="app.js"></script>
   <script src="sensor.js"></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      function updateTableLimitsColumn() {
-        const rows = document.querySelectorAll("#prayerTable tr");
-        if (rows.length === 0 || !window.prayerData) return;
-
-        const showStart = Math.floor(Date.now() / 5000) % 2 === 0;
-        const header = document.getElementById("table-limit-header");
-        if (header) header.innerText = showStart ? "वक़्त शुरू" : "वक़्त ख़त्म";
-
-        rows.forEach(row => {
-          const data = window.prayerData[row.id];
-          if (!data) return;
-
-          const value = showStart ? data.start : data.end;
-          let cell = row.cells[3];
-          if (!cell) {
-            cell = document.createElement("td");
-            row.appendChild(cell);
-          }
-          cell.innerText = formatDisplayTime(value);
-        });
-      }
-
-      updateTableLimitsColumn();
-      setInterval(updateTableLimitsColumn, 1000);
-    });
-  </script>
 
   <!-- floating sensor widget removed; inline badges used beside clock -->
 </body>
