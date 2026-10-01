@@ -2,5 +2,13 @@
   "hijriOffset": -2,
   "beepVolume": 1,
   "displayTheme": "auto",
-  "theme": "index"
+  "theme": "index",
+  "wifiHotspot": {
+    "enabled": true,
+    "hotspotName": "Masjid WiFi",
+    "fallbackHotspotName": "Masjid-Display",
+    "searchSeconds": 60,
+    "status": "idle",
+    "lastCheckedAt": null
+  }
 }
