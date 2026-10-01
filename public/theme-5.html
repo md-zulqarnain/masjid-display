@@ -6,16 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Masjid Display - Prayer Limits Theme</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    #index-body.theme-5 table {
+      font-size: 1.35vw;
+    }
+
+    @media (orientation: portrait) {
+      #index-body.theme-5 table {
+        font-size: 4.5vw;
+      }
+    }
+  </style>
 </head>
 
-<body id="index-body">
+<body id="index-body" class="theme-5">
 
   <div class="container">
 
     <!-- Top Arabic Header -->
     <div class="top-bar">
       <img src="images/roza.webp" class="corner-img">
-      <img src="images/kalima.png" style="max-width: 45%;">
+      <img src="images/kalima.png" style="max-width: 52%;">
       <!-- <div class="arabic-title">
         لا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَّسُولُ اللهِ
       </div> -->
