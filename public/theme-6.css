@@ -9,12 +9,6 @@
   --theme-line: #d4e1d9;
 }
 
-body#机-index-body.theme-6,
-body#机-index-body.theme-6 {
-  background: var(--theme-paper);
-  color: var(--theme-ink);
-}
-
 #index-body.theme-6 {
   background: var(--theme-paper);
   color: var(--theme-ink);

@@ -5,6 +5,7 @@ assert.strictEqual(typeof server.normalizeDisplayPage, 'function', 'normalizeDis
 assert.strictEqual(server.normalizeDisplayPage('normal'), 'normal');
 assert.strictEqual(server.normalizeDisplayPage('index'), 'index');
 assert.strictEqual(server.normalizeDisplayPage('surah-hadith'), 'surah-hadith');
+assert.strictEqual(server.normalizeDisplayPage('theme-6'), 'theme-6');
 assert.strictEqual(server.normalizeDisplayPage('not-a-page'), 'normal');
 
 assert.strictEqual(typeof server.normalizeDisplayDialogType, 'function', 'normalizeDisplayDialogType should exist');

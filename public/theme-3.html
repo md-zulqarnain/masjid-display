@@ -32,9 +32,9 @@
     <section class="clock-section">
       <div id="clock" style="margin-top: 2vh;">
         <div class="clock-display">
-            <span id="hours" class="clock-time">12:00</span>
-            <span id="seconds" class="clock-sec">:00</span>
-            <span id="ampm" class="clock-ampm">AM</span>
+          <span id="hours" class="clock-time">12:00</span>
+          <span id="seconds" class="clock-sec">:00</span>
+          <span id="ampm" class="clock-ampm">AM</span>
           <span id="hours" class="clock-time">12:00</span>
           <span id="seconds" class="clock-sec">:00</span>
           <span id="ampm" class="clock-ampm">AM</span>
@@ -42,8 +42,10 @@
         </div>
 
         <div class="date-row">
-          <span class="sensor-inline-left" id="sensor-left"><span class="s-label"><svg class="temp-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M14 14.76V5a4 4 0 0 0-8 0v9.76a6 6 0 1 0 8 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <span class="sensor-inline-left" id="sensor-left"><span class="s-label"><svg class="temp-icon"
+                viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 14.76V5a4 4 0 0 0-8 0v9.76a6 6 0 1 0 8 0Z" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M10 5v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 <circle cx="10" cy="18" r="2.5" fill="currentColor" />
               </svg></span><span class="s-value" id="sensor-temp-left">-- °C</span></span>
@@ -51,15 +53,15 @@
             <div id="date" class="date-left"></div>
           </div>
 
-        <!-- Sahri / Iftar Timings (Added data-format="simple" to prevent double Sahri text) -->
-        <div class="ramadan-times-row font-sans">
-          <span class="ramadan-label">सहरी:</span> <span id="sahriTime" data-format="simple"
-            class="ramadan-val">--:--</span>
-          <span class="date-separator"></span>
-          <span class="ramadan-label">इफ़्तार:</span> <span id="iftarTime" data-format="simple"
-            class="ramadan-val">--:--</span>
+          <!-- Sahri / Iftar Timings (Added data-format="simple" to prevent double Sahri text) -->
+          <div class="ramadan-times-row font-sans">
+            <span class="ramadan-label">सहरी:</span> <span id="sahriTime" data-format="simple"
+              class="ramadan-val">--:--</span>
+            <span class="date-separator"></span>
+            <span class="ramadan-label">इफ़्तार:</span> <span id="iftarTime" data-format="simple"
+              class="ramadan-val">--:--</span>
+          </div>
         </div>
-      </div>
     </section>
 
     <!-- NEXT PRAYER COUNTDOWN - Placed BEFORE the prayer table -->
