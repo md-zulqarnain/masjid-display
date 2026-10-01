@@ -5,6 +5,9 @@
   --theme-ink: #f3f5f2;
   --theme-muted: #aab7ae;
   --theme-accent: #e4bd67;
+  --theme-time: #efc96f;
+  --theme-prayer: #79d9a5;
+  --theme-hijri: #82d2e2;
   --theme-accent-soft: #29352d;
   --theme-line: #344239;
 }
@@ -31,6 +34,12 @@
 #index-body.theme-6 #seconds,
 #index-body.theme-6 #ampm {
   color: var(--theme-muted);
+}
+
+#index-body.theme-6 #hours,
+#index-body.theme-6 #seconds,
+#index-body.theme-6 #ampm {
+  color: var(--theme-time);
 }
 
 #index-body.theme-6 table,
@@ -85,6 +94,15 @@
 #index-body.theme-6 #ramadanTimes,
 #index-body.theme-6 .countdown {
   color: var(--theme-ink);
+}
+
+#index-body.theme-6 #nextPrayerName .prayer {
+  color: var(--theme-prayer);
+}
+
+#index-body.theme-6 #hijri .card-heading,
+#index-body.theme-6 #hijri .hijri-date {
+  color: var(--theme-hijri);
 }
 
 #index-body.theme-6 #ramadanTimes span:not(:last-child)::after {
