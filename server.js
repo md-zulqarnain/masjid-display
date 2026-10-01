@@ -3,6 +3,7 @@ const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const bodyParser = require("body-parser");
+const session = require("express-session");
 const os = require("os");
 const VERSES_FILE = 'verses.json';
 const SETTINGS_FILE = './data/settings.json';
@@ -12,7 +13,14 @@ const SETTINGS_FILE = './data/settings.json';
 const app = express();
 const PORT = 3000;
 const displayClients = new Set();
-const ALLOWED_PAGES = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4'];
+const DEFAULT_DISPLAY_RESOLUTION = '1920x1080@60Hz';
+const ALLOWED_DISPLAY_RESOLUTIONS = new Set([
+  DEFAULT_DISPLAY_RESOLUTION,
+  '3840x2160@30Hz',
+  '1280x720@60Hz',
+  '1024x768@60Hz'
+]);
+const ALLOWED_PAGES = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5'];
 const ALLOWED_DIALOGS = ['message', 'black', 'welcome', 'announcement', 'takbir', 'tashrik', 'takbir-e-tashrik'];
 
 if (!fs.existsSync(VERSES_FILE)) {
@@ -21,6 +29,33 @@ if (!fs.existsSync(VERSES_FILE)) {
 
 app.use(express.static("public"));
 app.use(bodyParser.json());
+app.use(session({
+  secret: process.env.SESSION_SECRET || require('crypto').randomBytes(32).toString('hex'),
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, sameSite: 'lax', maxAge: 8 * 60 * 60 * 1000 }
+}));
+
+function normalizeDisplayResolution(resolution) {
+  return ALLOWED_DISPLAY_RESOLUTIONS.has(resolution) ? resolution : DEFAULT_DISPLAY_RESOLUTION;
+}
+
+function requireSuperAdmin(req, res, next) {
+  if (req.session?.role !== 'superadmin') {
+    return res.status(403).json({ error: 'Superadmin login required' });
+  }
+  next();
+}
+
+function applyDisplayResolution(resolution, callback) {
+  if (process.platform === 'win32') {
+    callback(new Error('Display resolution can only be changed on the Raspberry Pi'));
+    return;
+  }
+
+  const mode = normalizeDisplayResolution(resolution);
+  exec(`wlr-randr --output HDMI-A-2 --mode ${mode}`, callback);
+}
 
 function normalizeDisplayPage(page, fallback = 'normal') {
   const normalized = typeof page === 'string' ? page.trim().toLowerCase() : '';
@@ -66,11 +101,12 @@ function readSettings() {
       hijriOffset: typeof data.hijriOffset === "number" ? data.hijriOffset : 0,
       beepVolume: typeof data.beepVolume === "number" ? data.beepVolume : 1,
       displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto",
+      displayResolution: normalizeDisplayResolution(data.displayResolution),
       theme: typeof data.theme === "string" ? data.theme : "index",
       displayOverride: normalizeDisplayOverride(data.displayOverride)
     };
   } catch (err) {
-    return { hijriOffset: 0, beepVolume: 1, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } };
+    return { hijriOffset: 0, beepVolume: 1, displayTheme: 'auto', displayResolution: DEFAULT_DISPLAY_RESOLUTION, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } };
   }
 }
 
@@ -82,13 +118,42 @@ function saveSettings(updates) {
   if (!["auto", "morning", "day", "evening", "night"].includes(next.displayTheme)) {
     next.displayTheme = "auto";
   }
-  if (!["index", "theme-1", "theme-2", "theme-3", "theme-4"].includes(next.theme)) {
+  next.displayResolution = normalizeDisplayResolution(next.displayResolution);
+  if (!["index", "theme-1", "theme-2", "theme-3", "theme-4", "theme-5"].includes(next.theme)) {
     next.theme = "index";
   }
   next.displayOverride = normalizeDisplayOverride(next.displayOverride || updates?.displayOverride);
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2));
   return next;
 }
+
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body || {};
+  const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const superAdminUsername = process.env.SUPERADMIN_USERNAME || 'superadmin';
+  const superAdminPassword = process.env.SUPERADMIN_PASSWORD || 'superpassword';
+
+  let role = null;
+  if (username === superAdminUsername && password === superAdminPassword) {
+    role = 'superadmin';
+  } else if (username === adminUsername && password === adminPassword) {
+    role = 'admin';
+  }
+
+  if (!role) return res.status(401).json({ error: 'Invalid username or password' });
+
+  req.session.role = role;
+  return res.json({ role });
+});
+
+app.get('/api/auth/session', (req, res) => {
+  res.json({ role: req.session?.role || null });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy(() => res.json({ message: 'Logged out' }));
+});
 
 function sendDisplayEvent(eventName, payload = {}) {
   const data = JSON.stringify({ ...payload, at: Date.now() });
@@ -106,8 +171,27 @@ app.get('/api/settings', (req, res) => {
 
 // UPDATE settings
 app.post('/api/settings', (req, res) => {
+  if (Object.hasOwn(req.body || {}, 'displayResolution') && req.session?.role !== 'superadmin') {
+    return res.status(403).json({ error: 'Superadmin login required to change display resolution' });
+  }
   const settings = saveSettings(req.body || {});
   res.json({ message: "Settings saved successfully", settings });
+});
+
+app.post('/api/display/resolution', requireSuperAdmin, (req, res) => {
+  const resolution = req.body?.displayResolution;
+  if (!ALLOWED_DISPLAY_RESOLUTIONS.has(resolution)) {
+    return res.status(400).json({ error: 'Unsupported display resolution' });
+  }
+
+  applyDisplayResolution(resolution, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: (stderr || error.message).trim() });
+    }
+
+    const settings = saveSettings({ displayResolution: resolution });
+    return res.json({ message: `Display resolution set to ${resolution}`, settings });
+  });
 });
 
 app.post('/api/beep/test', (req, res) => {
@@ -534,6 +618,13 @@ if (require.main === module) {
       }
     }
 
+    if (process.platform !== 'win32') {
+      applyDisplayResolution(readSettings().displayResolution, error => {
+        if (error) console.error('Could not set display resolution:', error.message);
+        else console.log(`Display resolution set to ${readSettings().displayResolution}`);
+      });
+    }
+
     const chromePath = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"`;
 
     // Kill existing chrome first
@@ -548,6 +639,7 @@ module.exports = {
   normalizeDisplayOverride,
   normalizeDisplayPage,
   normalizeDisplayDialogType,
+  normalizeDisplayResolution,
   readSettings,
   saveSettings
 };

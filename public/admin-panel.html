@@ -512,6 +512,7 @@
                         <option value="theme-2">Theme 2: Minimalist Dark (Grayscale)</option>
                         <option value="theme-3">Theme 3: Premium Glass (Cyan Blue)</option>
                         <option value="theme-4">Theme 4: Vibrant Neon (Green/Cyan)</option>
+                        <option value="theme-5">Theme 5: Prayer Limits</option>
                     </select>
                     <small style="color:#bbb;">
                         Select a theme from the list and apply it to the display.
@@ -568,6 +569,7 @@
                             <option value="theme-2">Theme 2</option>
                             <option value="theme-3">Theme 3</option>
                             <option value="theme-4">Theme 4</option>
+                            <option value="theme-5">Theme 5: Prayer Limits</option>
                         </select>
                         <select id="displayOverrideDialogType">
                             <option value="announcement">Announcement</option>
@@ -611,6 +613,18 @@
                     <button class="btn-primary" onclick="saveDisplayTheme()" id="saveThemeBtn">Apply Theme</button>
                     <button class="btn-primary" onclick="refreshDisplayPage()" id="refreshDisplayBtn"
                         style="background:#38bdf8; color:#0c1d15;">Refresh Display Page</button>
+                </div>
+                <div class="form-group" style="max-width: 520px;">
+                    <label for="displayResolutionInput">Display Resolution</label>
+                    <select id="displayResolutionInput">
+                        <option value="1920x1080@60Hz">1920 × 1080 at 60 Hz</option>
+                        <option value="3840x2160@30Hz">3840 × 2160 at 30 Hz</option>
+                        <option value="1280x720@60Hz">1280 × 720 at 60 Hz</option>
+                        <option value="1024x768@60Hz">1024 × 768 at 60 Hz</option>
+                    </select>
+                </div>
+                <div class="button-group" style="margin-bottom: 25px;">
+                    <button class="btn-primary" onclick="saveDisplayResolution()" id="saveResolutionBtn">Apply Resolution</button>
                 </div>
                 <div class="button-group">
                     <button class="btn-primary" onclick="pullCode()" id="pullCodeBtn">Pull Latest Code</button>
@@ -921,6 +935,7 @@
         }
 
         function logout() {
+            fetch('/api/auth/logout', { method: 'POST' });
             localStorage.removeItem('adminLogged');
             localStorage.removeItem('superLogged');
             window.location.href = '/login.html';
@@ -949,6 +964,26 @@
         }
 
         setVisibilityForAdminTabs();
+
+        fetch('/api/auth/session')
+            .then(response => response.json())
+            .then(({ role }) => {
+                if (!role) {
+                    localStorage.removeItem('adminLogged');
+                    localStorage.removeItem('superLogged');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                localStorage.setItem('adminLogged', 'true');
+                if (role === 'superadmin') localStorage.setItem('superLogged', 'true');
+                else localStorage.removeItem('superLogged');
+                setVisibilityForAdminTabs();
+            })
+            .catch(() => {
+                localStorage.removeItem('adminLogged');
+                localStorage.removeItem('superLogged');
+                window.location.href = '/login.html';
+            });
 
         function appendTerminalOutput(text, isError = false) {
             const output = document.getElementById('terminalOutput');
@@ -1159,6 +1194,10 @@
             if (themeInput) {
                 themeInput.value = data.displayTheme || 'auto';
             }
+            const resolutionInput = document.getElementById('displayResolutionInput');
+            if (resolutionInput) {
+                resolutionInput.value = data.displayResolution || '1920x1080@60Hz';
+            }
             const themeSelector = document.getElementById('themeSelector');
             if (themeSelector) {
                 themeSelector.value = data.theme || 'index';
@@ -1287,6 +1326,34 @@
                 }
             } catch (err) {
                 showMessage('maintenanceMessage', 'Network error: ' + err.message, 'error');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function saveDisplayResolution() {
+            if (!isSuperAdmin()) {
+                showMessage('maintenanceMessage', 'Superadmin login required.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveResolutionBtn');
+            const originalText = btn.textContent;
+            const displayResolution = document.getElementById('displayResolutionInput').value;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/display/resolution', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ displayResolution })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Could not apply display resolution.');
+                showMessage('maintenanceMessage', `${data.message}. It will also be applied at app startup.`, 'success');
+            } catch (error) {
+                showMessage('maintenanceMessage', error.message, 'error');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;

@@ -164,9 +164,21 @@
   </div>
 
   <script>
-    // Check if already logged in
     if (localStorage.getItem('adminLogged')) {
-      window.location.href = '/admin-panel.html';
+      fetch('/api/auth/session')
+        .then(response => response.json())
+        .then(({ role }) => {
+          if (role) {
+            window.location.href = '/admin-panel.html';
+            return;
+          }
+          localStorage.removeItem('adminLogged');
+          localStorage.removeItem('superLogged');
+        })
+        .catch(() => {
+          localStorage.removeItem('adminLogged');
+          localStorage.removeItem('superLogged');
+        });
     }
 
     async function handleLogin(event) {
@@ -177,40 +189,33 @@
       const btn = document.getElementById('submitBtn');
       const messageEl = document.getElementById('message');
 
-      // Simple validation - in production use proper authentication
-      const validUsername = 'admin';
-      const validPassword = 'admin123';
-      const superUsername = 'superadmin';
-      const superPassword = 'superpassword';
-
       btn.disabled = true;
       btn.innerHTML = '<span class="loading"></span>Logging in...';
 
-      // Simulate API call
-      setTimeout(() => {
-        if (username === validUsername && password === validPassword) {
-          localStorage.setItem('adminLogged', 'true');
-          localStorage.removeItem('superLogged');
-          messageEl.textContent = 'Login successful! Redirecting...';
-          messageEl.className = 'message success show';
-          setTimeout(() => {
-            window.location.href = '/admin-panel.html';
-          }, 1000);
-        } else if (username === superUsername && password === superPassword) {
-          localStorage.setItem('adminLogged', 'true');
-          localStorage.setItem('superLogged', 'true');
-          messageEl.textContent = 'Super Admin Login successful! Redirecting...';
-          messageEl.className = 'message success show';
-          setTimeout(() => {
-            window.location.href = '/admin-panel.html';
-          }, 1000);
-        } else {
-          messageEl.textContent = 'Invalid username or password';
-          messageEl.className = 'message error show';
-          btn.disabled = false;
-          btn.textContent = 'Login';
-        }
-      }, 500);
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Invalid username or password');
+
+        localStorage.setItem('adminLogged', 'true');
+        if (data.role === 'superadmin') localStorage.setItem('superLogged', 'true');
+        else localStorage.removeItem('superLogged');
+
+        messageEl.textContent = data.role === 'superadmin'
+          ? 'Super Admin Login successful! Redirecting...'
+          : 'Login successful! Redirecting...';
+        messageEl.className = 'message success show';
+        setTimeout(() => window.location.href = '/admin-panel.html', 1000);
+      } catch (error) {
+        messageEl.textContent = error.message;
+        messageEl.className = 'message error show';
+        btn.disabled = false;
+        btn.textContent = 'Login';
+      }
     }
   </script>
 
