@@ -175,6 +175,26 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      function updateTheme6ColorPeriod() {
+        const now = new Date();
+        const minutes = now.getHours() * 60 + now.getMinutes();
+        let period;
+
+        if (minutes >= 17 * 60 && minutes < 19 * 60 + 30) {
+          period = "evening";
+        } else if (minutes >= 5 * 60 && minutes < 8 * 60) {
+          period = "morning";
+        } else if (minutes >= 8 * 60 && minutes < 12 * 60) {
+          period = "day";
+        } else if (minutes >= 12 * 60 && minutes < 17 * 60) {
+          period = "afternoon";
+        } else {
+          period = "night";
+        }
+
+        document.body.dataset.themePeriod = period;
+      }
+
       function updateTableLimitsColumn() {
         const rows = document.querySelectorAll("#prayerTable tr");
         if (rows.length === 0 || !window.prayerData) return;
@@ -197,6 +217,8 @@
         });
       }
 
+      updateTheme6ColorPeriod();
+      setInterval(updateTheme6ColorPeriod, 60000);
       updateTableLimitsColumn();
       setInterval(updateTableLimitsColumn, 1000);
     });

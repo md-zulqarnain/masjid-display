@@ -17,6 +17,36 @@
   color: var(--theme-ink);
 }
 
+#index-body.theme-6[data-theme-period="night"] {
+  --theme-time: #c5b8ff;
+  --theme-prayer: #78d7b5;
+  --theme-hijri: #91cfff;
+}
+
+#index-body.theme-6[data-theme-period="morning"] {
+  --theme-time: #ffcb78;
+  --theme-prayer: #f2a879;
+  --theme-hijri: #9bd7e5;
+}
+
+#index-body.theme-6[data-theme-period="day"] {
+  --theme-time: #7ed9ef;
+  --theme-prayer: #8dddac;
+  --theme-hijri: #c0b0ff;
+}
+
+#index-body.theme-6[data-theme-period="afternoon"] {
+  --theme-time: #ff9d78;
+  --theme-prayer: #f3d078;
+  --theme-hijri: #7fd6ce;
+}
+
+#index-body.theme-6[data-theme-period="evening"] {
+  --theme-time: #efc96f;
+  --theme-prayer: #79d9a5;
+  --theme-hijri: #82d2e2;
+}
+
 #index-body.theme-6 .corner-img {
   border-color: var(--theme-line);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);

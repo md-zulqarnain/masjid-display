@@ -31,6 +31,7 @@ const prayerSliderOrder = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 let prayerSliderIndex = 0;
 const prayerSliderCycleMs = 6000;
 let ACTIVE_DISPLAY_OVERRIDE = { mode: 'normal', page: null, dialog: null, message: '' };
+let SELECTED_DISPLAY_THEME = 'index';
 
 const islamicMonths = [
     "मुहर्रम",
@@ -262,6 +263,11 @@ function buildPageUrl(pageName) {
     if (pageName === 'ramadan-isha') return 'ramadan-isha.html';
     if (/^theme-[1-6]$/.test(pageName)) return `${pageName}.html`;
     return null;
+}
+
+function isTheme6DisplayWindow(date = new Date()) {
+    const minutes = date.getHours() * 60 + date.getMinutes();
+    return minutes >= 17 * 60 && minutes < 19 * 60 + 30;
 }
 
 function ensureDisplayOverrideDialog() {
@@ -926,7 +932,20 @@ async function loadSelectedTheme() {
         const res = await fetch('/api/settings?t=' + Date.now(), { cache: 'no-store' });
         const data = await res.json();
         const selectedTheme = data.theme || 'index';
+        SELECTED_DISPLAY_THEME = selectedTheme;
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+        if (['surah-hadith.html', 'juma.html', 'ramadan-isha.html'].includes(currentPage)) {
+            return;
+        }
+
+        if (selectedTheme === 'theme-6') {
+            const scheduledPage = isTheme6DisplayWindow() ? 'theme-6.html' : 'index.html';
+            if (currentPage !== scheduledPage) {
+                window.location.href = '/' + scheduledPage;
+            }
+            return;
+        }
 
         // If a specific theme is selected, redirect to it; if index is selected, ensure we are on index.html
         if (selectedTheme !== 'index' && selectedTheme.startsWith('theme-')) {
@@ -1465,6 +1484,20 @@ function scheduleSwitcher() {
         scheduleLastSwitch = Date.now();
         return;
     }
+
+    if (SELECTED_DISPLAY_THEME === 'theme-6') {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const inTheme6Window = isTheme6DisplayWindow();
+        if (currentPage === 'index.html' && inTheme6Window) {
+            window.location.href = 'theme-6.html';
+            return;
+        }
+        if (currentPage === 'theme-6.html' && !inTheme6Window) {
+            window.location.href = 'index.html';
+            return;
+        }
+    }
+
     const now = new Date();
     const elapsed = now - scheduleLastSwitch;
 
