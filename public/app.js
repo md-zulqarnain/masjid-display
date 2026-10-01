@@ -2,7 +2,7 @@ const prayerData = {
     fajr: { name: "फ़जर ", arabic: "فجر", start: "04:30 AM", azan: "05:00 AM", jamah: "05:15 AM", end: "06:15 AM" },
     dhuhr: { name: "ज़ोहर ", arabic: "ظهر", start: "12:00 PM", azan: "12:30 PM", jamah: "12:45 PM", end: "03:30 PM" },
     asr: { name: "असर ", arabic: "عصر", start: "03:30 PM", azan: "04:00 PM", jamah: "04:15 PM", end: "05:45 PM" },
-    maghrib: { name: "मग़रिब ", arabic: "मغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
+    maghrib: { name: "मग़रिब ", arabic: "مغرب", start: "05:50 PM", azan: "05:55 PM", jamah: "06:00 PM", end: "07:15 PM" },
     isha: { name: "इशा ", arabic: "عشاء", start: "07:15 PM", azan: "07:45 PM", jamah: "08:07 PM", end: "10:30 PM" },
 };
 window.prayerData = prayerData;
@@ -31,7 +31,7 @@ const prayerSliderOrder = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 let prayerSliderIndex = 0;
 const prayerSliderCycleMs = 6000;
 let ACTIVE_DISPLAY_OVERRIDE = { mode: 'normal', page: null, dialog: null, message: '' };
-let SELECTED_DISPLAY_THEME = 'index';
+let SELECTED_DISPLAY_THEME = null;
 
 const islamicMonths = [
     "मुहर्रम",
@@ -267,7 +267,14 @@ function buildPageUrl(pageName) {
 
 function isTheme6DisplayWindow(date = new Date()) {
     const minutes = date.getHours() * 60 + date.getMinutes();
-    return minutes >= 17 * 60 && minutes < 19 * 60 + 30;
+    return minutes >= 16 * 60 + 48 && minutes < 19 * 60 + 30;
+}
+
+let previousTheme6WindowState = isTheme6DisplayWindow();
+
+function getScheduledHomePage(date = new Date()) {
+    const usesScheduledTheme6 = SELECTED_DISPLAY_THEME === 'index' || SELECTED_DISPLAY_THEME === 'theme-6';
+    return usesScheduledTheme6 && isTheme6DisplayWindow(date) ? 'theme-6.html' : 'index.html';
 }
 
 function ensureDisplayOverrideDialog() {
@@ -939,8 +946,8 @@ async function loadSelectedTheme() {
             return;
         }
 
-        if (selectedTheme === 'theme-6') {
-            const scheduledPage = isTheme6DisplayWindow() ? 'theme-6.html' : 'index.html';
+        if (selectedTheme === 'index' || selectedTheme === 'theme-6') {
+            const scheduledPage = getScheduledHomePage();
             if (currentPage !== scheduledPage) {
                 window.location.href = '/' + scheduledPage;
             }
@@ -1485,7 +1492,7 @@ function scheduleSwitcher() {
         return;
     }
 
-    if (SELECTED_DISPLAY_THEME === 'theme-6') {
+    if (SELECTED_DISPLAY_THEME === 'index' || SELECTED_DISPLAY_THEME === 'theme-6') {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const inTheme6Window = isTheme6DisplayWindow();
         if (currentPage === 'index.html' && inTheme6Window) {
@@ -1496,6 +1503,11 @@ function scheduleSwitcher() {
             window.location.href = 'index.html';
             return;
         }
+        if (currentPage === 'surah-hadith.html' && previousTheme6WindowState && !inTheme6Window) {
+            window.location.href = 'index.html';
+            return;
+        }
+        previousTheme6WindowState = inTheme6Window;
     }
 
     const now = new Date();
@@ -1528,8 +1540,7 @@ function scheduleSwitcher() {
 
     if (scheduleViewingSurah) {
         if (elapsed >= SURAH_DURATION) {
-            // switch back to index
-            window.location.href = 'index.html';
+            window.location.href = getScheduledHomePage();
         }
     } else {
         if (elapsed >= INDEX_DURATION) {
