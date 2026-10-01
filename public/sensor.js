@@ -1,4 +1,8 @@
 // sensor.js - fetches /api/sensor and updates sensor UI
+const initialTempValue = document.getElementById('sensor-temp-left') || document.getElementById('sensor-temp');
+const initialTempBlock = document.getElementById('sensor-left') || initialTempValue?.closest('.sensor-inline-left');
+if (initialTempBlock) initialTempBlock.style.display = 'none';
+
 async function fetchSensor() {
     try {
         const res = await fetch('/api/sensor');
@@ -12,22 +16,24 @@ async function fetchSensor() {
 
 function updateSensorUI(data) {
     const elTemp = document.getElementById('sensor-temp-left') || document.getElementById('sensor-temp') || document.getElementById('sensor-temp-left');
+    const tempBlock = document.getElementById('sensor-left') || elTemp?.closest('.sensor-inline-left');
     const elHum = document.getElementById('sensor-hum-right') || document.getElementById('sensor-hum') || document.getElementById('sensor-hum-right');
     const elTime = document.getElementById('sensor-time');
 
     if (!elTemp) return;
 
-    if (data && typeof data.temperature === 'number') {
+    const hasTemperature = Number.isFinite(data?.temperature);
+    if (tempBlock) tempBlock.style.display = hasTemperature ? '' : 'none';
+
+    if (hasTemperature) {
         const newVal = data.temperature.toFixed(1) + ' °C';
         if (elTemp.textContent !== newVal) {
             elTemp.classList.add('sensor-updated');
             setTimeout(() => elTemp.classList.remove('sensor-updated'), 900);
         }
         elTemp.textContent = newVal;
-    } else if (data && data.temperature === null) {
-        elTemp.textContent = '-- °C';
-    } else if (data && data.error) {
-        elTemp.textContent = 'Err';
+    } else {
+        elTemp.textContent = '';
     }
 
     // Humidity: show only when sensor provides it (BME); hide for BMP sensors
