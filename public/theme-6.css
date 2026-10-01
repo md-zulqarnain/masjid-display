@@ -1,0 +1,204 @@
+:root {
+  --theme-paper: #f5f8f6;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #edf4f0;
+  --theme-ink: #18372b;
+  --theme-muted: #536d60;
+  --theme-accent: #16845b;
+  --theme-accent-soft: #d9eee4;
+  --theme-line: #d4e1d9;
+}
+
+body#机-index-body.theme-6,
+body#机-index-body.theme-6 {
+  background: var(--theme-paper);
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 {
+  background: var(--theme-paper);
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 .corner-img {
+  border-color: var(--theme-line);
+  box-shadow: 0 3px 12px rgba(24, 55, 43, 0.12);
+}
+
+#index-body.theme-6 #clock,
+#index-body.theme-6 #hours,
+#index-body.theme-6 #seconds,
+#index-body.theme-6 #ampm,
+#index-body.theme-6 #date,
+#index-body.theme-6 #hijri {
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 #seconds,
+#index-body.theme-6 #ampm {
+  color: var(--theme-muted);
+}
+
+#index-body.theme-6 table,
+#index-body.theme-6 .card,
+#index-body.theme-6 .juma-times,
+#index-body.theme-6 .verse-slider-container,
+#index-body.theme-6 .extraPrayerCard {
+  background: var(--theme-surface);
+  color: var(--theme-ink);
+  border-color: var(--theme-line);
+  box-shadow: 0 5px 18px rgba(24, 55, 43, 0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+#index-body.theme-6 th,
+#index-body.theme-6 td {
+  color: var(--theme-ink);
+  border-bottom-color: var(--theme-line);
+}
+
+#index-body.theme-6 thead {
+  background: var(--theme-accent-soft);
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 tbody tr:nth-child(odd) {
+  background: var(--theme-surface);
+}
+
+#index-body.theme-6 tbody tr:nth-child(even) {
+  background: var(--theme-surface-alt);
+}
+
+#index-body.theme-6 tbody td:nth-child(2) {
+  color: #176c9a;
+}
+
+#index-body.theme-6 tbody td:nth-child(4) {
+  color: var(--theme-accent);
+}
+
+#index-body.theme-6 tbody tr.active-row {
+  background: #d8f0e3 !important;
+  color: var(--theme-ink);
+  box-shadow: inset 4px 0 var(--theme-accent);
+  transform: none;
+}
+
+#index-body.theme-6 .date-center #nextPrayerName,
+#index-body.theme-6 .date-center #nextPrayerCountdown,
+#index-body.theme-6 #ramadanTimes,
+#index-body.theme-6 .countdown {
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 #ramadanTimes span:not(:last-child)::after {
+  background: var(--theme-line);
+}
+
+#index-body.theme-6 .sensor-inline-left {
+  background: #fff4e8;
+  border-color: #f0d6bd;
+  box-shadow: none;
+}
+
+#index-body.theme-6 .sensor-inline-left .s-value {
+  color: #8a4a1d;
+  text-shadow: none;
+}
+
+#index-body.theme-6 .sensor-inline-left .s-label,
+#index-body.theme-6 .sahri-iftar-label {
+  color: var(--theme-muted);
+}
+
+#index-body.theme-6 .juma-header-card {
+  background: var(--theme-accent-soft);
+  color: var(--theme-ink);
+  box-shadow: none;
+}
+
+#index-body.theme-6 .juma-time-box {
+  background: var(--theme-surface);
+  border-right-color: var(--theme-line);
+}
+
+#index-body.theme-6 .juma-label {
+  color: var(--theme-muted);
+}
+
+#index-body.theme-6 .juma-label-arabic,
+#index-body.theme-6 .juma-time,
+#index-body.theme-6 .verse-text {
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 .verse-slider-container {
+  border-radius: 12px;
+}
+
+#index-body.theme-6 .extraPrayerCard.card-special {
+  border-left-color: var(--theme-accent);
+  background: var(--theme-surface);
+}
+
+#index-body.theme-6 .sliderPrayerName,
+#index-body.theme-6 .sliderTime,
+#index-body.theme-6 .extraPrayerTime {
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 .sliderLabel,
+#index-body.theme-6 .extraPrayerLabel {
+  color: var(--theme-muted);
+}
+
+#index-body.theme-6 .card-special #startSliderTime {
+  color: #176c9a;
+}
+
+#index-body.theme-6 .card-special #endSliderTime {
+  color: var(--theme-accent);
+}
+
+#index-body.theme-6 .footer {
+  color: var(--theme-muted);
+  border-top-color: var(--theme-line);
+}
+
+#index-body.theme-6 .brand-log {
+  background: var(--theme-surface);
+  box-shadow: 0 2px 8px rgba(24, 55, 43, 0.1);
+}
+
+#index-body.theme-6 .timing-change-marquee > span {
+  background: #e5f2eb;
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 .marquee-fajr,
+#index-body.theme-6 .marquee-asr,
+#index-body.theme-6 .marquee-isha {
+  background: #e5f2eb;
+  color: var(--theme-ink);
+}
+
+#index-body.theme-6 .jamat-popup {
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--theme-ink);
+  border-color: var(--theme-line);
+}
+
+#index-body.theme-6 .jamat-popup-content > div {
+  color: var(--theme-ink) !important;
+  border-color: var(--theme-line) !important;
+}
+
+#index-body.theme-6 .jamat-popup-content span {
+  color: var(--theme-accent) !important;
+}
+
+#index-body.theme-6 .jamat-popup .divider-star {
+  color: var(--theme-accent);
+}

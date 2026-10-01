@@ -20,7 +20,7 @@ const ALLOWED_DISPLAY_RESOLUTIONS = new Set([
   '1280x720@60Hz',
   '1024x768@60Hz'
 ]);
-const ALLOWED_PAGES = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5'];
+const ALLOWED_PAGES = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6'];
 const ALLOWED_DIALOGS = ['message', 'black', 'welcome', 'announcement', 'takbir', 'tashrik', 'takbir-e-tashrik'];
 
 if (!fs.existsSync(VERSES_FILE)) {
@@ -119,7 +119,7 @@ function saveSettings(updates) {
     next.displayTheme = "auto";
   }
   next.displayResolution = normalizeDisplayResolution(next.displayResolution);
-  if (!["index", "theme-1", "theme-2", "theme-3", "theme-4", "theme-5"].includes(next.theme)) {
+  if (!["index", "theme-1", "theme-2", "theme-3", "theme-4", "theme-5", "theme-6"].includes(next.theme)) {
     next.theme = "index";
   }
   next.displayOverride = normalizeDisplayOverride(next.displayOverride || updates?.displayOverride);
