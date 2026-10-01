@@ -55,29 +55,10 @@ function normalizeDisplayOverride(override, fallback = { mode: 'normal', page: n
   return { mode: 'normal', page: null, dialog: null, message: '' };
 }
 
-function normalizeHotspotConfig(config = {}) {
-  const hotspot = config && typeof config === 'object' ? config : {};
-  const hotspotName = typeof hotspot.hotspotName === 'string' ? hotspot.hotspotName.trim() : '';
-  const fallbackHotspotName = typeof hotspot.fallbackHotspotName === 'string' && hotspot.fallbackHotspotName.trim()
-    ? hotspot.fallbackHotspotName.trim()
-    : 'Masjid-Display';
-  const searchSeconds = Number.isFinite(Number(hotspot.searchSeconds)) ? Number(hotspot.searchSeconds) : 60;
-  const enabled = hotspot.enabled === true;
-
-  return {
-    enabled,
-    hotspotName,
-    fallbackHotspotName,
-    searchSeconds: Math.min(300, Math.max(15, searchSeconds)),
-    status: ['idle', 'searching', 'connected', 'hotspot', 'error'].includes(hotspot.status) ? hotspot.status : 'idle',
-    lastCheckedAt: typeof hotspot.lastCheckedAt === 'string' ? hotspot.lastCheckedAt : null
-  };
-}
-
 function readSettings() {
   try {
     if (!fs.existsSync(SETTINGS_FILE)) {
-      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ hijriOffset: 0, beepVolume: 1, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' }, wifiHotspot: normalizeHotspotConfig({ enabled: false, hotspotName: '', fallbackHotspotName: 'Masjid-Display', searchSeconds: 60, status: 'idle' }) }, null, 2));
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ hijriOffset: 0, beepVolume: 1, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } }, null, 2));
     }
 
     const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"));
@@ -86,11 +67,10 @@ function readSettings() {
       beepVolume: typeof data.beepVolume === "number" ? data.beepVolume : 1,
       displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto",
       theme: typeof data.theme === "string" ? data.theme : "index",
-      displayOverride: normalizeDisplayOverride(data.displayOverride),
-      wifiHotspot: normalizeHotspotConfig(data.wifiHotspot)
+      displayOverride: normalizeDisplayOverride(data.displayOverride)
     };
   } catch (err) {
-    return { hijriOffset: 0, beepVolume: 1, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' }, wifiHotspot: normalizeHotspotConfig({ enabled: false, hotspotName: '', fallbackHotspotName: 'Masjid-Display', searchSeconds: 60, status: 'idle' }) };
+    return { hijriOffset: 0, beepVolume: 1, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } };
   }
 }
 
@@ -106,7 +86,6 @@ function saveSettings(updates) {
     next.theme = "index";
   }
   next.displayOverride = normalizeDisplayOverride(next.displayOverride || updates?.displayOverride);
-  next.wifiHotspot = normalizeHotspotConfig(next.wifiHotspot || updates?.wifiHotspot || {});
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2));
   return next;
 }
@@ -129,35 +108,6 @@ app.get('/api/settings', (req, res) => {
 app.post('/api/settings', (req, res) => {
   const settings = saveSettings(req.body || {});
   res.json({ message: "Settings saved successfully", settings });
-});
-
-app.get('/api/network/hotspot', (req, res) => {
-  res.json(readSettings().wifiHotspot || normalizeHotspotConfig({ enabled: false, hotspotName: '', fallbackHotspotName: 'Masjid-Display', searchSeconds: 60, status: 'idle' }));
-});
-
-app.post('/api/network/hotspot', (req, res) => {
-  const hotspotConfig = normalizeHotspotConfig(req.body || {});
-  const settings = saveSettings({ wifiHotspot: hotspotConfig });
-  res.json({ message: 'Hotspot settings saved successfully', wifiHotspot: settings.wifiHotspot });
-});
-
-app.post('/api/network/hotspot/check', (req, res) => {
-  const scriptPath = path.join(__dirname, 'scripts', 'pi-hotspot-manager.js');
-  if (!fs.existsSync(scriptPath)) {
-    return res.status(404).json({ error: 'Hotspot manager script not found' });
-  }
-
-  const child = exec(`node "${scriptPath}"`, { cwd: __dirname }, (error, stdout, stderr) => {
-    if (error) {
-      return res.status(500).json({ error: error.message, stdout, stderr });
-    }
-
-    res.json({ message: 'Wi‑Fi hotspot check started', stdout, stderr });
-  });
-
-  if (!child || typeof child.pid === 'undefined') {
-    res.status(500).json({ error: 'Could not start hotspot manager' });
-  }
 });
 
 app.post('/api/beep/test', (req, res) => {

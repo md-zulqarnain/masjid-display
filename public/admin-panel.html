@@ -542,47 +542,7 @@
                     <button class="btn-primary" onclick="saveSettings()">Save</button>
                 </div>
 
-                <hr style="margin: 30px 0;">
-
-                <h2>Pi Wi‑Fi Hotspot</h2>
-
-                <div class="form-group">
-                    <label>Enable automatic Wi‑Fi switching</label>
-                    <input type="checkbox" id="wifiHotspotEnabled"
-                        style="width:auto; margin-right:8px; transform: scale(1.2);" />
-                    <small style="color:#bbb; display:block; margin-top:8px;">
-                        The Raspberry Pi will try the saved hotspot name for 1 minute, then start its own hotspot if it
-                        is not available.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label>Hotspot name to find</label>
-                    <input type="text" id="wifiHotspotName" placeholder="Example: Masjid WiFi" />
-                    <small style="color:#bbb;">This is the network name the Pi should search for first.</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Search window (seconds)</label>
-                    <input type="number" id="wifiHotspotSearchSeconds" min="15" max="300" step="5" value="60" />
-                    <small style="color:#bbb;">The Pi searches for this network for up to 60 seconds before starting its
-                        hotspot.</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Fallback hotspot name</label>
-                    <input type="text" id="wifiHotspotFallbackName" placeholder="Masjid-Display" />
-                    <small style="color:#bbb;">If the saved network is not found, this becomes the hotspot name shared
-                        by the Pi.</small>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn-primary" onclick="savePiHotspotSettings()">Save Hotspot Settings</button>
-                    <button class="btn-secondary" onclick="runPiHotspotCheck()" id="runHotspotCheckBtn">Run Search
-                        Now</button>
-                </div>
-
-                <div id="wifiHotspotMessage" class="message"></div>
+                <div id="settingsMessage" class="message"></div>
             </div>
         </div>
 
@@ -1190,25 +1150,6 @@
             const res = await fetch('/api/settings');
             const data = await res.json();
             document.getElementById('hijriOffsetInput').value = data.hijriOffset || 0;
-
-            const hotspot = data.wifiHotspot || {};
-            const hotspotEnabledInput = document.getElementById('wifiHotspotEnabled');
-            if (hotspotEnabledInput) {
-                hotspotEnabledInput.checked = !!hotspot.enabled;
-            }
-            const hotspotNameInput = document.getElementById('wifiHotspotName');
-            if (hotspotNameInput) {
-                hotspotNameInput.value = hotspot.hotspotName || '';
-            }
-            const hotspotSearchInput = document.getElementById('wifiHotspotSearchSeconds');
-            if (hotspotSearchInput) {
-                hotspotSearchInput.value = hotspot.searchSeconds || 60;
-            }
-            const fallbackHotspotInput = document.getElementById('wifiHotspotFallbackName');
-            if (fallbackHotspotInput) {
-                fallbackHotspotInput.value = hotspot.fallbackHotspotName || 'Masjid-Display';
-            }
-
             const beepInput = document.getElementById('beepVolumeInput');
             if (beepInput) {
                 beepInput.value = Math.round((typeof data.beepVolume === 'number' ? data.beepVolume : 1) * 100);
@@ -1251,67 +1192,6 @@
             });
 
             showMessage('settingsMessage', 'Settings saved successfully!', 'success');
-        }
-
-        async function savePiHotspotSettings() {
-            const hotspotEnabled = document.getElementById('wifiHotspotEnabled')?.checked || false;
-            const hotspotName = document.getElementById('wifiHotspotName')?.value.trim() || '';
-            const searchSeconds = parseInt(document.getElementById('wifiHotspotSearchSeconds')?.value || '60', 10);
-            const fallbackHotspotName = document.getElementById('wifiHotspotFallbackName')?.value.trim() || 'Masjid-Display';
-
-            if (!hotspotEnabled && !hotspotName) {
-                showMessage('wifiHotspotMessage', 'Set a hotspot name or enable auto switch to save the rule.', 'error');
-                return;
-            }
-
-            const res = await fetch('/api/network/hotspot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    enabled: hotspotEnabled,
-                    hotspotName,
-                    searchSeconds: Number.isFinite(searchSeconds) ? searchSeconds : 60,
-                    fallbackHotspotName,
-                    status: 'idle'
-                })
-            });
-
-            const data = await res.json();
-            if (!res.ok) {
-                showMessage('wifiHotspotMessage', data.error || 'Could not save hotspot settings.', 'error');
-                return;
-            }
-
-            showMessage('wifiHotspotMessage', 'Hotspot settings saved successfully.', 'success');
-        }
-
-        async function runPiHotspotCheck() {
-            const btn = document.getElementById('runHotspotCheckBtn');
-            const originalText = btn ? btn.textContent : 'Run Search Now';
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Searching...';
-            }
-
-            try {
-                const res = await fetch('/api/network/hotspot/check', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data = await res.json();
-                if (!res.ok) {
-                    showMessage('wifiHotspotMessage', data.error || 'Could not run hotspot search.', 'error');
-                    return;
-                }
-                showMessage('wifiHotspotMessage', 'Hotspot check started on the Raspberry Pi.', 'success');
-            } catch (err) {
-                showMessage('wifiHotspotMessage', 'Network error: ' + err.message, 'error');
-            } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                }
-            }
         }
 
         function updateBeepVolumeLabel() {
