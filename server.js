@@ -21,6 +21,7 @@ const ALLOWED_DISPLAY_RESOLUTIONS = new Set([
   '1024x768@60Hz'
 ]);
 const ALLOWED_PAGES = ['normal', 'index', 'home', 'surah-hadith', 'juma', 'ramadan-isha', 'theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6'];
+const ALLOWED_THEMES = ['index', 'theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6'];
 const ALLOWED_DIALOGS = ['message', 'black', 'welcome', 'announcement', 'takbir', 'tashrik', 'takbir-e-tashrik'];
 
 if (!fs.existsSync(VERSES_FILE)) {
@@ -67,6 +68,10 @@ function normalizeDisplayDialogType(dialog, fallback = 'message') {
   return ALLOWED_DIALOGS.includes(normalized) ? normalized : fallback;
 }
 
+function normalizeTheme(theme) {
+  return ALLOWED_THEMES.includes(theme) ? theme : 'index';
+}
+
 function normalizeDisplayOverride(override, fallback = { mode: 'normal', page: null, dialog: null, message: '' }) {
   const safeOverride = override && typeof override === 'object' ? override : {};
   const mode = safeOverride.mode === 'page' || safeOverride.mode === 'dialog' ? safeOverride.mode : 'normal';
@@ -102,7 +107,7 @@ function readSettings() {
       beepVolume: typeof data.beepVolume === "number" ? data.beepVolume : 1,
       displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto",
       displayResolution: normalizeDisplayResolution(data.displayResolution),
-      theme: typeof data.theme === "string" ? data.theme : "index",
+      theme: normalizeTheme(data.theme),
       displayOverride: normalizeDisplayOverride(data.displayOverride)
     };
   } catch (err) {
@@ -119,9 +124,7 @@ function saveSettings(updates) {
     next.displayTheme = "auto";
   }
   next.displayResolution = normalizeDisplayResolution(next.displayResolution);
-  if (!["index", "theme-1", "theme-2", "theme-3", "theme-4", "theme-5", "theme-6"].includes(next.theme)) {
-    next.theme = "index";
-  }
+  next.theme = normalizeTheme(next.theme);
   next.displayOverride = normalizeDisplayOverride(next.displayOverride || updates?.displayOverride);
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2));
   return next;
@@ -222,7 +225,12 @@ app.post('/api/display/override', (req, res) => {
 });
 
 app.post('/api/theme', (req, res) => {
-  const settings = saveSettings({ theme: req.body?.theme });
+  const theme = req.body?.theme;
+  if (!ALLOWED_THEMES.includes(theme)) {
+    return res.status(400).json({ error: 'Unsupported display theme' });
+  }
+
+  const settings = saveSettings({ theme });
   sendDisplayEvent("theme-change", { theme: settings.theme });
   res.json({ message: "Theme saved successfully", settings });
 });
@@ -639,6 +647,7 @@ module.exports = {
   normalizeDisplayOverride,
   normalizeDisplayPage,
   normalizeDisplayDialogType,
+  normalizeTheme,
   normalizeDisplayResolution,
   readSettings,
   saveSettings

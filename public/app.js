@@ -260,7 +260,7 @@ function buildPageUrl(pageName) {
     if (pageName === 'surah-hadith') return 'surah-hadith.html';
     if (pageName === 'juma') return 'juma.html';
     if (pageName === 'ramadan-isha') return 'ramadan-isha.html';
-    if (pageName === 'theme-1' || pageName === 'theme-2' || pageName === 'theme-3' || pageName === 'theme-4') return `${pageName}.html`;
+    if (/^theme-[1-6]$/.test(pageName)) return `${pageName}.html`;
     return null;
 }
 

@@ -1564,13 +1564,14 @@
                     body: JSON.stringify({ theme })
                 });
 
-                if (res.ok) {
-                    showMessage('themeMessage', 'Theme applied successfully! The display will update.', 'success');
-                } else {
-                    showMessage('themeMessage', 'Could not apply theme.', 'error');
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || 'Could not apply theme.');
+                if (result.settings?.theme !== theme) {
+                    throw new Error(`Server kept ${result.settings?.theme || 'an unknown theme'} instead of ${theme}.`);
                 }
+                showMessage('themeMessage', 'Theme applied successfully! The display will update.', 'success');
             } catch (err) {
-                showMessage('themeMessage', 'Network error: ' + err.message, 'error');
+                showMessage('themeMessage', err.message, 'error');
             } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;

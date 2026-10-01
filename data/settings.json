@@ -2,5 +2,12 @@
   "hijriOffset": -2,
   "beepVolume": 1,
   "displayTheme": "auto",
-  "theme": "index"
+  "displayResolution": "1920x1080@60Hz",
+  "theme": "index",
+  "displayOverride": {
+    "mode": "normal",
+    "page": null,
+    "dialog": null,
+    "message": ""
+  }
 }

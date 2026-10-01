@@ -12,6 +12,8 @@ assert.strictEqual(typeof server.normalizeDisplayDialogType, 'function', 'normal
 assert.strictEqual(server.normalizeDisplayDialogType('takbir'), 'takbir');
 assert.strictEqual(server.normalizeDisplayDialogType('TASHRIK'), 'tashrik');
 assert.strictEqual(server.normalizeDisplayDialogType('not-a-dialog'), 'message');
+assert.strictEqual(server.normalizeTheme('theme-6'), 'theme-6');
+assert.strictEqual(server.normalizeTheme('unsupported-theme'), 'index');
 assert.strictEqual(server.normalizeDisplayResolution('1920x1080@60Hz'), '1920x1080@60Hz');
 assert.strictEqual(server.normalizeDisplayResolution('3840x2160@30Hz'), '3840x2160@30Hz');
 assert.strictEqual(server.normalizeDisplayResolution('unsupported-mode'), '1920x1080@60Hz');
