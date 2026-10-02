@@ -659,6 +659,19 @@
                 <div class="button-group" style="margin-bottom: 15px;">
                     <button class="btn-primary" onclick="runPiCommand()" id="runPiCommandBtn">Run Command</button>
                     <button class="btn-secondary" onclick="clearTerminalOutput()">Clear</button>
+                <hr style="margin: 30px 0;">
+                <h2>Samsung Display Power Schedule</h2>
+                <div class="form-group" style="max-width: 760px;">
+                    <small style="color:#bbb;">Add extra daily power-on/off intervals. These supplement the existing morning and Isha-to-Sahri schedule. Overnight intervals are supported.</small>
+                    <div id="displayPowerSlots" style="display:grid; gap:12px; margin-top:16px;"></div>
+                    <small id="displayPowerSlotsEmpty" style="display:block; color:#bbb; margin-top:10px;">No extra intervals configured.</small>
+                </div>
+                <div class="button-group" style="margin-bottom: 25px;">
+                    <button class="btn-secondary" onclick="addDisplayPowerSlot()" id="addPowerSlotBtn">Add Time Slot</button>
+                    <button class="btn-primary" onclick="saveDisplayPowerSchedule()" id="savePowerScheduleBtn">Save Power Schedule</button>
+                    <button class="btn-secondary" onclick="clearDisplayPowerSchedule()" id="clearPowerScheduleBtn">Clear Extra Slots</button>
+                </div>
+                <div id="displayPowerScheduleMessage" class="message"></div>
                 </div>
 
                 <div class="form-group">
@@ -1201,6 +1214,7 @@
             if (resolutionInput) {
                 resolutionInput.value = data.displayResolution || '1920x1080@60Hz';
             }
+            renderDisplayPowerSlots(data.displayPowerSlots || []);
             const themeSelector = document.getElementById('themeSelector');
             if (themeSelector) {
                 themeSelector.value = data.theme || 'index';
@@ -1361,6 +1375,92 @@
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
+        }
+
+        function addDisplayPowerSlot(slot = { on: '', off: '' }) {
+            const container = document.getElementById('displayPowerSlots');
+            if (!container || container.children.length >= 12) {
+                showMessage('displayPowerScheduleMessage', 'You can add up to 12 extra intervals.', 'error');
+                return;
+            }
+
+            const row = document.createElement('div');
+            row.className = 'display-power-slot';
+            row.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) auto; align-items:end; gap:12px; padding:12px; border:1px solid #444; border-radius:6px;';
+            row.innerHTML = `
+                <div class="form-group" style="margin:0;">
+                    <label>Power On</label>
+                    <input type="time" data-power-on required>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Power Off</label>
+                    <input type="time" data-power-off required>
+                </div>
+                <button type="button" class="btn-danger" aria-label="Remove time slot">Remove</button>
+            `;
+            row.querySelector('[data-power-on]').value = slot.on || '';
+            row.querySelector('[data-power-off]').value = slot.off || '';
+            row.querySelector('button').addEventListener('click', () => {
+                row.remove();
+                updateDisplayPowerSlotsEmptyState();
+            });
+            container.appendChild(row);
+            updateDisplayPowerSlotsEmptyState();
+        }
+
+        function renderDisplayPowerSlots(slots) {
+            const container = document.getElementById('displayPowerSlots');
+            if (!container) return;
+            container.innerHTML = '';
+            slots.slice(0, 12).forEach(slot => addDisplayPowerSlot(slot));
+            updateDisplayPowerSlotsEmptyState();
+        }
+
+        function updateDisplayPowerSlotsEmptyState() {
+            const container = document.getElementById('displayPowerSlots');
+            const emptyState = document.getElementById('displayPowerSlotsEmpty');
+            if (container && emptyState) emptyState.style.display = container.children.length ? 'none' : 'block';
+        }
+
+        async function saveDisplayPowerSchedule() {
+            if (!isSuperAdmin()) {
+                showMessage('displayPowerScheduleMessage', 'Superadmin login required.', 'error');
+                return;
+            }
+
+            const slots = [...document.querySelectorAll('#displayPowerSlots .display-power-slot')].map(row => ({
+                on: row.querySelector('[data-power-on]').value,
+                off: row.querySelector('[data-power-off]').value
+            }));
+            if (slots.some(slot => !slot.on || !slot.off || slot.on === slot.off)) {
+                showMessage('displayPowerScheduleMessage', 'Choose different power-on and power-off times for every slot.', 'error');
+                return;
+            }
+
+            const button = document.getElementById('savePowerScheduleBtn');
+            const originalText = button.textContent;
+            button.disabled = true;
+            try {
+                const response = await fetch('/api/display/power-schedule', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slots })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Could not save power schedule.');
+                showMessage('displayPowerScheduleMessage', 'Extra power intervals saved.', 'success');
+            } catch (error) {
+                showMessage('displayPowerScheduleMessage', error.message, 'error');
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        async function clearDisplayPowerSchedule() {
+            document.getElementById('displayPowerSlots').innerHTML = '';
+            updateDisplayPowerSlotsEmptyState();
+            await saveDisplayPowerSchedule();
         }
 
         async function applyDisplayOverrideFromAdmin() {

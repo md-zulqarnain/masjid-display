@@ -3,6 +3,7 @@
   "beepVolume": 1,
   "displayTheme": "auto",
   "displayResolution": "1920x1080@60Hz",
+  "displayPowerSlots": [],
   "theme": "index",
   "displayOverride": {
     "mode": "normal",

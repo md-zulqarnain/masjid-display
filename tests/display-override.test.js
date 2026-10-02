@@ -17,6 +17,29 @@ assert.strictEqual(server.normalizeTheme('unsupported-theme'), 'index');
 assert.strictEqual(server.normalizeDisplayResolution('1920x1080@60Hz'), '1920x1080@60Hz');
 assert.strictEqual(server.normalizeDisplayResolution('3840x2160@30Hz'), '3840x2160@30Hz');
 assert.strictEqual(server.normalizeDisplayResolution('unsupported-mode'), '1920x1080@60Hz');
+assert.deepStrictEqual(server.normalizeDisplayPowerSlots([
+    { on: '12:00', off: '13:00' },
+    { on: '25:00', off: '13:00' },
+    { on: '14:00', off: '14:00' }
+]), [{ on: '12:00', off: '13:00' }]);
+assert.strictEqual(server.parseTimeToMinutes('7:30 AM'), 450);
+assert.strictEqual(server.parseTimeToMinutes('19:30'), 1170);
+
+const quickTimes = { isha: { useCustomTime: true, azan: '07:30 PM', jamahAfterAzan: 15 } };
+const timingDayReader = () => ({ Isha: '19:00', Sahri: '04:30' });
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 7, 29), quickTimes, timingDayReader), false);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 7, 30), quickTimes, timingDayReader), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 11, 29), quickTimes, timingDayReader), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 11, 30), quickTimes, timingDayReader), false);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 20, 44), quickTimes, timingDayReader), false);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 20, 45), quickTimes, timingDayReader), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 3, 3, 29), quickTimes, timingDayReader), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 3, 3, 30), quickTimes, timingDayReader), false);
+const additionalPowerSlots = [{ on: '12:00', off: '13:00' }, { on: '22:00', off: '05:00' }];
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 12, 59), quickTimes, timingDayReader, additionalPowerSlots), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 13, 0), quickTimes, timingDayReader, additionalPowerSlots), false);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 3, 4, 30), quickTimes, timingDayReader, additionalPowerSlots), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 3, 5, 0), quickTimes, timingDayReader, additionalPowerSlots), false);
 
 assert.deepStrictEqual(server.normalizeDisplayOverride({ mode: 'dialog', dialog: 'tashrik', message: 'Test message' }), {
     mode: 'dialog',

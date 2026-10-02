@@ -1,5 +1,5 @@
 const express = require("express");
-const { exec } = require("child_process");
+const { exec, spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const bodyParser = require("body-parser");
@@ -66,6 +66,172 @@ function applySavedDisplayResolution() {
   });
 }
 
+function parseTimeToMinutes(value) {
+  if (typeof value !== 'string') return null;
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+  if (!match) return null;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const period = match[3]?.toUpperCase();
+  if (minutes > 59) return null;
+
+  if (period) {
+    if (hours < 1 || hours > 12) return null;
+    hours = (hours % 12) + (period === 'PM' ? 12 : 0);
+  } else if (hours > 23) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function normalizeDisplayPowerSlots(slots) {
+  if (!Array.isArray(slots)) return [];
+
+  return slots.slice(0, 12).map(slot => {
+    const on = typeof slot?.on === 'string' ? slot.on.trim() : '';
+    const off = typeof slot?.off === 'string' ? slot.off.trim() : '';
+    if (!/^\d{2}:\d{2}$/.test(on) || !/^\d{2}:\d{2}$/.test(off)) return null;
+
+    const onMinutes = parseTimeToMinutes(on);
+    const offMinutes = parseTimeToMinutes(off);
+    if (onMinutes === null || offMinutes === null || onMinutes === offMinutes) return null;
+
+    return { on, off };
+  }).filter(Boolean);
+}
+
+function readTimingDay(date) {
+  const filePath = path.join(__dirname, `timing-data-${date.getMonth() + 1}.json`);
+  try {
+    const days = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    return Array.isArray(days)
+      ? (days.find(day => day.day === date.getDate()) || days[date.getDate() - 1] || null)
+      : null;
+  } catch (error) {
+    console.error(`Could not read timing data for ${date.toLocaleDateString()}:`, error.message);
+    return null;
+  }
+}
+
+function readQuickTimingSettings() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, 'timings.json'), 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function getIshaJamatMinutes(dayData, quickTimes) {
+  const ishaConfig = quickTimes?.isha || {};
+  let azanMinutes;
+
+  if (ishaConfig.useCustomTime === true && ishaConfig.azan) {
+    azanMinutes = parseTimeToMinutes(ishaConfig.azan);
+  } else {
+    const ishaMinutes = parseTimeToMinutes(dayData?.Isha);
+    if (ishaMinutes === null) return null;
+    azanMinutes = Math.ceil((ishaMinutes + 15) / 15) * 15;
+  }
+
+  if (azanMinutes === null || azanMinutes === undefined) return null;
+  const configuredDelay = Number.parseInt(ishaConfig.jamahAfterAzan, 10);
+  const jamatDelay = Number.isNaN(configuredDelay) ? 15 : configuredDelay;
+  return ((azanMinutes + jamatDelay) % 1440 + 1440) % 1440;
+}
+
+function shouldSamsungDisplayBeOn(now = new Date(), quickTimes = readQuickTimingSettings(), timingDayReader = readTimingDay, powerSlots = readSettings().displayPowerSlots) {
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const isInCustomPowerSlot = normalizeDisplayPowerSlots(powerSlots).some(slot => {
+    const on = parseTimeToMinutes(slot.on);
+    const off = parseTimeToMinutes(slot.off);
+    return on < off
+      ? currentMinutes >= on && currentMinutes < off
+      : currentMinutes >= on || currentMinutes < off;
+  });
+  if (isInCustomPowerSlot) return true;
+
+  if (currentMinutes >= 7 * 60 + 30 && currentMinutes < 11 * 60 + 30) return true;
+
+  const eveningDates = [new Date(now), new Date(now)];
+  eveningDates[0].setDate(eveningDates[0].getDate() - 1);
+
+  for (const eveningDate of eveningDates) {
+    const morningDate = new Date(eveningDate);
+    morningDate.setDate(morningDate.getDate() + 1);
+
+    const eveningData = timingDayReader(eveningDate);
+    const morningData = timingDayReader(morningDate);
+    const ishaJamatMinutes = getIshaJamatMinutes(eveningData, quickTimes);
+    const sahriMinutes = parseTimeToMinutes(morningData?.Sahri);
+    if (ishaJamatMinutes === null || sahriMinutes === null) continue;
+
+    const ishaJamat = new Date(eveningDate);
+    ishaJamat.setHours(0, 0, 0, 0);
+    ishaJamat.setMinutes(ishaJamatMinutes + 60);
+
+    const sahriCutoff = new Date(morningDate);
+    sahriCutoff.setHours(0, 0, 0, 0);
+    sahriCutoff.setMinutes(sahriMinutes - 60);
+
+    if (now >= ishaJamat && now < sahriCutoff) return true;
+  }
+
+  return false;
+}
+
+function setSamsungDisplayPower(isOn, callback) {
+  if (process.platform === 'win32') {
+    callback(new Error('HDMI-CEC power control is only available on the Raspberry Pi'));
+    return;
+  }
+
+  const client = spawn('cec-client', ['-s', '-d', '1'], { stdio: ['pipe', 'ignore', 'pipe'] });
+  let stderr = '';
+  let completed = false;
+  const timeout = setTimeout(() => {
+    client.kill('SIGTERM');
+    finish(new Error('CEC command timed out'));
+  }, 10000);
+
+  function finish(error) {
+    if (completed) return;
+    completed = true;
+    clearTimeout(timeout);
+    callback(error);
+  }
+
+  client.stderr.on('data', chunk => { stderr += chunk.toString(); });
+  client.on('error', finish);
+  client.on('close', code => {
+    finish(code === 0 ? null : new Error(stderr.trim() || `cec-client exited with code ${code}`));
+  });
+  client.stdin.end(`${isOn ? 'on' : 'standby'} 0\n`);
+}
+
+let lastSamsungPowerState = null;
+let samsungPowerCommandInProgress = false;
+
+function updateSamsungDisplayPower() {
+  if (process.platform === 'win32' || samsungPowerCommandInProgress) return;
+
+  const desiredState = shouldSamsungDisplayBeOn();
+  if (lastSamsungPowerState === desiredState) return;
+
+  samsungPowerCommandInProgress = true;
+  setSamsungDisplayPower(desiredState, error => {
+    samsungPowerCommandInProgress = false;
+    if (error) {
+      console.error(`Could not turn Samsung display ${desiredState ? 'on' : 'off'} via HDMI-CEC:`, error.message);
+      return;
+    }
+
+    lastSamsungPowerState = desiredState;
+    console.log(`Samsung display powered ${desiredState ? 'on' : 'off'} via HDMI-CEC`);
+  });
+}
+
 function normalizeDisplayPage(page, fallback = 'normal') {
   const normalized = typeof page === 'string' ? page.trim().toLowerCase() : '';
   return ALLOWED_PAGES.includes(normalized) ? normalized : fallback;
@@ -115,11 +281,12 @@ function readSettings() {
       beepVolume: typeof data.beepVolume === "number" ? data.beepVolume : 1,
       displayTheme: typeof data.displayTheme === "string" ? data.displayTheme : "auto",
       displayResolution: normalizeDisplayResolution(data.displayResolution),
+      displayPowerSlots: normalizeDisplayPowerSlots(data.displayPowerSlots),
       theme: normalizeTheme(data.theme),
       displayOverride: normalizeDisplayOverride(data.displayOverride)
     };
   } catch (err) {
-    return { hijriOffset: 0, beepVolume: 1, displayTheme: 'auto', displayResolution: DEFAULT_DISPLAY_RESOLUTION, theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } };
+    return { hijriOffset: 0, beepVolume: 1, displayTheme: 'auto', displayResolution: DEFAULT_DISPLAY_RESOLUTION, displayPowerSlots: [], theme: 'index', displayOverride: { mode: 'normal', page: null, dialog: null, message: '' } };
   }
 }
 
@@ -132,6 +299,7 @@ function saveSettings(updates) {
     next.displayTheme = "auto";
   }
   next.displayResolution = normalizeDisplayResolution(next.displayResolution);
+  next.displayPowerSlots = normalizeDisplayPowerSlots(next.displayPowerSlots);
   next.theme = normalizeTheme(next.theme);
   next.displayOverride = normalizeDisplayOverride(next.displayOverride || updates?.displayOverride);
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(next, null, 2));
@@ -187,6 +355,21 @@ app.post('/api/settings', (req, res) => {
   }
   const settings = saveSettings(req.body || {});
   res.json({ message: "Settings saved successfully", settings });
+});
+
+app.post('/api/display/power-schedule', requireSuperAdmin, (req, res) => {
+  const slots = req.body?.slots;
+  if (!Array.isArray(slots) || slots.length > 12) {
+    return res.status(400).json({ error: 'Provide between 0 and 12 power schedule slots' });
+  }
+
+  const normalizedSlots = normalizeDisplayPowerSlots(slots);
+  if (normalizedSlots.length !== slots.length) {
+    return res.status(400).json({ error: 'Each slot needs valid, different power-on and power-off times' });
+  }
+
+  const settings = saveSettings({ displayPowerSlots: normalizedSlots });
+  res.json({ message: 'Display power schedule saved', slots: settings.displayPowerSlots });
 });
 
 app.post('/api/display/resolution', requireSuperAdmin, (req, res) => {
@@ -637,6 +820,8 @@ if (require.main === module) {
     if (process.platform !== 'win32') {
       applySavedDisplayResolution();
       setInterval(applySavedDisplayResolution, 10 * 60 * 1000);
+      updateSamsungDisplayPower();
+      setInterval(updateSamsungDisplayPower, 30 * 1000);
     }
 
     const chromePath = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"`;
@@ -655,6 +840,10 @@ module.exports = {
   normalizeDisplayDialogType,
   normalizeTheme,
   normalizeDisplayResolution,
+  normalizeDisplayPowerSlots,
+  parseTimeToMinutes,
+  getIshaJamatMinutes,
+  shouldSamsungDisplayBeOn,
   readSettings,
   saveSettings
 };
