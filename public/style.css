@@ -267,9 +267,9 @@ tbody .active-row td:nth-child(4) {
   position: absolute;
   bottom: 0.8vh;
   right: 0;
-  background: rgb(255 255 255 / 40%);
+  background: #252b32c7;
   /* backdrop-filter: blur(8px); */
-  padding: 0px 12px;
+  padding: 7px 12px 3px;
   border-radius: 14px;
 }
 
