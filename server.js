@@ -158,17 +158,21 @@ function shouldSamsungDisplayBeOn(now = new Date(), quickTimes = readQuickTiming
   const todayData = timingDayReader(today);
   const sahriMinutes = parseTimeToMinutes(todayData?.Sahri);
   const sahriWakeMinutes = sahriMinutes === null ? null : Math.max(0, sahriMinutes - 45);
-
-  if (sahriWakeMinutes !== null && currentMinutes >= sahriWakeMinutes && currentMinutes < 11 * 60 + 30) return true;
-  if (sahriWakeMinutes === null && currentMinutes >= 7 * 60 + 30 && currentMinutes < 11 * 60 + 30) return true;
-
   const ishaJamatMinutes = getIshaJamatMinutes(todayData, quickTimes);
-  if (ishaJamatMinutes !== null) {
-    const ishaJamat = new Date(today);
-    ishaJamat.setMinutes(ishaJamatMinutes);
-    const ishaPowerOff = new Date(ishaJamat.getTime() + 60 * 60 * 1000);
-    if (now >= ishaJamat && now < ishaPowerOff) return true;
-  }
+  if (sahriWakeMinutes === null || ishaJamatMinutes === null) return false;
+
+  const sahriPowerOn = new Date(today);
+  sahriPowerOn.setMinutes(sahriWakeMinutes);
+  const morningPowerOff = new Date(today);
+  morningPowerOff.setHours(7, 30, 0, 0);
+  if (now >= sahriPowerOn && now < morningPowerOff) return true;
+
+  const daytimePowerOn = new Date(today);
+  daytimePowerOn.setHours(11, 30, 0, 0);
+  const ishaJamat = new Date(today);
+  ishaJamat.setMinutes(ishaJamatMinutes);
+  const ishaPowerOff = new Date(ishaJamat.getTime() + 60 * 60 * 1000);
+  if (now >= daytimePowerOn && now < ishaPowerOff) return true;
 
   return false;
 }
