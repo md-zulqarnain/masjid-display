@@ -58,6 +58,14 @@ function applyDisplayResolution(resolution, callback) {
   exec(`wlr-randr --output HDMI-A-2 --mode ${mode}`, callback);
 }
 
+function applySavedDisplayResolution() {
+  const resolution = readSettings().displayResolution;
+  applyDisplayResolution(resolution, error => {
+    if (error) console.error('Could not set display resolution:', error.message);
+    else console.log(`Display resolution set to ${resolution}`);
+  });
+}
+
 function normalizeDisplayPage(page, fallback = 'normal') {
   const normalized = typeof page === 'string' ? page.trim().toLowerCase() : '';
   return ALLOWED_PAGES.includes(normalized) ? normalized : fallback;
@@ -627,10 +635,8 @@ if (require.main === module) {
     }
 
     if (process.platform !== 'win32') {
-      applyDisplayResolution(readSettings().displayResolution, error => {
-        if (error) console.error('Could not set display resolution:', error.message);
-        else console.log(`Display resolution set to ${readSettings().displayResolution}`);
-      });
+      applySavedDisplayResolution();
+      setInterval(applySavedDisplayResolution, 10 * 60 * 1000);
     }
 
     const chromePath = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"`;
