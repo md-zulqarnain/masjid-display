@@ -181,13 +181,17 @@ function shouldSamsungDisplayBeOn(now = new Date(), quickTimes = readQuickTiming
   return false;
 }
 
+function getSamsungDisplayPowerArgs(isOn) {
+  return ['-d', '1', '-t', '0', isOn ? '--image-view-on' : '--standby'];
+}
+
 function setSamsungDisplayPower(isOn, callback) {
   if (process.platform === 'win32') {
     callback(new Error('HDMI-CEC power control is only available on the Raspberry Pi'));
     return;
   }
 
-  const client = spawn('cec-client', ['-s', '-d', '1'], { stdio: ['pipe', 'pipe', 'pipe'] });
+  const client = spawn('cec-ctl', getSamsungDisplayPowerArgs(isOn), { stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';
   let completed = false;
@@ -207,9 +211,8 @@ function setSamsungDisplayPower(isOn, callback) {
   client.stderr.on('data', chunk => { stderr += chunk.toString(); });
   client.on('error', finish);
   client.on('close', code => {
-    finish(code === 0 ? null : new Error(stderr.trim() || `cec-client exited with code ${code}`));
+    finish(code === 0 ? null : new Error(stderr.trim() || `cec-ctl exited with code ${code}`));
   });
-  client.stdin.end(`${isOn ? 'on' : 'standby'} 0\n`);
 }
 
 let lastSamsungPowerState = null;
@@ -892,6 +895,7 @@ module.exports = {
   normalizeTheme,
   normalizeDisplayResolution,
   normalizeDisplayPowerSlots,
+  getSamsungDisplayPowerArgs,
   parseTimeToMinutes,
   getIshaJamatMinutes,
   shouldSamsungDisplayBeOn,
