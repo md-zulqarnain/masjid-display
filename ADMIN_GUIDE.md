@@ -33,6 +33,23 @@ This system displays prayer times and videos for Jama Masjid Jhirniya Shaikh wit
 
 ## Setup
 
+### Samsung QM55C HDMI-CEC Power Control
+The Pi server sends `cec-ctl` commands through non-interactive `sudo`. Install the CEC utility and confirm its path:
+
+```bash
+sudo apt update
+sudo apt install -y cec-utils
+command -v cec-ctl
+```
+
+Allow only the two required commands for the Linux account that runs `node server.js`. If `command -v` returns `/usr/bin/cec-ctl`, create a sudoers file with `sudo visudo -f /etc/sudoers.d/masjid-display-cec` and add:
+
+```sudoers
+<app-user> ALL=(root) NOPASSWD: /usr/bin/cec-ctl -d 1 -t 0 --image-view-on, /usr/bin/cec-ctl -d 1 -t 0 --standby
+```
+
+Replace `<app-user>` with the server process account. If `cec-ctl` is installed elsewhere, set `CEC_CTL_PATH` to that path and use the same path in the sudoers entries. Restart the app after changing sudoers or its environment. The Scheduler tab reports the last command error/output when CEC access fails.
+
 ### Creating Monthly Timing Files
 Create files named `timing-data-1.json` to `timing-data-12.json` for each month:
 - `timing-data-1.json` = January

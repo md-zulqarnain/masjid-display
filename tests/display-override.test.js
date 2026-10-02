@@ -19,6 +19,8 @@ assert.strictEqual(server.normalizeDisplayResolution('3840x2160@30Hz'), '3840x21
 assert.strictEqual(server.normalizeDisplayResolution('unsupported-mode'), '1920x1080@60Hz');
 assert.deepStrictEqual(server.getSamsungDisplayPowerArgs(true), ['-d', '1', '-t', '0', '--image-view-on']);
 assert.deepStrictEqual(server.getSamsungDisplayPowerArgs(false), ['-d', '1', '-t', '0', '--standby']);
+assert.deepStrictEqual(server.getSamsungDisplayCommandArgs(true), ['-n', '/usr/bin/cec-ctl', '-d', '1', '-t', '0', '--image-view-on']);
+assert.deepStrictEqual(server.getSamsungDisplayCommandArgs(false), ['-n', '/usr/bin/cec-ctl', '-d', '1', '-t', '0', '--standby']);
 assert.deepStrictEqual(server.normalizeDisplayPowerSlots([
     { on: '12:00', off: '13:00' },
     { on: '25:00', off: '13:00' },

@@ -1461,7 +1461,10 @@
                 const last = data.lastCommand?.at
                     ? `${data.lastCommand.powerOn ? 'ON' : 'STANDBY'} at ${new Date(data.lastCommand.at).toLocaleTimeString()}`
                     : 'none since server start';
-                status.textContent = `${data.available ? 'CEC available' : 'CEC tests require the Raspberry Pi'} | Scheduled state: ${desired} | Last command: ${last}${data.lastCommand?.error ? ` | Error: ${data.lastCommand.error}` : ''}`;
+                const cecAvailability = data.available
+                    ? `cec-ctl found at ${data.cecCtlPath}`
+                    : `cec-ctl unavailable at ${data.cecCtlPath}; CEC tests require the Raspberry Pi`;
+                status.textContent = `${cecAvailability} | Scheduled state: ${desired} | Last command: ${last}${data.lastCommand?.error ? ` | Error: ${data.lastCommand.error}` : ''}`;
 
                 const output = document.getElementById('displayPowerCommandOutput');
                 const commandOutput = data.lastCommand?.output || '';

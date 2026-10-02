@@ -7,6 +7,7 @@ const session = require("express-session");
 const os = require("os");
 const VERSES_FILE = 'verses.json';
 const SETTINGS_FILE = './data/settings.json';
+const CEC_CTL_PATH = process.env.CEC_CTL_PATH || '/usr/bin/cec-ctl';
 
 
 
@@ -185,13 +186,17 @@ function getSamsungDisplayPowerArgs(isOn) {
   return ['-d', '1', '-t', '0', isOn ? '--image-view-on' : '--standby'];
 }
 
+function getSamsungDisplayCommandArgs(isOn) {
+  return ['-n', CEC_CTL_PATH, ...getSamsungDisplayPowerArgs(isOn)];
+}
+
 function setSamsungDisplayPower(isOn, callback) {
   if (process.platform === 'win32') {
     callback(new Error('HDMI-CEC power control is only available on the Raspberry Pi'));
     return;
   }
 
-  const client = spawn('cec-ctl', getSamsungDisplayPowerArgs(isOn), { stdio: ['ignore', 'pipe', 'pipe'] });
+  const client = spawn('sudo', getSamsungDisplayCommandArgs(isOn), { stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';
   let completed = false;
@@ -381,12 +386,14 @@ app.post('/api/display/power-schedule', requireSuperAdmin, (req, res) => {
   }
 
   const settings = saveSettings({ displayPowerSlots: normalizedSlots });
+  updateSamsungDisplayPower();
   res.json({ message: 'Display power schedule saved', slots: settings.displayPowerSlots });
 });
 
 app.get('/api/display/power-status', requireSuperAdmin, (req, res) => {
   res.json({
-    available: process.platform !== 'win32',
+    available: process.platform !== 'win32' && fs.existsSync(CEC_CTL_PATH),
+    cecCtlPath: CEC_CTL_PATH,
     desiredPowerOn: shouldSamsungDisplayBeOn(),
     lastSuccessfulPowerOn: lastSamsungPowerState,
     commandInProgress: samsungPowerCommandInProgress,
@@ -896,6 +903,7 @@ module.exports = {
   normalizeDisplayResolution,
   normalizeDisplayPowerSlots,
   getSamsungDisplayPowerArgs,
+  getSamsungDisplayCommandArgs,
   parseTimeToMinutes,
   getIshaJamatMinutes,
   shouldSamsungDisplayBeOn,
