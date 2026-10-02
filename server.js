@@ -153,30 +153,21 @@ function shouldSamsungDisplayBeOn(now = new Date(), quickTimes = readQuickTiming
   });
   if (isInCustomPowerSlot) return true;
 
-  if (currentMinutes >= 7 * 60 + 30 && currentMinutes < 11 * 60 + 30) return true;
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const todayData = timingDayReader(today);
+  const sahriMinutes = parseTimeToMinutes(todayData?.Sahri);
+  const sahriWakeMinutes = sahriMinutes === null ? null : Math.max(0, sahriMinutes - 45);
 
-  const eveningDates = [new Date(now), new Date(now)];
-  eveningDates[0].setDate(eveningDates[0].getDate() - 1);
+  if (sahriWakeMinutes !== null && currentMinutes >= sahriWakeMinutes && currentMinutes < 11 * 60 + 30) return true;
+  if (sahriWakeMinutes === null && currentMinutes >= 7 * 60 + 30 && currentMinutes < 11 * 60 + 30) return true;
 
-  for (const eveningDate of eveningDates) {
-    const morningDate = new Date(eveningDate);
-    morningDate.setDate(morningDate.getDate() + 1);
-
-    const eveningData = timingDayReader(eveningDate);
-    const morningData = timingDayReader(morningDate);
-    const ishaJamatMinutes = getIshaJamatMinutes(eveningData, quickTimes);
-    const sahriMinutes = parseTimeToMinutes(morningData?.Sahri);
-    if (ishaJamatMinutes === null || sahriMinutes === null) continue;
-
-    const ishaJamat = new Date(eveningDate);
-    ishaJamat.setHours(0, 0, 0, 0);
-    ishaJamat.setMinutes(ishaJamatMinutes + 60);
-
-    const sahriCutoff = new Date(morningDate);
-    sahriCutoff.setHours(0, 0, 0, 0);
-    sahriCutoff.setMinutes(sahriMinutes - 60);
-
-    if (now >= ishaJamat && now < sahriCutoff) return true;
+  const ishaJamatMinutes = getIshaJamatMinutes(todayData, quickTimes);
+  if (ishaJamatMinutes !== null) {
+    const ishaJamat = new Date(today);
+    ishaJamat.setMinutes(ishaJamatMinutes);
+    const ishaPowerOff = new Date(ishaJamat.getTime() + 60 * 60 * 1000);
+    if (now >= ishaJamat && now < ishaPowerOff) return true;
   }
 
   return false;
