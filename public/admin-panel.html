@@ -431,6 +431,7 @@
             <button class="tab-btn" onclick="switchTab('verses', this)">Manage Verses</button>
             <button class="tab-btn" onclick="switchTab('settings', this)">Settings</button>
             <button class="tab-btn" onclick="switchTab('maintenance', this)">Maintenance</button>
+            <button class="tab-btn" onclick="switchTab('scheduler', this)">Scheduler</button>
             <button class="tab-btn" onclick="switchTab('terminal', this)">Terminal</button>
         </div>
 
@@ -548,6 +549,23 @@
             </div>
         </div>
 
+        <div id="scheduler" class="tab-content">
+            <div class="section">
+                <h2>Samsung Display Power Schedule</h2>
+                <div class="form-group" style="max-width: 760px;">
+                    <small style="color:#bbb;">Add extra daily power-on/off intervals. These supplement the existing morning and Isha-to-Sahri schedule. Overnight intervals are supported.</small>
+                    <div id="displayPowerSlots" style="display:grid; gap:12px; margin-top:16px;"></div>
+                    <small id="displayPowerSlotsEmpty" style="display:block; color:#bbb; margin-top:10px;">No extra intervals configured.</small>
+                </div>
+                <div class="button-group" style="margin-bottom: 25px;">
+                    <button class="btn-secondary" onclick="addDisplayPowerSlot()" id="addPowerSlotBtn">Add Time Slot</button>
+                    <button class="btn-primary" onclick="saveDisplayPowerSchedule()" id="savePowerScheduleBtn">Save Power Schedule</button>
+                    <button class="btn-secondary" onclick="clearDisplayPowerSchedule()" id="clearPowerScheduleBtn">Clear Extra Slots</button>
+                </div>
+                <div id="displayPowerScheduleMessage" class="message"></div>
+            </div>
+        </div>
+
         <div id="maintenance" class="tab-content">
             <div class="section">
                 <h2>System Maintenance</h2>
@@ -659,19 +677,6 @@
                 <div class="button-group" style="margin-bottom: 15px;">
                     <button class="btn-primary" onclick="runPiCommand()" id="runPiCommandBtn">Run Command</button>
                     <button class="btn-secondary" onclick="clearTerminalOutput()">Clear</button>
-                <hr style="margin: 30px 0;">
-                <h2>Samsung Display Power Schedule</h2>
-                <div class="form-group" style="max-width: 760px;">
-                    <small style="color:#bbb;">Add extra daily power-on/off intervals. These supplement the existing morning and Isha-to-Sahri schedule. Overnight intervals are supported.</small>
-                    <div id="displayPowerSlots" style="display:grid; gap:12px; margin-top:16px;"></div>
-                    <small id="displayPowerSlotsEmpty" style="display:block; color:#bbb; margin-top:10px;">No extra intervals configured.</small>
-                </div>
-                <div class="button-group" style="margin-bottom: 25px;">
-                    <button class="btn-secondary" onclick="addDisplayPowerSlot()" id="addPowerSlotBtn">Add Time Slot</button>
-                    <button class="btn-primary" onclick="saveDisplayPowerSchedule()" id="savePowerScheduleBtn">Save Power Schedule</button>
-                    <button class="btn-secondary" onclick="clearDisplayPowerSchedule()" id="clearPowerScheduleBtn">Clear Extra Slots</button>
-                </div>
-                <div id="displayPowerScheduleMessage" class="message"></div>
                 </div>
 
                 <div class="form-group">
@@ -713,6 +718,8 @@
             } else if (tab === 'settings') {
                 loadSettings();
             } else if (tab === 'maintenance') {
+                loadSettings();
+            } else if (tab === 'scheduler') {
                 loadSettings();
             }
         }
@@ -968,13 +975,16 @@
 
         function setVisibilityForAdminTabs() {
             const maintBtn = document.querySelector('.tab-btn[onclick="switchTab(\\\'maintenance\\\', this)"]');
+            const schedulerBtn = document.querySelector('.tab-btn[onclick="switchTab(\\\'scheduler\\\', this)"]');
             const terminalBtn = document.querySelector('.tab-btn[onclick="switchTab(\\\'terminal\\\', this)"]');
 
             if (!isSuperAdmin()) {
                 if (maintBtn) maintBtn.style.display = 'none';
+                if (schedulerBtn) schedulerBtn.style.display = 'none';
                 if (terminalBtn) terminalBtn.style.display = 'none';
             } else {
                 if (maintBtn) maintBtn.style.display = 'inline-block';
+                if (schedulerBtn) schedulerBtn.style.display = 'inline-block';
                 if (terminalBtn) terminalBtn.style.display = 'inline-block';
             }
         }
