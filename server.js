@@ -183,7 +183,9 @@ function shouldSamsungDisplayBeOn(now = new Date(), quickTimes = readQuickTiming
 }
 
 function getSamsungDisplayPowerArgs(isOn) {
-  return ['-d', '1', '-t', '0', isOn ? '--image-view-on' : '--standby'];
+  return isOn
+    ? ['-d', '1', '--playback', '-o', 'Raspberry Pi', '-t', '0', '--image-view-on']
+    : ['-d', '1', '--standby', '-t', '0'];
 }
 
 function getSamsungDisplayCommandArgs(isOn) {

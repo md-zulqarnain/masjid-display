@@ -45,7 +45,7 @@ command -v cec-ctl
 Allow only the two required commands for the Linux account that runs `node server.js`. If `command -v` returns `/usr/bin/cec-ctl`, create a sudoers file with `sudo visudo -f /etc/sudoers.d/masjid-display-cec` and add:
 
 ```sudoers
-<app-user> ALL=(root) NOPASSWD: /usr/bin/cec-ctl -d 1 -t 0 --image-view-on, /usr/bin/cec-ctl -d 1 -t 0 --standby
+<app-user> ALL=(root) NOPASSWD: /usr/bin/cec-ctl -d 1 --playback -o Raspberry Pi -t 0 --image-view-on, /usr/bin/cec-ctl -d 1 --standby -t 0
 ```
 
 Replace `<app-user>` with the server process account. If `cec-ctl` is installed elsewhere, set `CEC_CTL_PATH` to that path and use the same path in the sudoers entries. Restart the app after changing sudoers or its environment. The Scheduler tab reports the last command error/output when CEC access fails.
