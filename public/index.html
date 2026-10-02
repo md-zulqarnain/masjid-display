@@ -1,212 +1,1106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Masjid Display - Prayer Limits Theme</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Masjid Al-Noor - Smart Portrait Digital Signage Kiosk (1080x1920)</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Premium Islamic & Display Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cinzel:wght@500;700;800;900&family=Noto+Naskh+Arabic:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Scheherazade+New:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            arabic: ['Scheherazade New', 'Amiri', 'serif'],
+            naskh: ['Noto Naskh Arabic', 'serif'],
+            serifHeading: ['Cinzel', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            gold: {
+              300: '#fde047',
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+              700: '#a16207',
+              accent: '#d4af37',
+              glow: '#fbbf24',
+            },
+            emerald: {
+              850: '#064e3b',
+              900: '#04271e',
+              950: '#021611',
+              darkest: '#010f0b'
+            }
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 2.5s ease-in-out infinite alternate',
+            'shimmer': 'shimmer 4s ease-in-out infinite',
+            'radar': 'radarPing 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+            'marquee-continuous': 'marquee 28s linear infinite',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%': { boxShadow: '0 0 15px rgba(212, 175, 55, 0.3), inset 0 0 10px rgba(212, 175, 55, 0.1)' },
+              '100%': { boxShadow: '0 0 35px rgba(212, 175, 55, 0.7), inset 0 0 20px rgba(212, 175, 55, 0.3)' }
+            },
+            shimmer: {
+              '0%, 100%': { opacity: '0.8' },
+              '50%': { opacity: '1' }
+            },
+            radarPing: {
+              '75%, 100%': { transform: 'scale(2.2)', opacity: '0' }
+            },
+            marquee: {
+              '0%': { transform: 'translateX(100%)' },
+              '100%': { transform: 'translateX(-100%)' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
-    #clock {
-      margin-top: 2vh;
+    /* Absolute fixed viewport constraints for Kiosk TV 9:16 portrait display */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      background-color: #010f0b;
+      color: #f8fafc;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    /* Scaling helper for desktop viewing & preview testing */
+    #kiosk-viewport-wrapper {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      transform-origin: top center;
+      background-color: #021611;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Islamic geometric background texture */
+    .islamic-geo-bg {
+      background-image:
+        radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.05) 1.5px, transparent 1.5px),
+        linear-gradient(45deg, rgba(6, 78, 59, 0.15) 25%, transparent 25%, transparent 75%, rgba(6, 78, 59, 0.15) 75%),
+        linear-gradient(45deg, rgba(6, 78, 59, 0.15) 25%, transparent 25%, transparent 75%, rgba(6, 78, 59, 0.15) 75%);
+      background-size: 40px 40px, 80px 80px, 80px 80px;
+      background-position: 0 0, 0 0, 40px 40px;
+    }
+
+    /* Architectural glass cards */
+    .glass-card {
+      background: linear-gradient(135deg, rgba(4, 39, 30, 0.72) 0%, rgba(2, 22, 17, 0.88) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(212, 175, 55, 0.28);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card-gold {
+      background: linear-gradient(135deg, rgba(45, 34, 4, 0.75) 0%, rgba(15, 26, 18, 0.92) 100%);
+      border: 2px solid rgba(250, 204, 21, 0.55);
+      box-shadow: 0 15px 35px -5px rgba(234, 179, 8, 0.25), inset 0 0 20px rgba(234, 179, 8, 0.15);
+    }
+
+    /* Active prayer row special spotlight */
+    .active-prayer-row {
+      background: linear-gradient(90deg, rgba(234, 179, 8, 0.22) 0%, rgba(6, 78, 59, 0.85) 50%, rgba(234, 179, 8, 0.22) 100%) !important;
+      border: 2px solid #facc15 !important;
+      box-shadow: 0 0 45px rgba(234, 179, 8, 0.45), inset 0 0 25px rgba(234, 179, 8, 0.2) !important;
+      transform: scale(1.015);
+      z-index: 20;
+    }
+
+    /* Animated Gold Border Shimmer */
+    .gold-accent-line {
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #d4af37 20%, #fef08a 50%, #d4af37 80%, transparent 100%);
+    }
+
+    /* Micro flip transition for Waqt Shuru <-> Waqt Khatam */
+    .fade-flip {
+      transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
   </style>
 </head>
 
-<body id="index-body">
+<body class="flex justify-center items-start bg-black font-sans antialiased">
 
-  <div class="container">
+  <!-- 1080x1920 Kiosk Root Canvas Container -->
+  <div id="kiosk-viewport-wrapper" class="islamic-geo-bg relative select-none">
 
-    <!-- Top Arabic Header -->
-    <div class="top-bar">
-      <img src="images/roza.webp" class="corner-img">
-      <img src="images/kalima.png" style="max-width: 52%;">
-      <!-- <div class="arabic-title">
-        لا إِلَهَ إِلَّا اللَّهُ مُحَمَّدٌ رَّسُولُ اللهِ
-      </div> -->
+    <!-- Top Aesthetic Header & Ornamental Border -->
+    <div class="gold-accent-line w-full"></div>
 
-      <img src="images/kaaba.webp" class="corner-img ">
-    </div>
+    <!-- MAIN KIOSK VIEWPORT BODY (Padded for commercial LED bezels) -->
+    <div class="flex-1 flex flex-col justify-between p-7 relative z-10">
 
-    <!-- Clock Section -->
-    <div id="clock" style="margin-top: 2vh;">
-      <div class="clock-time">
+      <!-- ========================================================================= -->
+      <!-- 1. TOP HEADER SECTION: Mosque Identity, Telemetry, Clock & Dates        -->
+      <!-- ========================================================================= -->
+      <header class="space-y-4">
 
-        <span id="hours"></span>
-        <span id="seconds"></span>
-        <span id="ampm"></span>
-        <!-- humidity removed for BMP-only setups -->
-      </div>
-      <div class="date-row">
-        <span class="sensor-inline-left" id="sensor-left"><span class="s-label"><svg class="temp-icon"
-              viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M14 14.76V5a4 4 0 0 0-8 0v9.76a6 6 0 1 0 8 0Z" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M10 5v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <circle cx="10" cy="18" r="2.5" fill="currentColor" />
-            </svg></span><span class="s-value" id="sensor-temp-left">-- °C</span></span>
-        <div id="date" class="date-left"></div>
-      </div>
-      <div class="nextPrayerAndHijri">
-        <div id="nextPrayer" class="date-center card">
-          <div>
-            <div id="nextPrayerName"></div>
-            <h4 class="remainingTimeHeading">बाक़ी रह गया वक़्त</h4>
-            <div id="nextPrayerCountdown">
-              <span id="countHours" class="countdown">00</span> :
-              <span id="countMinutes" class="countdown">00</span> :
-              <span id="countSeconds" class="countdown">00</span>
+        <!-- Bismillah Calligraphy & Mosque Branding -->
+        <div class="flex items-center justify-between border-b border-gold-500/30 pb-3">
+
+          <!-- Mosque Identity + City -->
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-gold-600 via-amber-400 to-yellow-200 p-0.5 shadow-xl flex items-center justify-center">
+              <div class="w-full h-full bg-emerald-950 rounded-2xl flex items-center justify-center">
+                <i data-lucide="moon-star" class="w-9 h-9 text-gold-400"></i>
+              </div>
             </div>
-
-          </div>
-        </div>
-        <div class="nextPrayerAndHijriDate card">
-          <div>
-            <div id="hijri" class="date-right"></div>
-            <div id="ramadanTimes">
-              <span id="sahriTime"></span>
-              <span id="iftarTime"></span>
+            <div>
+              <div class="flex items-baseline space-x-2">
+                <h1 class="text-3xl font-extrabold tracking-wider font-serifHeading text-white">MASJID AL-NOOR</h1>
+                <span
+                  class="text-xs font-bold text-black bg-gold-400 px-2 py-0.5 rounded-full uppercase tracking-widest">LIVE
+                  KIOSK</span>
+              </div>
+              <div class="flex items-center space-x-2 text-gold-300 font-naskh text-lg">
+                <span>جامع مسجد النور &bull; Khajrana, Indore (M.P.)</span>
+              </div>
             </div>
           </div>
+
+          <!-- BME280 Real-Time Environmental Telemetry Pills -->
+          <div class="flex items-center space-x-3">
+            <!-- Temperature -->
+            <div class="glass-card px-4 py-2 rounded-xl flex items-center space-x-2 border-emerald-500/30">
+              <i data-lucide="thermometer" class="w-5 h-5 text-amber-400 animate-pulse"></i>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Indoor Temp</div>
+                <div id="sensor-temp" class="text-xl font-bold font-mono text-white">27.4°C</div>
+              </div>
+            </div>
+
+            <!-- Humidity -->
+            <div class="glass-card px-4 py-2 rounded-xl flex items-center space-x-2 border-emerald-500/30">
+              <i data-lucide="droplets" class="w-5 h-5 text-cyan-400"></i>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Humidity</div>
+                <div id="sensor-humidity" class="text-xl font-bold font-mono text-cyan-300">54% RH</div>
+              </div>
+            </div>
+
+            <!-- Air Quality / Status -->
+            <div class="glass-card px-4 py-2 rounded-xl flex items-center space-x-2 border-emerald-500/30">
+              <span class="relative flex h-3 w-3">
+                <span
+                  class="animate-radar absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Sensor Status</div>
+                <div class="text-xs font-bold text-emerald-400 font-mono">OPTIMAL</div>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </div>
+
+        <!-- Master Digital Clock & Dual Gregorian/Hijri Calendar Hero Widget -->
+        <div
+          class="glass-card rounded-2xl p-5 border-gold-500/40 relative overflow-hidden flex items-center justify-between shadow-2xl">
+          <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-gold-500/10 rounded-full blur-3xl pointer-events-none">
+          </div>
+
+          <!-- Dual Calendar (Left) -->
+          <div class="space-y-1 z-10 pl-2">
+            <div class="text-xs uppercase font-extrabold tracking-widest text-gold-400 flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+              <span>ISLAMIC LUNAR CALENDAR</span>
+            </div>
+            <!-- Hijri Date -->
+            <div id="clock-hijri-date" class="text-3xl font-bold font-arabic text-yellow-300 tracking-wider">
+              20 Rabi' al-Thani 1448 AH
+            </div>
+            <!-- Gregorian Date with Day of Week -->
+            <div id="clock-gregorian-date" class="text-lg font-semibold text-slate-200 tracking-wide font-sans">
+              Friday, 02 October 2026
+            </div>
+          </div>
+
+          <!-- Central Ayat / Dhikr Motif -->
+          <div class="hidden sm:flex flex-col items-center justify-center text-center z-10">
+            <div class="font-arabic text-3xl text-gold-400 drop-shadow mb-1">
+              أَقِمِ الصَّلَاةَ لِذِكْرِي
+            </div>
+            <div class="text-xs text-emerald-200/80 font-medium italic">
+              "Establish prayer for My remembrance" &bull; (20:14)
+            </div>
+          </div>
+
+          <!-- Large Master Clock Numerals (Right) -->
+          <div class="text-right z-10 pr-2">
+            <div class="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">CURRENT LOCAL TIME</div>
+            <div class="flex items-baseline justify-end font-mono">
+              <span id="master-time"
+                class="text-7xl font-extrabold tracking-tight text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.35)]">
+                12:15
+              </span>
+              <span id="master-seconds" class="text-3xl font-bold text-gold-400 ml-2">
+                :15
+              </span>
+              <span id="master-ampm" class="text-2xl font-bold font-sans text-slate-300 ml-2">
+                PM
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+      </header>
+
+      <!-- ========================================================================= -->
+      <!-- 2. NEXT PRAYER & COUNTDOWN FOCUS ZONE                                    -->
+      <!-- ========================================================================= -->
+      <section class="my-2">
+        <div id="banner-focus-zone"
+          class="glass-card-gold rounded-2xl p-5 flex items-center justify-between relative overflow-hidden transition-all duration-700">
+
+          <div class="flex items-center space-x-5 z-10">
+            <!-- Pulsing Bell / Dome Icon -->
+            <div
+              class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold-400 via-amber-500 to-yellow-600 flex items-center justify-center text-black font-extrabold shadow-lg shadow-gold-500/30">
+              <i data-lucide="bell-ring" id="hero-bell-icon" class="w-9 h-9 animate-bounce"></i>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span
+                  class="text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded-md bg-gold-400 text-black shadow-sm">
+                  NEXT SALAH
+                </span>
+                <span id="target-event-badge"
+                  class="text-xs font-bold font-mono tracking-wider text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">
+                  IQAMAH JAMAT IN
+                </span>
+              </div>
+              <div class="text-3xl font-black text-yellow-300 tracking-wider uppercase mt-1 flex items-baseline gap-2">
+                <span id="target-prayer-name">DHUHR (الظهر)</span>
+                <span class="text-base text-slate-300 font-medium">@ <span id="target-event-time">01:15 PM</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Countdown Digits Display -->
+          <div class="text-right z-10">
+            <div
+              class="text-xs uppercase font-extrabold text-gold-300 tracking-widest mb-1 flex items-center justify-end gap-1.5">
+              <i data-lucide="timer" class="w-3.5 h-3.5 text-gold-400"></i>
+              <span>COUNTDOWN TO JAMA'AT</span>
+            </div>
+            <div id="countdown-clock"
+              class="text-6xl font-black font-mono tracking-tight text-white drop-shadow-[0_0_25px_rgba(250,204,21,0.5)]">
+              00:59:45
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 3. MAIN PRAYER TIMETABLE GRID (Vertical 9:16 layout)                     -->
+      <!-- ========================================================================= -->
+      <section class="space-y-3">
+
+        <!-- Table Column Sub-Header -->
+        <div
+          class="px-6 py-2.5 rounded-xl bg-emerald-950/80 border border-gold-500/20 flex items-center justify-between text-xs font-extrabold tracking-widest uppercase text-gold-400">
+          <div class="w-1/3 flex items-center space-x-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-gold-400"></i>
+            <span>SALAH (الصلاة)</span>
+          </div>
+          <div class="w-1/3 text-center flex items-center justify-center space-x-1">
+            <span id="toggle-col-header" class="text-cyan-300">WAQT SHURU (AZAN)</span>
+            <span class="text-[10px] text-slate-400 font-normal">↺</span>
+          </div>
+          <div class="w-1/3 text-right">
+            <span class="text-yellow-300">IQAMAH (JAMA'AT)</span>
+          </div>
+        </div>
+
+        <!-- 6 Vertical Prayer Rows (Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha) -->
+        <div id="prayer-rows-container" class="space-y-3">
+
+          <!-- FAJR -->
+          <div id="row-fajr"
+            class="glass-card prayer-row rounded-2xl p-4.5 px-6 flex items-center justify-between transition-all duration-500">
+            <div class="w-1/3 flex items-center space-x-3">
+              <div
+                class="w-11 h-11 rounded-xl bg-emerald-900/60 border border-gold-500/30 flex items-center justify-center text-gold-400 font-bold">
+                <i data-lucide="sunrise" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="text-2xl font-black tracking-wide text-white flex items-center gap-2">
+                  <span>FAJR</span>
+                  <span class="text-base font-arabic text-yellow-300 font-bold">الفجر</span>
+                </div>
+                <div class="text-[11px] text-slate-400 font-medium">Dawn Prayer &bull; فجر</div>
+              </div>
+            </div>
+            <div class="w-1/3 text-center">
+              <div class="dynamic-time-fajr text-3xl font-bold font-mono text-cyan-200">05:08 AM</div>
+              <div class="dynamic-sublabel-fajr text-[10px] uppercase font-bold text-slate-400 tracking-wider">Start
+                Time</div>
+            </div>
+            <div class="w-1/3 text-right">
+              <div class="text-4xl font-black font-mono text-gold-400 tracking-tight">05:30 AM</div>
+              <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Jama'at Time</div>
+            </div>
+          </div>
+
+          <!-- SUNRISE / ISHRAQ (Special Auxiliary Row) -->
+          <div id="row-sunrise"
+            class="glass-card prayer-row rounded-2xl p-4 px-6 flex items-center justify-between border-dashed border-amber-500/40 opacity-90 transition-all duration-500 bg-emerald-950/40">
+            <div class="w-1/3 flex items-center space-x-3">
+              <div
+                class="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold">
+                <i data-lucide="sun-medium" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="text-xl font-bold tracking-wide text-amber-200 flex items-center gap-2">
+                  <span>SUNRISE</span>
+                  <span class="text-sm font-arabic text-amber-300">الشروق</span>
+                </div>
+                <div class="text-[11px] text-slate-400 font-medium">Tulu-e-Aftab &bull; طلوع آفتاب</div>
+              </div>
+            </div>
+            <div class="w-1/3 text-center">
+              <div class="text-2xl font-bold font-mono text-amber-300">06:17 AM</div>
+              <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Prohibited Period Ends</div>
+            </div>
+            <div class="w-1/3 text-right">
+              <div class="text-2xl font-bold font-mono text-yellow-300">06:35 AM</div>
+              <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ishraq Salah Time</div>
+            </div>
+          </div>
+
+          <!-- DHUHR / JUMA (Dynamic Active Friday detection) -->
+          <div id="row-dhuhr"
+            class="glass-card prayer-row rounded-2xl p-4.5 px-6 flex items-center justify-between transition-all duration-500 active-prayer-row">
+            <div class="w-1/3 flex items-center space-x-3">
+              <div
+                class="w-11 h-11 rounded-xl bg-gradient-to-tr from-gold-600 to-yellow-400 flex items-center justify-center text-black font-extrabold shadow-md">
+                <i data-lucide="sun" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="text-2xl font-black tracking-wide text-white flex items-center gap-2">
+                  <span id="dhuhr-title-label">DHUHR / JUMA</span>
+                  <span class="text-base font-arabic text-yellow-300 font-bold">الظهر / الجمعة</span>
+                </div>
+                <div class="text-[11px] text-yellow-200/80 font-medium">Noon / Friday &bull; ظہر / جمعہ مبارک</div>
+              </div>
+            </div>
+            <div class="w-1/3 text-center">
+              <div class="dynamic-time-dhuhr text-3xl font-bold font-mono text-cyan-200">12:12 PM</div>
+              <div class="dynamic-sublabel-dhuhr text-[10px] uppercase font-bold text-slate-300 tracking-wider">Start
+                Time (Azan)</div>
+            </div>
+            <div class="w-1/3 text-right">
+              <div class="text-4xl font-black font-mono text-gold-300 tracking-tight">01:15 PM</div>
+              <div class="text-[10px] uppercase font-extrabold text-yellow-300 tracking-wider animate-pulse">Friday
+                Jamat Today</div>
+            </div>
+          </div>
+
+          <!-- ASR -->
+          <div id="row-asr"
+            class="glass-card prayer-row rounded-2xl p-4.5 px-6 flex items-center justify-between transition-all duration-500">
+            <div class="w-1/3 flex items-center space-x-3">
+              <div
+                class="w-11 h-11 rounded-xl bg-emerald-900/60 border border-gold-500/30 flex items-center justify-center text-gold-400 font-bold">
+                <i data-lucide="cloud-sun" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="text-2xl font-black tracking-wide text-white flex items-center gap-2">
+                  <span>ASR</span>
+                  <span class="text-base font-arabic text-yellow-300 font-bold">العصر</span>
+                </div>
+                <div class="text-[11px] text-slate-400 font-medium">Late Afternoon &bull; عصر (Hanafi)</div>
+              </div>
+            </div>
+            <div class="w-1/3 text-center">
+              <div class="dynamic-time-asr text-3xl font-bold font-mono text-cyan-200">04:35 PM</div>
+              <div class="dynamic-sublabel-asr text-[10px] uppercase font-bold text-slate-400 tracking-wider">Start Time
+              </div>
+            </div>
+            <div class="w-1/3 text-right">
+              <div class="text-4xl font-black font-mono text-gold-400 tracking-tight">05:00 PM</div>
+              <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Jama'at Time</div>
+            </div>
+          </div>
+
+          <!-- MAGHRIB -->
+          <div id="row-maghrib"
+            class="glass-card prayer-row rounded-2xl p-4.5 px-6 flex items-center justify-between transition-all duration-500">
+            <div class="w-1/3 flex items-center space-x-3">
+              <div
+                class="w-11 h-11 rounded-xl bg-emerald-900/60 border border-gold-500/30 flex items-center justify-center text-gold-400 font-bold">
+                <i data-lucide="sunset" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="text-2xl font-black tracking-wide text-white flex items-center gap-2">
+                  <span>MAGHRIB</span>
+                  <span class="text-base font-arabic text-yellow-300 font-bold">المغرب</span>
+                </div>
+                <div class="text-[11px] text-slate-400 font-medium">Sunset / Iftar &bull; مغرب</div>
+              </div>
+            </div>
+            <div class="w-1/3 text-center">
+              <div class="dynamic-time-maghrib text-3xl font-bold font-mono text-cyan-200">06:14 PM</div>
+              <div class="dynamic-sublabel-maghrib text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sunset
+                Azan</div>
+            </div>
+            <div class="w-1/3 text-right">
+              <div class="text-4xl font-black font-mono text-gold-400 tracking-tight">06:20 PM</div>
+              <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">+6 min Jama'at</div>
+            </div>
+          </div>
+
+          <!-- ISHA -->
+          <div id="row-isha"
+            class="glass-card prayer-row rounded-2xl p-4.5 px-6 flex items-center justify-between transition-all duration-500">
+            <div class="w-1/3 flex items-center space-x-3">
+              <div
+                class="w-11 h-11 rounded-xl bg-emerald-900/60 border border-gold-500/30 flex items-center justify-center text-gold-400 font-bold">
+                <i data-lucide="moon" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="text-2xl font-black tracking-wide text-white flex items-center gap-2">
+                  <span>ISHA</span>
+                  <span class="text-base font-arabic text-yellow-300 font-bold">العشاء</span>
+                </div>
+                <div class="text-[11px] text-slate-400 font-medium">Night Prayer &bull; عشاء</div>
+              </div>
+            </div>
+            <div class="w-1/3 text-center">
+              <div class="dynamic-time-isha text-3xl font-bold font-mono text-cyan-200">07:29 PM</div>
+              <div class="dynamic-sublabel-isha text-[10px] uppercase font-bold text-slate-400 tracking-wider">Start
+                Time</div>
+            </div>
+            <div class="w-1/3 text-right">
+              <div class="text-4xl font-black font-mono text-gold-400 tracking-tight">08:15 PM</div>
+              <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Jama'at Time</div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Auxiliary Islamic Timings Bar -->
+      <section class="grid grid-cols-4 gap-3 my-1">
+        <div class="glass-card p-3 rounded-xl border-emerald-500/30 text-center">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">SAHRI ENDS</div>
+          <div class="text-xl font-bold font-mono text-cyan-300">05:00 AM</div>
+          <div class="text-[9px] text-slate-400">سحری اختتام</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border-emerald-500/30 text-center">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">IFTAR TODAY</div>
+          <div class="text-xl font-bold font-mono text-amber-300">06:14 PM</div>
+          <div class="text-[9px] text-slate-400">افطار کا وقت</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border-emerald-500/30 text-center">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">TAHAJJUD WINDOW</div>
+          <div class="text-xl font-bold font-mono text-purple-300">03:30 - 05:00</div>
+          <div class="text-[9px] text-slate-400">نمازِ تہجد</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border-emerald-500/30 text-center">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">CHASHT / DUHA</div>
+          <div class="text-xl font-bold font-mono text-emerald-300">08:30 - 11:30</div>
+          <div class="text-[9px] text-slate-400">نمازِ چاشت</div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 4. MID-SCREEN AUTOMATED CAROUSEL (Ayah, Hadith, Etiquette, Juma)          -->
+      <!-- ========================================================================= -->
+      <section class="my-2">
+        <div
+          class="glass-card rounded-2xl p-6 border-gold-500/40 relative overflow-hidden min-h-[260px] flex flex-col justify-between shadow-2xl">
+
+          <!-- Slide Progress & Badge -->
+          <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+            <div class="flex items-center space-x-2">
+              <span id="slide-category-icon"
+                class="w-7 h-7 rounded-lg bg-gold-500/20 text-gold-400 flex items-center justify-center">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+              </span>
+              <span id="slide-category-title" class="text-xs font-black uppercase tracking-widest text-gold-400">
+                DAILY QURANIC AYAH
+              </span>
+            </div>
+
+            <!-- Slide Dot Indicators -->
+            <div class="flex items-center space-x-2">
+              <span class="carousel-dot w-2.5 h-2.5 rounded-full bg-gold-400 transition-all duration-300"></span>
+              <span class="carousel-dot w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-300"></span>
+              <span class="carousel-dot w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-300"></span>
+              <span class="carousel-dot w-2.5 h-2.5 rounded-full bg-slate-700 transition-all duration-300"></span>
+            </div>
+          </div>
+
+          <!-- Slide Content Zone (Rotates every 12s) -->
+          <div id="carousel-content"
+            class="my-4 transition-all duration-700 flex flex-col items-center justify-center text-center">
+            <!-- Dynamic Arabic Text -->
+            <div id="slide-arabic"
+              class="font-arabic text-3xl md:text-4xl text-yellow-200 leading-relaxed drop-shadow mb-3">
+              إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا
+            </div>
+            <!-- English / Translation -->
+            <div id="slide-translation" class="text-lg font-medium text-slate-100 max-w-3xl leading-snug">
+              "Indeed, prayer has been decreed upon the believers a decree of specified times."
+            </div>
+            <!-- Urdu / Hindi Subtitle -->
+            <div id="slide-subtext" class="text-base text-gold-300/90 font-naskh mt-2">
+              "بیشک نماز مومنوں پر مقررہ وقت کے ساتھ فرض کی گئی ہے"
+            </div>
+            <!-- Source / Citation Reference -->
+            <div id="slide-reference" class="text-xs text-slate-400 font-mono tracking-widest uppercase mt-2">
+              &bull; Surah An-Nisa (4:103) &bull;
+            </div>
+          </div>
+
+          <!-- Bottom Slide Timer Bar -->
+          <div class="w-full bg-emerald-950/80 h-1.5 rounded-full overflow-hidden">
+            <div id="slide-progress-fill"
+              class="h-full bg-gradient-to-r from-gold-500 to-yellow-300 w-0 transition-all duration-100"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 5. BOTTOM TICKER & RASPBERRY PI KIOSK STATUS BAR                         -->
+      <!-- ========================================================================= -->
+      <footer class="space-y-3">
+
+        <!-- Marquee Ticker -->
+        <div class="glass-card rounded-xl py-2.5 px-4 flex items-center space-x-3 overflow-hidden border-gold-500/30">
+          <div
+            class="flex items-center space-x-1.5 bg-gradient-to-r from-gold-500 to-amber-600 text-black px-3 py-1 rounded-md text-xs font-black tracking-widest uppercase flex-shrink-0 shadow">
+            <i data-lucide="megaphone" class="w-3.5 h-3.5"></i>
+            <span>NOTICE</span>
+          </div>
+          <div class="overflow-hidden relative w-full text-sm font-medium text-slate-200">
+            <div class="whitespace-nowrap animate-marquee-continuous flex items-center space-x-16 font-medium">
+              <span>&bull; Special Juma Khutbah begins at 01:00 PM sharp followed by Jama'at at 01:15 PM.</span>
+              <span>&bull; Please park bicycles and vehicles only in designated mosque parking zones.</span>
+              <span>&bull; Turn off or switch mobile phones to complete silent mode prior to joining the prayer
+                lines.</span>
+              <span>&bull; Maktab classes for children are held daily after Asr prayer in the lower madrasa hall.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Heartbeat & Kiosk Hardware Bar -->
+        <div
+          class="flex items-center justify-between text-[11px] text-slate-400 font-mono px-3 py-1 border-t border-emerald-900/60">
+          <div class="flex items-center space-x-3">
+            <span class="flex items-center space-x-1.5 text-emerald-400">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span class="font-bold">KIOSK ENGINE LIVE</span>
+            </span>
+            <span>&bull; IP: 192.168.1.105:3000 (Admin Portal)</span>
+            <span>&bull; Port: 1080x1920@60Hz (HDMI-A-2)</span>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span>Raspberry Pi OS 64-bit</span>
+            <span class="text-gold-400 font-bold">&bull; Auto-Pilot Mode</span>
+          </div>
+        </div>
+
+      </footer>
+
     </div>
 
-    <!-- Prayer Table -->
-    <div class="prayerTimeingContainer">
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>नमाज़</th>
-              <th>अज़ान</th>
-              <th>जमाअत</th>
-              <th id="table-limit-header">वक़्त शुरू</th>
-            </tr>
-          </thead>
-          <tbody id="prayerTable"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Juma Section -->
-    <div class="juma-section-container">
-      <div class="juma-header-card">
-        <span>जुमा</span>
-        <span class="juma-arabic">جمعة</span>
-      </div>
-      <div class="juma-times">
-        <div class="juma-time-box">
-          <div class="juma-label">अज़ान</div>
-          <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
-        </div>
-        <div class="juma-time-box">
-          <div class="juma-label">खु़त्बा</div>
-          <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
-        </div>
-        <div class="juma-time-box">
-          <div class="juma-label">जमाअत</div>
-          <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Verse Slider Section -->
-    <div class="verse-slider-container">
-      <div id="verseSliderContent" class="verse-slider-content">
-        <span id="verseText" class="verse-text"></span>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div id="timingChangeMarquee" class="timing-change-marquee" style="display:none;">
-        <span id="timingChangeText"></span>
-      </div>
-      <p>जामा मस्जिद झिरन्या शेख</p>
-      <div class="brand-log">
-        <img src="images/logo.png" />
-      </div>
-    </footer>
-
-  </div>
-
-
-  <!-- Black Screen -->
-  <audio id="beepSound" preload="auto">
-    <source src="audio/beep_long.wav" type="audio/wav" muted>
-  </audio>
-
-  <div id="jamatPopup" class="jamat-popup" style="display:none;">
-    <div class="jamat-popup-content" style="padding: 40px; text-align: center; max-width: 900px; line-height: 1.6;">
+    <!-- ========================================================================= -->
+    <!-- 6. SCHEDULED AUTONOMOUS OVERLAYS (No-User-Input Overrides)                -->
+    <!-- ========================================================================= -->
+    <!-- Fullscreen Autonomous Event Overlay Modal (Controlled by automatic timers) -->
+    <div id="autonomous-overlay"
+      class="absolute inset-0 z-50 bg-black/95 backdrop-blur-2xl hidden flex flex-col items-center justify-center p-12 text-center transition-all duration-700">
       <div
-        style="font-size: 70px; color: #ffd700; font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
-        तक्बीरे तशरीक़</div>
+        class="max-w-3xl p-12 rounded-3xl glass-card border-4 border-gold-400/80 shadow-[0_0_80px_rgba(234,179,8,0.5)] relative flex flex-col items-center">
 
-      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
-        <span style="color: #ffd700; font-weight: bold;">वक़्त:</span><br>
-        9 ज़िल हिज्जा (फजर) से 13 ज़िल हिज्जा (असर) तक
-      </div>
+        <div id="overlay-icon-container"
+          class="w-28 h-28 rounded-3xl bg-gold-500/20 border-2 border-gold-400 flex items-center justify-center text-gold-300 mb-8 shadow-2xl">
+          <i data-lucide="bell-off" class="w-16 h-16"></i>
+        </div>
 
-      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
-        <span style="color: #ffd700; font-weight: bold;">हुक्म (वाजिब):</span><br>
-        मर्द: बुलंद आवाज़ से पढ़ें<br>
-        औरतें: आहिस्ता आवाज़ से पढ़ें
-      </div>
+        <div id="overlay-arabic-title" class="font-arabic text-6xl text-gold-300 tracking-wider mb-4 leading-tight">
+          صَفُوف سِيدھى كَرِيں
+        </div>
 
-      <div style="font-size: 49px; margin-bottom: 25px; color: #ffffff;">
-        <span style="color: #ffd700; font-weight: bold;">कब पढ़ें:</span><br>
-        हर फ़र्ज़ नमाज़ के बाद, सलाम फेरते ही फ़ौरन
-      </div>
+        <div id="overlay-main-message"
+          class="text-4xl font-extrabold text-white tracking-wide uppercase leading-snug mb-3">
+          PLEASE TURN OFF MOBILE PHONES
+        </div>
 
-      <div class="divider" style="margin: 30px 0;">
-        <div class="divider-line"></div>
-        <div class="divider-star">☪</div>
-        <div class="divider-line"></div>
-      </div>
+        <div id="overlay-urdu-message" class="text-2xl font-naskh text-yellow-200/90 mb-6">
+          برائے مہربانی اپنے موبائل فون بند یا خاموش کر لیں اور صفیں درست فرمائیں
+        </div>
 
-      <div style="font-size: 61px; color: #ffd700; font-weight: bold; margin-top: 25px; line-height: 1.8;">
-        अल्लाहु अकबर, अल्लाहु अकबर,<br>
-        ला इलाहा इल्लल्लाहु वल्लाहु अकबर,<br>
-        अल्लाहु अकबर, व लिल्लाहिल हम्द
+        <div
+          class="w-full bg-emerald-950/90 border border-gold-500/30 rounded-2xl p-4 flex items-center justify-around font-mono text-sm">
+          <div class="text-slate-300">STATUS: <span class="text-yellow-400 font-bold">JAMA'AT COMMENCING</span></div>
+          <div class="text-slate-300">AUTO-DISMISS: <span id="overlay-timer-countdown"
+              class="text-white font-bold">15s</span></div>
+        </div>
+
       </div>
     </div>
-  </div>
 
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="sensor.js"></script>
+    <!-- Black Screen Mode (Silent prayer in progress) -->
+    <div id="salah-black-screen"
+      class="absolute inset-0 z-40 bg-[#000503] hidden flex flex-col items-center justify-center text-center p-10 transition-all duration-1000">
+      <div class="space-y-6">
+        <div class="font-arabic text-5xl text-gold-400/70">
+          وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ
+        </div>
+        <div class="text-3xl font-extrabold text-slate-300 tracking-widest uppercase">
+          SALAH IN PROGRESS &bull; صلوٰۃ قائم ہے
+        </div>
+        <p class="text-sm font-mono text-slate-500">
+          Screen automatically dimmed for khushoo. Resuming timetable after prayer.
+        </p>
+      </div>
+    </div>
+
+    <!-- Hidden Simulation Control Bar (Discrete bottom tool for review/demonstration) -->
+    <aside
+      class="absolute bottom-1 right-2 z-30 opacity-20 hover:opacity-100 transition-opacity flex items-center space-x-1.5 bg-black/90 p-1.5 rounded-lg border border-slate-700 text-[10px]">
+      <span class="text-slate-400">Demo Overlays:</span>
+      <button onclick="triggerAutonomousOverlay('mobile', 10)"
+        class="px-2 py-0.5 rounded bg-amber-900 text-amber-200">Mobile Alert</button>
+      <button onclick="triggerAutonomousOverlay('blackout', 8)"
+        class="px-2 py-0.5 rounded bg-slate-800 text-slate-200">Salah Dark</button>
+      <button onclick="triggerAutonomousOverlay('juma', 10)"
+        class="px-2 py-0.5 rounded bg-emerald-900 text-emerald-200">Juma Mubarak</button>
+      <button onclick="synthesizeChime(3, 880)" class="px-2 py-0.5 rounded bg-gold-700 text-yellow-200">Test
+        Chime</button>
+    </aside>
+
+  </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      function updateTableLimitsColumn() {
-        const rows = document.querySelectorAll("#prayerTable tr");
-        if (rows.length === 0 || !window.prayerData) return;
+    /* ========================================================================= */
+    /* MOSQUE TV DIGITAL SIGNAGE AUTONOMOUS CLIENT ENGINE                        */
+    /* ========================================================================= */
 
-        const showStart = Math.floor(Date.now() / 5000) % 2 === 0;
-        const header = document.getElementById("table-limit-header");
-        if (header) header.innerText = showStart ? "वक़्त शुरू" : "वक़्त ख़त्म";
+    // Timetable Configuration (Adhan & Iqamah in 24h format)
+    const PrayerSchedule = {
+      fajr: { adhan: "05:08", iqamah: "05:30", end: "06:17", name: "FAJR", ar: "الفجر" },
+      sunrise: { time: "06:17", ishraq: "06:35", name: "SUNRISE", ar: "الشروق" },
+      dhuhr: { adhan: "12:12", iqamah: "13:15", end: "16:35", name: "DHUHR", ar: "الظهر" },
+      asr: { adhan: "16:35", iqamah: "17:00", end: "18:14", name: "ASR", ar: "العصر" },
+      maghrib: { adhan: "18:14", iqamah: "18:20", end: "19:29", name: "MAGHRIB", ar: "المغرب" },
+      isha: { adhan: "19:29", iqamah: "20:15", end: "05:08", name: "ISHA", ar: "العشاء" },
+      juma: { speech: "12:45", khutbah: "13:00", iqamah: "13:15", name: "JUMA", ar: "الجمعة" }
+    };
 
-        rows.forEach(row => {
-          const data = window.prayerData[row.id];
-          if (!data) return;
+    // Infotainment Carousel Slides
+    const CarouselSlides = [
+      {
+        type: "DAILY QURANIC AYAH",
+        icon: "book-open",
+        arabic: "إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا",
+        translation: '"Indeed, prayer has been decreed upon the believers a decree of specified times."',
+        subtext: '"بیشک نماز مومنوں پر مقررہ اوقات میں فرض کی گئی ہے"',
+        reference: "Surah An-Nisa (4:103)"
+      },
+      {
+        type: "SAHIH HADITH",
+        icon: "quote",
+        arabic: "أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ الصَّلَاةُ عَلَى وَقْتِهَا",
+        translation: '"The deed most beloved to Allah is performing the prayer at its proper appointed time."',
+        subtext: '"اللہ تعالیٰ کو سب سے زیادہ محبوب عمل وقت پر نماز ادا کرنا ہے"',
+        reference: "Sahih Al-Bukhari 527"
+      },
+      {
+        type: "MASJID ADAB & ETIQUETTE",
+        icon: "shield-alert",
+        arabic: "وَأَنَّ الْمَسَاجِدَ لِلَّهِ فَلَا تَدْعُوا مَعَ اللَّهِ أَحَدًا",
+        translation: 'Kindly silence all mobile devices. Straighten prayer lines shoulder-to-shoulder with humility.',
+        subtext: 'مسجد میں داخل ہوتے وقت موبائل فون بند یا سائلنٹ موڈ پر رکھیں',
+        reference: "House of Allah &bull; Adab"
+      },
+      {
+        type: "FRIDAY SPECIAL REMINDER",
+        icon: "sparkles",
+        arabic: "مَنْ قَرَأَ سُورَةَ الْكَهْفِ يَوْمَ الْجُمُعَةِ أَضَاءَ لَهُ مِنَ النُّورِ",
+        translation: '"Whoever reads Surah Al-Kahf on Friday, light will shine for him from one Friday to the next."',
+        subtext: '"جو شخص جمعہ کے دن سورۃ الکہف پڑھے گا اس کے لیے دونوں جمعوں کے درمیان نور روشن رہے گا"',
+        reference: "Sunan Al-Kubra 5856"
+      }
+    ];
 
-          const value = showStart ? data.start : data.end;
-          let cell = row.cells[3];
-          if (!cell) {
-            cell = document.createElement("td");
-            row.appendChild(cell);
-          }
-          cell.innerText = formatDisplayTime(value);
-        });
+    let currentSlideIndex = 0;
+    let slideProgress = 0;
+    const SLIDE_DURATION_MS = 12000;
+    const PROGRESS_TICK_MS = 100;
+
+    // Toggle Flag for Start vs End Time in Main Rows
+    let showStartTime = true;
+
+    // Web Audio Context Synthesizer (Zero external file dependencies)
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function synthesizeChime(count = 2, freq = 880) {
+      try {
+        const ctx = getAudioCtx();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        for (let i = 0; i < count; i++) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const startTime = ctx.currentTime + (i * 0.28);
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, startTime);
+
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.35, startTime + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.24);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(startTime);
+          osc.stop(startTime + 0.26);
+        }
+      } catch (e) {
+        console.warn("Audio synthesizer requires user gesture on initial load", e);
+      }
+    }
+
+    /* 1. MASTER REAL-TIME CLOCK & DUAL CALENDAR */
+    function updateMasterClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const secs = String(now.getSeconds()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+
+      document.getElementById('master-time').textContent = `${String(displayHours).padStart(2, '0')}:${mins}`;
+      document.getElementById('master-seconds').textContent = `:${secs}`;
+      document.getElementById('master-ampm').textContent = ampm;
+
+      // Gregorian Date
+      const gregOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('clock-gregorian-date').textContent = now.toLocaleDateString('en-US', gregOptions);
+
+      // Check if Friday
+      const isFriday = now.getDay() === 5;
+      const dhuhrLabel = document.getElementById('dhuhr-title-label');
+      if (dhuhrLabel) {
+        dhuhrLabel.textContent = isFriday ? "JUMA PRAYER" : "DHUHR";
       }
 
-      updateTableLimitsColumn();
-      setInterval(updateTableLimitsColumn, 1000);
+      updatePrayerEngine(now);
+    }
+
+    /* 2. PRAYER LOGIC, COUNTDOWN & ROW SPOTLIGHT */
+    function updatePrayerEngine(now) {
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const nowSeconds = now.getSeconds();
+
+      const prayerKeys = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+      let nextEvent = null;
+      let minDiffMinutes = Infinity;
+
+      // Convert "HH:MM" to day minutes
+      function parseMins(str) {
+        const [h, m] = str.split(':').map(Number);
+        return h * 60 + m;
+      }
+
+      prayerKeys.forEach(key => {
+        const p = PrayerSchedule[key];
+        const adhanMins = parseMins(p.adhan);
+        const iqamahMins = parseMins(p.iqamah);
+
+        // Upcoming Azan
+        const diffAdhan = adhanMins - nowMinutes;
+        if (diffAdhan >= 0 && diffAdhan < minDiffMinutes) {
+          minDiffMinutes = diffAdhan;
+          nextEvent = {
+            key: key,
+            name: `${p.name} (${p.ar})`,
+            type: "AZAN STARTS IN",
+            targetMins: adhanMins,
+            displayTarget: format12h(p.adhan)
+          };
+        }
+
+        // Upcoming Iqamah
+        const diffIqamah = iqamahMins - nowMinutes;
+        if (diffIqamah >= 0 && diffIqamah < minDiffMinutes) {
+          minDiffMinutes = diffIqamah;
+          nextEvent = {
+            key: key,
+            name: `${p.name} (${p.ar})`,
+            type: "IQAMAH JAMAT IN",
+            targetMins: iqamahMins,
+            displayTarget: format12h(p.iqamah)
+          };
+        }
+      });
+
+      // Wrap around to next day Fajr if passed Isha
+      if (!nextEvent) {
+        const fajrMins = parseMins(PrayerSchedule.fajr.adhan);
+        nextEvent = {
+          key: 'fajr',
+          name: "FAJR (الفجر)",
+          type: "AZAN STARTS IN",
+          targetMins: 24 * 60 + fajrMins,
+          displayTarget: format12h(PrayerSchedule.fajr.adhan)
+        };
+      }
+
+      // Update banner labels
+      document.getElementById('target-prayer-name').textContent = nextEvent.name;
+      document.getElementById('target-event-badge').textContent = nextEvent.type;
+      document.getElementById('target-event-time').textContent = nextEvent.displayTarget;
+
+      // Calculate countdown seconds
+      const totalSecondsRemaining = Math.max(0, (nextEvent.targetMins - nowMinutes) * 60 - nowSeconds);
+      const cHours = Math.floor(totalSecondsRemaining / 3600);
+      const cMins = Math.floor((totalSecondsRemaining % 3600) / 60);
+      const cSecs = totalSecondsRemaining % 60;
+
+      document.getElementById('countdown-clock').textContent =
+        `${String(cHours).padStart(2, '0')}:${String(cMins).padStart(2, '0')}:${String(cSecs).padStart(2, '0')}`;
+
+      // Highlight active row in main table
+      prayerKeys.forEach(key => {
+        const row = document.getElementById(`row-${key}`);
+        if (!row) return;
+        if (key === nextEvent.key) {
+          row.classList.add('active-prayer-row');
+        } else {
+          row.classList.remove('active-prayer-row');
+        }
+      });
+
+      // Sound soft chime 1 minute before Iqamah
+      if (totalSecondsRemaining === 60) {
+        synthesizeChime(2, 880);
+      }
+    }
+
+    function format12h(time24) {
+      const [h, m] = time24.split(':').map(Number);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+    }
+
+    /* 3. DYNAMIC TOGGLING: WAQT SHURU (AZAN) <-> WAQT KHATAM (END TIME) */
+    function togglePrayerTimesDisplay() {
+      showStartTime = !showStartTime;
+      const headerTitle = document.getElementById('toggle-col-header');
+      if (headerTitle) {
+        headerTitle.textContent = showStartTime ? "WAQT SHURU (AZAN)" : "WAQT KHATAM (END)";
+        headerTitle.className = showStartTime ? "text-cyan-300" : "text-amber-300";
+      }
+
+      const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+      prayers.forEach(p => {
+        const timeEl = document.querySelector(`.dynamic-time-fajr`) ? document.querySelector(`.dynamic-time-${p}`) : null;
+        const sublabelEl = document.querySelector(`.dynamic-sublabel-${p}`);
+        if (!timeEl || !sublabelEl) return;
+
+        const timeVal = showStartTime ? PrayerSchedule[p].adhan : PrayerSchedule[p].end;
+        timeEl.textContent = format12h(timeVal);
+        sublabelEl.textContent = showStartTime ? "Start Time (Azan)" : "End / Makruh Start";
+      });
+    }
+
+    /* 4. AUTOMATED INFOTAINMENT CAROUSEL */
+    function updateCarouselProgress() {
+      slideProgress += (PROGRESS_TICK_MS / SLIDE_DURATION_MS) * 100;
+      const progressFill = document.getElementById('slide-progress-fill');
+      if (progressFill) {
+        progressFill.style.width = `${Math.min(100, slideProgress)}%`;
+      }
+
+      if (slideProgress >= 100) {
+        slideProgress = 0;
+        advanceCarousel();
+      }
+    }
+
+    function advanceCarousel() {
+      currentSlideIndex = (currentSlideIndex + 1) % CarouselSlides.length;
+      const slide = CarouselSlides[currentSlideIndex];
+
+      const categoryTitle = document.getElementById('slide-category-title');
+      const categoryIcon = document.getElementById('slide-category-icon');
+      const arabicEl = document.getElementById('slide-arabic');
+      const translationEl = document.getElementById('slide-translation');
+      const subtextEl = document.getElementById('slide-subtext');
+      const referenceEl = document.getElementById('slide-reference');
+
+      // Update Slide Content
+      if (categoryTitle) categoryTitle.textContent = slide.type;
+      if (categoryIcon) categoryIcon.innerHTML = `<i data-lucide="${slide.icon}" class="w-4 h-4"></i>`;
+      if (arabicEl) arabicEl.textContent = slide.arabic;
+      if (translationEl) translationEl.textContent = slide.translation;
+      if (subtextEl) subtextEl.textContent = slide.subtext;
+      if (referenceEl) referenceEl.innerHTML = `&bull; ${slide.reference} &bull;`;
+
+      // Update Indicators
+      document.querySelectorAll('.carousel-dot').forEach((dot, idx) => {
+        if (idx === currentSlideIndex) {
+          dot.className = "carousel-dot w-3.5 h-2.5 rounded-full bg-gold-400 transition-all duration-300";
+        } else {
+          dot.className = "carousel-dot w-2 h-2 rounded-full bg-slate-700 transition-all duration-300";
+        }
+      });
+
+      lucide.createIcons();
+    }
+
+    /* 5. BME280 TELEMETRY JITTER SIMULATION */
+    function simulateBME280() {
+      const baseTemp = 27.2;
+      const jitterTemp = (baseTemp + Math.random() * 0.5).toFixed(1);
+      const jitterHum = Math.floor(53 + Math.random() * 4);
+
+      const tempEl = document.getElementById('sensor-temp');
+      const humEl = document.getElementById('sensor-humidity');
+      if (tempEl) tempEl.textContent = `${jitterTemp}°C`;
+      if (humEl) humEl.textContent = `${jitterHum}% RH`;
+    }
+
+    /* 6. AUTONOMOUS OVERLAY SIMULATOR (Mobile warning, Salah Blackout, Juma) */
+    let overlayTimer = null;
+    function triggerAutonomousOverlay(type, durationSeconds = 12) {
+      if (overlayTimer) clearInterval(overlayTimer);
+
+      const modal = document.getElementById('autonomous-overlay');
+      const blackScreen = document.getElementById('salah-black-screen');
+      const titleAr = document.getElementById('overlay-arabic-title');
+      const msgEn = document.getElementById('overlay-main-message');
+      const msgUr = document.getElementById('overlay-urdu-message');
+      const timerCount = document.getElementById('overlay-timer-countdown');
+      const iconContainer = document.getElementById('overlay-icon-container');
+
+      if (type === 'blackout') {
+        blackScreen.classList.remove('hidden');
+        modal.classList.add('hidden');
+        setTimeout(() => {
+          blackScreen.classList.add('hidden');
+        }, durationSeconds * 1000);
+        return;
+      }
+
+      blackScreen.classList.add('hidden');
+      modal.classList.remove('hidden');
+
+      if (type === 'mobile') {
+        iconContainer.innerHTML = '<i data-lucide="bell-off" class="w-16 h-16 text-gold-400"></i>';
+        titleAr.textContent = "صَفُوف سِيدھى كَرِيں";
+        msgEn.textContent = "PLEASE TURN OFF MOBILE PHONES";
+        msgUr.textContent = "برائے مہربانی اپنے موبائل فون بند یا سائلنٹ موڈ پر رکھیں";
+        synthesizeChime(2, 700);
+      } else if (type === 'juma') {
+        iconContainer.innerHTML = '<i data-lucide="sparkles" class="w-16 h-16 text-yellow-300"></i>';
+        titleAr.textContent = "جُمُعَة مُبَارَك";
+        msgEn.textContent = "BLESSED FRIDAY CONGREGATION";
+        msgUr.textContent = "جمعہ مبارک! خطبہ توجہ اور خاموشی سے سماعت فرمائیں";
+        synthesizeChime(1, 950);
+      }
+
+      lucide.createIcons();
+
+      let remaining = durationSeconds;
+      timerCount.textContent = `${remaining}s`;
+      overlayTimer = setInterval(() => {
+        remaining--;
+        timerCount.textContent = `${remaining}s`;
+        if (remaining <= 0) {
+          clearInterval(overlayTimer);
+          modal.classList.add('hidden');
+        }
+      }, 1000);
+    }
+
+    /* Initial Startup Sequence */
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      updateMasterClock();
+
+      // Master Tick (1 second)
+      setInterval(updateMasterClock, 1000);
+
+      // Carousel Tick (100ms smooth bar progress)
+      setInterval(updateCarouselProgress, PROGRESS_TICK_MS);
+
+      // Start <-> End Time Alternate Toggle (Every 6 seconds)
+      setInterval(togglePrayerTimesDisplay, 6000);
+
+      // BME280 sensor polling (every 15 seconds)
+      setInterval(simulateBME280, 15000);
+
+      // Programmatic auto-scale on resize to fit 1080x1920 in any viewer window
+      function autoScaleKiosk() {
+        const wrapper = document.getElementById('kiosk-viewport-wrapper');
+        const scaleX = window.innerWidth / 1080;
+        const scaleY = window.innerHeight / 1920;
+        const scale = Math.min(scaleX, scaleY);
+        if (scale < 1) {
+          wrapper.style.transform = `scale(${scale})`;
+          document.body.style.height = `${1920 * scale}px`;
+        } else {
+          wrapper.style.transform = 'none';
+          document.body.style.height = '1920px';
+        }
+      }
+
+      window.addEventListener('resize', autoScaleKiosk);
+      autoScaleKiosk();
     });
   </script>
-
-  <!-- floating sensor widget removed; inline badges used beside clock -->
 </body>
 
 </html>
