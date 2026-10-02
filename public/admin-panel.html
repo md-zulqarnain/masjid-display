@@ -562,6 +562,13 @@
                     <button class="btn-primary" onclick="saveDisplayPowerSchedule()" id="savePowerScheduleBtn">Save Power Schedule</button>
                     <button class="btn-secondary" onclick="clearDisplayPowerSchedule()" id="clearPowerScheduleBtn">Clear Extra Slots</button>
                 </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="testSamsungDisplayPower(true)" id="testDisplayPowerOnBtn">Test Power On</button>
+                    <button class="btn-danger" onclick="testSamsungDisplayPower(false)" id="testDisplayPowerOffBtn">Test Standby</button>
+                    <button class="btn-secondary" onclick="loadDisplayPowerStatus()">Refresh Status</button>
+                </div>
+                <p id="displayPowerStatus" style="color:#bbb; margin-top:12px;">Power status has not been checked.</p>
+                <pre id="displayPowerCommandOutput" style="display:none; margin-top:10px; padding:12px; background:rgba(0,0,0,0.5); color:#d1fae5; white-space:pre-wrap;"></pre>
                 <div id="displayPowerScheduleMessage" class="message"></div>
             </div>
         </div>
@@ -1225,6 +1232,9 @@
                 resolutionInput.value = data.displayResolution || '1920x1080@60Hz';
             }
             renderDisplayPowerSlots(data.displayPowerSlots || []);
+            if (document.getElementById('scheduler')?.classList.contains('active')) {
+                loadDisplayPowerStatus();
+            }
             const themeSelector = document.getElementById('themeSelector');
             if (themeSelector) {
                 themeSelector.value = data.theme || 'index';
@@ -1430,6 +1440,56 @@
             const container = document.getElementById('displayPowerSlots');
             const emptyState = document.getElementById('displayPowerSlotsEmpty');
             if (container && emptyState) emptyState.style.display = container.children.length ? 'none' : 'block';
+        }
+
+        async function loadDisplayPowerStatus() {
+            const status = document.getElementById('displayPowerStatus');
+            try {
+                const response = await fetch('/api/display/power-status');
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Could not read display power status.');
+
+                const desired = data.desiredPowerOn ? 'ON' : 'STANDBY';
+                const last = data.lastCommand?.at
+                    ? `${data.lastCommand.powerOn ? 'ON' : 'STANDBY'} at ${new Date(data.lastCommand.at).toLocaleTimeString()}`
+                    : 'none since server start';
+                status.textContent = `${data.available ? 'CEC available' : 'CEC tests require the Raspberry Pi'} | Scheduled state: ${desired} | Last command: ${last}${data.lastCommand?.error ? ` | Error: ${data.lastCommand.error}` : ''}`;
+
+                const output = document.getElementById('displayPowerCommandOutput');
+                const commandOutput = data.lastCommand?.output || '';
+                output.textContent = commandOutput;
+                output.style.display = commandOutput ? 'block' : 'none';
+            } catch (error) {
+                status.textContent = error.message;
+            }
+        }
+
+        async function testSamsungDisplayPower(powerOn) {
+            if (!isSuperAdmin()) {
+                showMessage('displayPowerScheduleMessage', 'Superadmin login required.', 'error');
+                return;
+            }
+
+            const button = document.getElementById(powerOn ? 'testDisplayPowerOnBtn' : 'testDisplayPowerOffBtn');
+            const originalText = button.textContent;
+            button.disabled = true;
+            try {
+                const response = await fetch('/api/display/power-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ powerOn })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error([result.error, result.output].filter(Boolean).join(': '));
+                showMessage('displayPowerScheduleMessage', `${result.message}. If the TV did not respond, check the status output below.`, 'success');
+                await loadDisplayPowerStatus();
+            } catch (error) {
+                showMessage('displayPowerScheduleMessage', error.message, 'error');
+                await loadDisplayPowerStatus();
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
         }
 
         async function saveDisplayPowerSchedule() {

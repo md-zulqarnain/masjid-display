@@ -187,7 +187,8 @@ function setSamsungDisplayPower(isOn, callback) {
     return;
   }
 
-  const client = spawn('cec-client', ['-s', '-d', '1'], { stdio: ['pipe', 'ignore', 'pipe'] });
+  const client = spawn('cec-client', ['-s', '-d', '1'], { stdio: ['pipe', 'pipe', 'pipe'] });
+  let stdout = '';
   let stderr = '';
   let completed = false;
   const timeout = setTimeout(() => {
@@ -199,9 +200,10 @@ function setSamsungDisplayPower(isOn, callback) {
     if (completed) return;
     completed = true;
     clearTimeout(timeout);
-    callback(error);
+    callback(error, { stdout: stdout.trim(), stderr: stderr.trim() });
   }
 
+  client.stdout.on('data', chunk => { stdout += chunk.toString(); });
   client.stderr.on('data', chunk => { stderr += chunk.toString(); });
   client.on('error', finish);
   client.on('close', code => {
@@ -212,6 +214,7 @@ function setSamsungDisplayPower(isOn, callback) {
 
 let lastSamsungPowerState = null;
 let samsungPowerCommandInProgress = false;
+let lastSamsungPowerCommand = { powerOn: null, at: null, error: null, output: '' };
 
 function updateSamsungDisplayPower() {
   if (process.platform === 'win32' || samsungPowerCommandInProgress) return;
@@ -220,8 +223,14 @@ function updateSamsungDisplayPower() {
   if (lastSamsungPowerState === desiredState) return;
 
   samsungPowerCommandInProgress = true;
-  setSamsungDisplayPower(desiredState, error => {
+  setSamsungDisplayPower(desiredState, (error, result = {}) => {
     samsungPowerCommandInProgress = false;
+    lastSamsungPowerCommand = {
+      powerOn: desiredState,
+      at: new Date().toISOString(),
+      error: error?.message || null,
+      output: result.stdout || result.stderr || ''
+    };
     if (error) {
       console.error(`Could not turn Samsung display ${desiredState ? 'on' : 'off'} via HDMI-CEC:`, error.message);
       return;
@@ -370,6 +379,48 @@ app.post('/api/display/power-schedule', requireSuperAdmin, (req, res) => {
 
   const settings = saveSettings({ displayPowerSlots: normalizedSlots });
   res.json({ message: 'Display power schedule saved', slots: settings.displayPowerSlots });
+});
+
+app.get('/api/display/power-status', requireSuperAdmin, (req, res) => {
+  res.json({
+    available: process.platform !== 'win32',
+    desiredPowerOn: shouldSamsungDisplayBeOn(),
+    lastSuccessfulPowerOn: lastSamsungPowerState,
+    commandInProgress: samsungPowerCommandInProgress,
+    lastCommand: lastSamsungPowerCommand
+  });
+});
+
+app.post('/api/display/power-test', requireSuperAdmin, (req, res) => {
+  const powerOn = req.body?.powerOn;
+  if (typeof powerOn !== 'boolean') {
+    return res.status(400).json({ error: 'powerOn must be true or false' });
+  }
+  if (samsungPowerCommandInProgress) {
+    return res.status(409).json({ error: 'A Samsung power command is already running' });
+  }
+  if (process.platform === 'win32') {
+    return res.status(400).json({ error: 'HDMI-CEC power control is only available on the Raspberry Pi' });
+  }
+
+  samsungPowerCommandInProgress = true;
+  setSamsungDisplayPower(powerOn, (error, result = {}) => {
+    samsungPowerCommandInProgress = false;
+    lastSamsungPowerCommand = {
+      powerOn,
+      at: new Date().toISOString(),
+      error: error?.message || null,
+      output: result.stdout || result.stderr || ''
+    };
+    if (error) {
+      console.error(`Samsung HDMI-CEC test (${powerOn ? 'on' : 'standby'}) failed:`, error.message, result.stderr || '');
+      return res.status(500).json({ error: error.message, output: result.stdout || result.stderr || '' });
+    }
+
+    lastSamsungPowerState = powerOn;
+    console.log(`Samsung HDMI-CEC test command completed: ${powerOn ? 'on' : 'standby'}`, result.stdout || '');
+    return res.json({ message: `CEC ${powerOn ? 'power-on' : 'standby'} command completed`, output: result.stdout || result.stderr || '' });
+  });
 });
 
 app.post('/api/display/resolution', requireSuperAdmin, (req, res) => {
