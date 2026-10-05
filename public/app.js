@@ -32,6 +32,7 @@ let prayerSliderIndex = 0;
 const prayerSliderCycleMs = 6000;
 let ACTIVE_DISPLAY_OVERRIDE = { mode: 'normal', page: null, dialog: null, message: '' };
 let SELECTED_DISPLAY_THEME = null;
+let displayScheduleDataLoaded = false;
 
 const islamicMonths = [
     "मुहर्रम",
@@ -268,6 +269,15 @@ function buildPageUrl(pageName) {
 function isTheme6DisplayWindow(date = new Date()) {
     const minutes = date.getHours() * 60 + date.getMinutes();
     return minutes >= 16 * 60 + 48 && minutes < 19 * 60 + 30;
+}
+
+function getNightStandbyWindow(now = new Date()) {
+    const ishaJamat = parseTime(prayerData.isha.jamah);
+    if (ishaJamat > now) ishaJamat.setDate(ishaJamat.getDate() - 1);
+
+    const startsAt = new Date(ishaJamat.getTime() + 60 * 60 * 1000);
+    const endsAt = new Date(startsAt.getTime() + 75 * 60 * 1000);
+    return { startsAt, endsAt, active: now >= startsAt && now < endsAt };
 }
 
 let previousTheme6WindowState = isTheme6DisplayWindow();
@@ -942,7 +952,7 @@ async function loadSelectedTheme() {
         SELECTED_DISPLAY_THEME = selectedTheme;
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
-        if (['surah-hadith.html', 'juma.html', 'ramadan-isha.html'].includes(currentPage)) {
+        if (['surah-hadith.html', 'juma.html', 'ramadan-isha.html', 'night-standby.html'].includes(currentPage)) {
             return;
         }
 
@@ -973,6 +983,7 @@ async function loadSelectedTheme() {
 async function initializePage() {
     await loadSelectedTheme();
     await loadPrayerTimesForToday();
+    displayScheduleDataLoaded = true;
     renderTable();
     updateCurrentAndNextPrayerTimes();
 }
@@ -1483,6 +1494,8 @@ function minutesUntilNextAzanJamah() {
 }
 
 function scheduleSwitcher() {
+    if (!displayScheduleDataLoaded) return;
+
     if (ACTIVE_DISPLAY_OVERRIDE && ACTIVE_DISPLAY_OVERRIDE.mode !== 'normal') {
         return;
     }
@@ -1492,8 +1505,22 @@ function scheduleSwitcher() {
         return;
     }
 
+    const now = new Date();
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const nightStandbyWindow = getNightStandbyWindow(now);
+    if (currentPage === 'night-standby.html') {
+        const standbyUntil = Number(new URLSearchParams(window.location.search).get('until'));
+        if (!Number.isFinite(standbyUntil) || Date.now() >= standbyUntil) {
+            window.location.replace('/index.html');
+        }
+        return;
+    }
+    if (nightStandbyWindow.active) {
+        window.location.href = `/night-standby.html?until=${nightStandbyWindow.endsAt.getTime()}`;
+        return;
+    }
+
     if (SELECTED_DISPLAY_THEME === 'index' || SELECTED_DISPLAY_THEME === 'theme-6') {
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const inTheme6Window = isTheme6DisplayWindow();
         if (currentPage === 'index.html' && inTheme6Window) {
             window.location.href = 'theme-6.html';
@@ -1510,7 +1537,6 @@ function scheduleSwitcher() {
         previousTheme6WindowState = inTheme6Window;
     }
 
-    const now = new Date();
     const elapsed = now - scheduleLastSwitch;
 
     // Check if it's Ramadan and Isha Jamat is over

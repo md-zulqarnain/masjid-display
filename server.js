@@ -142,6 +142,34 @@ function getIshaJamatMinutes(dayData, quickTimes) {
   return ((azanMinutes + jamatDelay) % 1440 + 1440) % 1440;
 }
 
+function getFajrAzanMinutes(dayData, quickTimes) {
+  const fajrConfig = quickTimes?.fajr || {};
+  if (fajrConfig.useCustomTime === true && fajrConfig.azan) {
+    return parseTimeToMinutes(fajrConfig.azan);
+  }
+
+  if (fajrConfig.specialEnabled === true) {
+    const sahriMinutes = parseTimeToMinutes(dayData?.Sahri);
+    if (sahriMinutes === null) return null;
+    return (sahriMinutes + (Number.parseInt(fajrConfig.azanAfterSahri, 10) || 0)) % 1440;
+  }
+
+  const sunriseMinutes = parseTimeToMinutes(dayData?.Sunrise);
+  if (sunriseMinutes === null) return null;
+  const defaultAzanMinutes = (sunriseMinutes - 60 + 1440) % 1440;
+  const hours = Math.floor(defaultAzanMinutes / 60);
+  const minutes = Math.floor((defaultAzanMinutes % 60) / 5) * 5;
+  return hours * 60 + minutes;
+}
+
+function formatMinutesAsClock(minutes) {
+  if (minutes === null || minutes === undefined) return null;
+  const normalized = ((minutes % 1440) + 1440) % 1440;
+  const hours24 = Math.floor(normalized / 60);
+  const hours12 = hours24 % 12 || 12;
+  return `${String(hours12).padStart(2, '0')}:${String(normalized % 60).padStart(2, '0')} ${hours24 >= 12 ? 'PM' : 'AM'}`;
+}
+
 function shouldSamsungDisplayBeOn(now = new Date(), quickTimes = readQuickTimingSettings(), timingDayReader = readTimingDay, powerSlots = readSettings().displayPowerSlots) {
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const isInCustomPowerSlot = normalizeDisplayPowerSlots(powerSlots).some(slot => {
@@ -171,7 +199,7 @@ function shouldSamsungDisplayBeOn(now = new Date(), quickTimes = readQuickTiming
   daytimePowerOn.setHours(11, 30, 0, 0);
   const ishaJamat = new Date(today);
   ishaJamat.setMinutes(ishaJamatMinutes);
-  const ishaPowerOff = new Date(ishaJamat.getTime() + 60 * 60 * 1000);
+  const ishaPowerOff = new Date(ishaJamat.getTime() + 135 * 60 * 1000);
   if (now >= daytimePowerOn && now < ishaPowerOff) return true;
 
   return false;
@@ -388,6 +416,17 @@ app.post('/api/display/power-schedule', requireSuperAdmin, (req, res) => {
   const settings = saveSettings({ displayPowerSlots: normalizedSlots });
   updateSamsungDisplayPower();
   res.json({ message: 'Display power schedule saved', slots: settings.displayPowerSlots });
+});
+
+app.get('/api/display/night-standby-info', (req, res) => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dayData = readTimingDay(tomorrow);
+  const fajrMinutes = getFajrAzanMinutes(dayData, readQuickTimingSettings());
+  if (fajrMinutes === null) {
+    return res.status(503).json({ error: 'Tomorrow Fajr time is unavailable' });
+  }
+  return res.json({ fajrTime: formatMinutesAsClock(fajrMinutes) });
 });
 
 app.get('/api/display/power-status', requireSuperAdmin, (req, res) => {
@@ -905,6 +944,8 @@ module.exports = {
   getSamsungDisplayPowerArgs,
   getSamsungDisplayCommandArgs,
   parseTimeToMinutes,
+  getFajrAzanMinutes,
+  formatMinutesAsClock,
   getIshaJamatMinutes,
   shouldSamsungDisplayBeOn,
   readSettings,

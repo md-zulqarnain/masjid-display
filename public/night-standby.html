@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Night Display</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: #f4f1e8;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    main {
+      min-height: 100%;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: 8vh;
+      padding: 6vh 6vw;
+      text-align: center;
+    }
+
+    #currentTime {
+      display: flex;
+      align-items: baseline;
+      gap: 0.08em;
+      font-size: 13rem;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      color: #f0d68a;
+    }
+
+    #clockDetails {
+      font-size: 0.28em;
+    }
+
+    .fajr-block {
+      display: grid;
+      gap: 1.5vh;
+    }
+
+    .fajr-label {
+      color: #aab0ac;
+      font: 600 1.6rem/1.2 Arial, sans-serif;
+    }
+
+    #fajrTime {
+      color: #dce5df;
+      font: 500 4.2rem/1.1 Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 900px) {
+      #currentTime {
+        font-size: 8rem;
+      }
+
+      #fajrTime {
+        font-size: 3rem;
+      }
+    }
+
+    @media (max-width: 520px) {
+      #currentTime {
+        font-size: 5rem;
+      }
+
+      #fajrTime {
+        font-size: 2.3rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <time id="currentTime" aria-label="Current time"><span id="clockMain">--:--</span><span id="clockDetails">:-- AM</span></time>
+    <section class="fajr-block" aria-label="Tomorrow's Fajr time">
+      <div class="fajr-label" lang="hi">फ़ज्र</div>
+      <time id="fajrTime">--:--</time>
+    </section>
+  </main>
+
+  <script>
+    const clockMainEl = document.getElementById('clockMain');
+    const clockDetailsEl = document.getElementById('clockDetails');
+    const fajrTimeEl = document.getElementById('fajrTime');
+    const standbyUntil = Number(new URLSearchParams(window.location.search).get('until'));
+
+    function updateCurrentTime() {
+      const now = new Date();
+      const hours = now.getHours() % 12 || 12;
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const period = now.getHours() >= 12 ? 'PM' : 'AM';
+      clockMainEl.textContent = `${String(hours).padStart(2, '0')}:${minutes}`;
+      clockDetailsEl.textContent = `:${seconds} ${period}`;
+
+      if (!Number.isFinite(standbyUntil) || Date.now() >= standbyUntil) {
+        window.location.replace('/index.html');
+      }
+    }
+
+    async function loadNextFajr() {
+      try {
+        const response = await fetch('/api/display/night-standby-info', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Fajr time unavailable');
+        const data = await response.json();
+        fajrTimeEl.textContent = data.fajrTime || '--:--';
+      } catch {
+        fajrTimeEl.textContent = '--:--';
+      }
+    }
+
+    updateCurrentTime();
+    loadNextFajr();
+    setInterval(updateCurrentTime, 1000);
+    setInterval(loadNextFajr, 60 * 60 * 1000);
+  </script>
+</body>
+
+</html>

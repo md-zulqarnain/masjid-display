@@ -29,6 +29,10 @@ assert.deepStrictEqual(server.normalizeDisplayPowerSlots([
 ]), [{ on: '12:00', off: '13:00' }]);
 assert.strictEqual(server.parseTimeToMinutes('7:30 AM'), 450);
 assert.strictEqual(server.parseTimeToMinutes('19:30'), 1170);
+assert.strictEqual(server.getFajrAzanMinutes({ Sunrise: '06:12', Sahri: '04:30' }, {}), 310);
+assert.strictEqual(server.getFajrAzanMinutes({ Sunrise: '06:12', Sahri: '04:30' }, { fajr: { specialEnabled: true, azanAfterSahri: 12 } }), 282);
+assert.strictEqual(server.getFajrAzanMinutes({ Sunrise: '06:12', Sahri: '04:30' }, { fajr: { useCustomTime: true, azan: '04:55 AM' } }), 295);
+assert.strictEqual(server.formatMinutesAsClock(310), '05:10 AM');
 
 const quickTimes = { isha: { useCustomTime: true, azan: '07:30 PM', jamahAfterAzan: 15 } };
 const timingDayReader = () => ({ Isha: '19:00', Sahri: '04:30' });
@@ -40,7 +44,9 @@ assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 11, 29),
 assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 11, 30), quickTimes, timingDayReader), true);
 assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 19, 44), quickTimes, timingDayReader), true);
 assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 20, 44), quickTimes, timingDayReader), true);
-assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 20, 45), quickTimes, timingDayReader), false);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 20, 45), quickTimes, timingDayReader), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 21, 59), quickTimes, timingDayReader), true);
+assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 2, 22, 0), quickTimes, timingDayReader), false);
 assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 3, 3, 44), quickTimes, timingDayReader), false);
 assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 3, 3, 45), quickTimes, timingDayReader), true);
 assert.strictEqual(server.shouldSamsungDisplayBeOn(new Date(2026, 9, 3, 7, 29), quickTimes, timingDayReader), true);
