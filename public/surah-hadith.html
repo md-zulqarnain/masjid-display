@@ -71,19 +71,24 @@
         }
 
         .arabic {
-            width: 90%;
-            height: 60%;
+            width: 92%;
+            height: 58%;
+            max-height: 58%;
             font-weight: bold;
-            /* limit height area */
-            overflow: hidden;
-            /* important */
             line-height: 1.8;
             direction: rtl;
-            /* better for Arabic */
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
             color: #ffffffa6;
+            /* Important */
+            overflow: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            /* Font will be controlled by JavaScript */
+            font-size: 60px;
         }
 
         .reference {
@@ -241,18 +246,52 @@
             }
         }
 
+
         function fitText() {
-            const el = document.getElementById('verseText');
-            let fontSize = 60;
+            const el = document.getElementById("verseText");
+
+            // Start with a large font
+            let fontSize = 100;
+
+            // Minimum font size
+            const minFontSize = 24;
+
             el.style.fontSize = fontSize + "px";
 
+            // Force browser to calculate layout
+            void el.offsetHeight;
+
+            /*
+             * Reduce font size until the complete text fits
+             * inside both width and height.
+             */
             while (
                 (el.scrollHeight > el.clientHeight ||
-                    el.scrollWidth > el.clientWidth)
-                && fontSize > 14
+                    el.scrollWidth > el.clientWidth) &&
+                fontSize > minFontSize
             ) {
                 fontSize -= 1;
                 el.style.fontSize = fontSize + "px";
+            }
+
+            /*
+             * Try to increase the font slightly again.
+             * This makes sure small text uses as much
+             * available space as possible.
+             */
+            while (fontSize < 100) {
+                const testSize = fontSize + 1;
+                el.style.fontSize = testSize + "px";
+
+                if (
+                    el.scrollHeight > el.clientHeight ||
+                    el.scrollWidth > el.clientWidth
+                ) {
+                    el.style.fontSize = fontSize + "px";
+                    break;
+                }
+
+                fontSize = testSize;
             }
         }
 
