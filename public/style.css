@@ -545,7 +545,7 @@ tbody .active-row td:nth-child(4) {
   border: 1px solid rgba(229, 193, 88, 0.15);
   border-radius: 16px;
   box-shadow: 0 5px 18px 0 rgba(0, 0, 0, 0.5);
-  margin-bottom: 0.8vh;
+  /* margin-bottom: 0.8vh; */
 }
 
 .hijri-part {
