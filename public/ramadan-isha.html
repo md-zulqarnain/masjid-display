@@ -5,6 +5,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Masjid Display</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     .text-message {
@@ -42,19 +45,24 @@
             </svg></span><span class="s-value" id="sensor-temp-left">-- °C</span></span>
         <div id="date" class="date-left"></div>
       </div>
-      <div class="nextPrayerAndHijri">
+    </div>
 
-        <div class="nextPrayerAndHijriDate card">
-          <div>
-            <div id="hijri" class="date-right"></div>
-            <div id="ramadanTimes">
-              <span id="sahriTime"></span>
-              <span id="iftarTime"></span>
-            </div>
-          </div>
+    <!-- FULL WIDTH HIJRI & SAHRI/IFTAR BAR -->
+    <section class="hijri-ramadan-bar card">
+      <div class="hijri-part">
+        <div id="hijri"></div>
+      </div>
+      <div class="ramadan-part">
+        <div class="ramadan-time-box">
+          <span class="ramadan-label">सहरी</span>
+          <span id="sahriTime" data-format="simple" class="ramadan-val">--:--</span>
+        </div>
+        <div class="ramadan-time-box">
+          <span class="ramadan-label">इफ़्तार</span>
+          <span id="iftarTime" data-format="simple" class="ramadan-val">--:--</span>
         </div>
       </div>
-    </div>
+    </section>
 
     <div class="text-message">
       सुब्हान ज़िल मुल्कि वल मलाकूत<br />

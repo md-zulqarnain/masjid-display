@@ -308,6 +308,7 @@ tbody .active-row td:nth-child(4) {
   margin-top: auto;
   border-top: 2px solid #facc15;
   position: relative;
+  width: 100%;
 }
 
 .brand-log {
@@ -493,8 +494,7 @@ tbody .active-row td:nth-child(4) {
 }
 
 #nextPrayerName .prayer {
-  font-family: "Outfit", sans-serif;
-  font-size: 4.2vh;
+  font-size: 3vh;
   font-weight: 600;
   line-height: 1;
   color: #ffffff;
@@ -881,6 +881,8 @@ div#nextPrayerCountdown {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .verse-slider-content {

@@ -4,7 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Masjid Display - Vibrant Neon Theme</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="theme-4.css">
 </head>
 
@@ -37,30 +40,40 @@
             </svg></span><span class="s-value" id="sensor-temp-left">-- °C</span></span>
         <div id="date" class="date-left"></div>
       </div>
-      <div class="nextPrayerAndHijri">
-        <div id="nextPrayer" class="date-center card">
-          <div>
-            <div id="nextPrayerName"></div>
-            <h4 class="remainingTimeHeading">बाक़ी रह गया वक़्त</h4>
-            <div id="nextPrayerCountdown">
-              <span id="countHours" class="countdown">00</span> :
-              <span id="countMinutes" class="countdown">00</span> :
-              <span id="countSeconds" class="countdown">00</span>
-            </div>
+    </div>
 
-          </div>
+    <!-- NEXT PRAYER COUNTDOWN BAR (Theme-3 Style) -->
+    <section id="nextPrayer" class="countdown-bar card animate-soft-glow">
+      <div class="countdown-bar-content">
+        <div class="prayer-info">
+          <div id="nextPrayerName"></div>
         </div>
-        <div class="nextPrayerAndHijriDate card">
-          <div>
-            <div id="hijri" class="date-right"></div>
-            <div id="ramadanTimes">
-              <span id="sahriTime"></span>
-              <span id="iftarTime"></span>
-            </div>
-          </div>
+        <div id="nextPrayerCountdown" class="countdown-timer">
+          <span id="countHours" class="countdown-num">00</span>
+          <span class="countdown-colon">:</span>
+          <span id="countMinutes" class="countdown-num">00</span>
+          <span class="countdown-colon">:</span>
+          <span id="countSeconds" class="countdown-num">00</span>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- FULL WIDTH HIJRI & SAHRI/IFTAR BAR -->
+    <section class="hijri-ramadan-bar card">
+      <div class="hijri-part">
+        <div id="hijri"></div>
+      </div>
+      <div class="ramadan-part">
+        <div class="ramadan-time-box">
+          <span class="ramadan-label">सहरी</span>
+          <span id="sahriTime" data-format="simple" class="ramadan-val">--:--</span>
+        </div>
+        <div class="ramadan-time-box">
+          <span class="ramadan-label">इफ़्तार</span>
+          <span id="iftarTime" data-format="simple" class="ramadan-val">--:--</span>
+        </div>
+      </div>
+    </section>
 
     <!-- Prayer Table -->
     <div class="prayerTimeingContainer">
@@ -189,7 +202,82 @@
   <script src="app.js"></script>
   <script src="sensor.js"></script>
 
-  <!-- floating sensor widget removed; inline badges used beside clock -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const observer = new MutationObserver(() => {
+        observer.disconnect();
+
+        const prayerEl = document.querySelector("#nextPrayerName .prayer");
+        const prefixEl = document.querySelector("#nextPrayerName .prefix.card-heading");
+
+        if (prayerEl) {
+          const text = prayerEl.textContent.toLowerCase();
+          let englishName = "";
+          if (text.includes("fajr") || text.includes("फ़जर") || text.includes("फजर") || text.includes("फ़ज्र")) {
+            englishName = "Fajr";
+          } else if (text.includes("zuhr") || text.includes("dhuhr") || text.includes("ज़ोهر") || text.includes("ज़ोहर") || text.includes("जोहर") || text.includes("ज़ोहर")) {
+            englishName = "Zuhr";
+          } else if (text.includes("asr") || text.includes("असर")) {
+            englishName = "Asr";
+          } else if (text.includes("maghrib") || text.includes("मग़रिब") || text.includes("मगरिब") || text.includes("मग़रिब")) {
+            englishName = "Maghrib";
+          } else if (text.includes("isha") || text.includes("इशा") || text.includes("ईशा")) {
+            englishName = "Isha";
+          } else if (text.includes("juma") || text.includes("जुमा")) {
+            englishName = "Juma";
+          }
+
+          if (!englishName) {
+            englishName = prayerEl.textContent.replace(/^[-\s]+/, "").trim();
+          }
+
+          const hindiTranslations = {
+            "Fajr": "फ़ज्र",
+            "Zuhr": "ज़ोहर",
+            "Asr": "असर",
+            "Maghrib": "मग़रिब",
+            "Isha": "इशा",
+            "Juma": "जुमा"
+          };
+          const hindiName = hindiTranslations[englishName] || englishName;
+
+          const prefixText = prefixEl ? prefixEl.textContent : "";
+          let labelType = "अगली नमाज़";
+          if (prefixText.includes("जमाअत") || prefixText.includes("जमात") || prefixText.includes("Jamaat")) {
+            labelType = "अगली जमाअत";
+          } else if (prefixText.includes("अज़ान") || prefixText.includes("Azan")) {
+            labelType = "अगली अज़ान";
+          }
+
+          const nameContainer = document.getElementById("nextPrayerName");
+          if (nameContainer) {
+            nameContainer.innerHTML = `
+              <span class="prefix card-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-4 h-4 text-gold">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                ${labelType}
+              </span>
+              <span class="prayer">
+                ${hindiName}
+              </span>
+            `;
+          }
+        }
+
+        const target = document.getElementById("nextPrayerName");
+        if (target) {
+          observer.observe(target, { childList: true, subtree: true });
+        }
+      });
+
+      const target = document.getElementById("nextPrayerName");
+      if (target) {
+        observer.observe(target, { childList: true, subtree: true });
+      }
+    });
+  </script>
 </body>
 
 </html>

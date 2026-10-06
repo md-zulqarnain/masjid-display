@@ -9,6 +9,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="theme-3.css">
 </head>
 
@@ -22,23 +23,13 @@
 
   <div class="container relative z-10">
 
-    <!-- Top Date Strip (Before Clock) -->
-    <header class="top-date-strip card">
-      <span id="date" class="date-gregorian">--</span>
-      <span id="hijri" class="date-hijri">--</span>
-    </header>
-
-    <!-- Header Clock & Sahri/Iftar Timings -->
+    <!-- Header Clock Section -->
     <section class="clock-section">
       <div id="clock" style="margin-top: 2vh;">
         <div class="clock-display">
           <span id="hours" class="clock-time">12:00</span>
           <span id="seconds" class="clock-sec">:00</span>
           <span id="ampm" class="clock-ampm">AM</span>
-          <span id="hours" class="clock-time">12:00</span>
-          <span id="seconds" class="clock-sec">:00</span>
-          <span id="ampm" class="clock-ampm">AM</span>
-          <!-- humidity removed for BMP-only setups -->
         </div>
 
         <div class="date-row">
@@ -52,16 +43,8 @@
           <div class="date-row">
             <div id="date" class="date-left"></div>
           </div>
-
-          <!-- Sahri / Iftar Timings (Added data-format="simple" to prevent double Sahri text) -->
-          <div class="ramadan-times-row font-sans">
-            <span class="ramadan-label">सहरी:</span> <span id="sahriTime" data-format="simple"
-              class="ramadan-val">--:--</span>
-            <span class="date-separator"></span>
-            <span class="ramadan-label">इफ़्तार:</span> <span id="iftarTime" data-format="simple"
-              class="ramadan-val">--:--</span>
-          </div>
         </div>
+      </div>
     </section>
 
     <!-- NEXT PRAYER COUNTDOWN - Placed BEFORE the prayer table -->
@@ -76,6 +59,23 @@
           <span id="countMinutes" class="countdown-num">00</span>
           <span class="countdown-colon">:</span>
           <span id="countSeconds" class="countdown-num">00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FULL WIDTH HIJRI & SAHRI/IFTAR BAR -->
+    <section class="hijri-ramadan-bar card">
+      <div class="hijri-part">
+        <div id="hijri"></div>
+      </div>
+      <div class="ramadan-part">
+        <div class="ramadan-time-box">
+          <span class="ramadan-label">सहरी</span>
+          <span id="sahriTime" data-format="simple" class="ramadan-val">--:--</span>
+        </div>
+        <div class="ramadan-time-box">
+          <span class="ramadan-label">इफ़्तार</span>
+          <span id="iftarTime" data-format="simple" class="ramadan-val">--:--</span>
         </div>
       </div>
     </section>
