@@ -391,72 +391,252 @@ tbody .active-row td:nth-child(4) {
   margin-left: 0.5vw;
 }
 
-/* Next prayer countdown */
-#nextPrayer {
-  /* margin-top: 1vh; */
-  text-align: center;
+/* Next Prayer Bar (Theme-3 Style) */
+.countdown-bar {
+  padding: 1.2vh 3vw;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(15, 23, 20, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 193, 88, 0.2);
+  border-radius: 18px;
+  box-shadow:
+    0 5px 18px 0 rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  margin-top: 1vh;
+  margin-bottom: 0.6vh;
+}
+
+.countdown-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: radial-gradient(
+    ellipse at left,
+    rgba(16, 185, 129, 0.1) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.countdown-bar.animate-soft-glow {
+  animation: soft-glow 3s infinite ease-in-out;
+}
+
+@keyframes soft-glow {
+  0%,
+  100% {
+    border-color: rgba(16, 185, 129, 0.15);
+    box-shadow:
+      0 6px 20px 0 rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow:
+      0 6px 20px 0 rgba(16, 185, 129, 0.12),
+      inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.countdown-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 3vw;
+  position: relative;
+  z-index: 5;
+}
+
+.prayer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1vh;
 }
 
 #nextPrayerName {
-  font-weight: 700;
-  color: #facc15;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2vh;
+  text-align: left;
+}
+
+#nextPrayerName .prefix.card-heading {
+  font-size: 1.8vh;
+  font-weight: 600;
   text-transform: uppercase;
-  line-height: 1.2;
+  letter-spacing: normal !important;
+  color: #e5c158;
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+}
+
+#nextPrayerName .prefix.card-heading svg {
+  width: 2.2vh;
+  height: 2.2vh;
+  color: #e5c158;
 }
 
 #nextPrayerName .prayer {
-  font-size: 3.5vw;
-  display: block;
-  margin-top: 0.2vh;
+  font-family: "Outfit", sans-serif;
+  font-size: 4.2vh;
+  font-weight: 600;
+  line-height: 1;
+  color: #ffffff;
+  display: flex;
+  align-items: baseline;
+  gap: 0.8vw;
 }
 
-.remainingTimeHeading {
-  font-size: 4vw;
-  margin: 10px 0 0;
-  color: #ffffff86;
+.countdown-timer {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3vw;
+  font-family: monospace;
+  font-size: 5.2vh;
+  font-weight: 400;
+  line-height: 1;
+  color: #ffffff;
 }
 
-#nextPrayerCountdown {
-  margin-top: 0.4vh;
-  opacity: 0.95;
-  font-size: 1.5vw;
-  color: #fff;
+.countdown-num {
+  font-size: 5.2vh;
+  color: #ffffff;
 }
 
-/* hijri box acts as card header for Ramadan info */
-#hijri {
-  font-weight: 700;
-  color: #facc15;
-  text-transform: uppercase;
+#countSeconds {
+  color: #34d399 !important;
+  font-weight: 600;
+}
+
+.countdown-colon {
+  font-size: 4vh;
+  color: rgba(16, 185, 129, 0.4);
+  animation: blink 1.5s infinite;
+}
+
+/* Full Width Hijri & Sahri/Iftar Bar (Below Next Prayer) */
+.hijri-ramadan-bar {
+  width: 100%;
+  padding: 1.2vh 3vw;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  background: rgba(15, 23, 20, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 193, 88, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 5px 18px 0 rgba(0, 0, 0, 0.5);
   margin-bottom: 0.8vh;
+}
+
+.hijri-part {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#hijri {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2vh;
+}
+
+#hijri .card-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5vw;
+  color: #e5c158;
+  font-size: 2.6vh;
+  font-weight: 700;
   line-height: 1.2;
 }
 
-#hijri .hijri-month {
-  display: block;
-  font-size: 2.4vw;
-  font-family: "Amiri", serif;
+#hijri .card-heading svg {
+  width: 2.4vh;
+  height: 2.4vh;
+  color: #e5c158;
 }
 
 #hijri .hijri-date {
   display: block;
-  font-size: 8.6vw;
-  opacity: 0.85;
+  font-size: 2.2vh;
+  color: #ffffff;
+  margin-left: 0;
+  font-weight: 500;
+  opacity: 0.9;
+  line-height: 1.2;
 }
 
-/* sahri/iftar times inside right card */
-#ramadanTimes {
-  font-weight: bold;
-  color: #ffffffd1;
+.ramadan-part {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1vw;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.4vh;
+  text-align: right;
 }
 
-/* add a thin vertical divider between sahri and iftar when both present */
-#ramadanTimes span:not(:last-child) {
-  position: relative;
+.ramadan-time-box {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8vw;
+}
+
+.ramadan-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: normal !important;
+  font-size: 2vh;
+}
+
+.ramadan-val {
+  color: #e5c158;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 2.6vh;
+}
+
+.ramadan-divider {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(229, 193, 88, 0.4);
+}
+
+.nafl-label {
+  font-size: 1.8vh;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.nafl-val {
+  font-family: monospace;
+  font-size: 2.6vh;
+  font-weight: 700;
+  color: #34d399;
 }
 
 #ramadanTimes span:not(:last-child)::after {
@@ -643,6 +823,7 @@ div#nextPrayerCountdown {
   display: flex;
   flex-direction: row;
   align-items: stretch;
+  width: 100%;
 }
 
 .juma-header-card {
