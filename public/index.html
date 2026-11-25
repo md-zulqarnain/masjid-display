@@ -259,13 +259,18 @@
         const nafilInfoSlide = document.getElementById("nafilInfoSlide");
         let showNafilInfo = false;
 
-        window.setInterval(() => {
-          showNafilInfo = !showNafilInfo;
-          jumaInfoSlide.classList.toggle("active", !showNafilInfo);
-          nafilInfoSlide.classList.toggle("active", showNafilInfo);
-          jumaSection.classList.toggle("nafil-active", showNafilInfo);
-          nafilInfoSlide.setAttribute("aria-hidden", String(!showNafilInfo));
-        }, 10000);
+        function scheduleNextJumaSlide() {
+          window.setTimeout(() => {
+            showNafilInfo = !showNafilInfo;
+            jumaInfoSlide.classList.toggle("active", !showNafilInfo);
+            nafilInfoSlide.classList.toggle("active", showNafilInfo);
+            jumaSection.classList.toggle("nafil-active", showNafilInfo);
+            nafilInfoSlide.setAttribute("aria-hidden", String(!showNafilInfo));
+            scheduleNextJumaSlide();
+          }, showNafilInfo ? 20000 : 10000);
+        }
+
+        scheduleNextJumaSlide();
 
         // 1. Dynamic Hindi Translation & Overlap Prevention Observer for Next Prayer Name
         const observer = new MutationObserver(() => {
