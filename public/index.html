@@ -10,6 +10,54 @@
     #clock {
       margin-top: 2vh;
     }
+
+    .juma-times {
+      display: block;
+      position: relative;
+    }
+
+    .juma-slide {
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      width: 100%;
+      height: 100%;
+    }
+
+    .juma-slide.active {
+      display: grid;
+      animation: jumaSlideIn 0.6s ease both;
+    }
+
+    #nafilInfoSlide .juma-time {
+      font-size: 4.3vw;
+    }
+
+    .juma-section-container.nafil-active .juma-header-card {
+      display: none;
+    }
+
+    .juma-section-container.nafil-active .juma-times {
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+    }
+
+    @keyframes jumaSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .juma-slide.active {
+        animation: none;
+      }
+    }
   </style>
 </head>
 
@@ -103,21 +151,37 @@
       <!-- Juma Section -->
       <div class="juma-section-container">
         <div class="juma-header-card">
-          <span>जुमा</span>
-          <span class="juma-arabic">جمعة</span>
+          <span id="jumaSlideTitle">जुमा</span>
+          <span class="juma-arabic" id="jumaSlideArabic">جمعة</span>
         </div>
         <div class="juma-times">
-          <div class="juma-time-box">
-            <div class="juma-label">अज़ान</div>
-            <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
+          <div class="juma-slide active" id="jumaInfoSlide">
+            <div class="juma-time-box">
+              <div class="juma-label">अज़ान</div>
+              <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
+            </div>
+            <div class="juma-time-box">
+              <div class="juma-label">खु़त्बा</div>
+              <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
+            </div>
+            <div class="juma-time-box">
+              <div class="juma-label">जमाअत</div>
+              <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
+            </div>
           </div>
-          <div class="juma-time-box">
-            <div class="juma-label">खु़त्बा</div>
-            <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
-          </div>
-          <div class="juma-time-box">
-            <div class="juma-label">जमाअत</div>
-            <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
+          <div class="juma-slide" id="nafilInfoSlide" aria-hidden="true">
+            <div class="juma-time-box">
+              <div class="juma-label">तहज्जुद</div>
+              <div class="juma-time" id="tahajjudTime">--</div>
+            </div>
+            <div class="juma-time-box">
+              <div class="juma-label">इशराक़</div>
+              <div class="juma-time" id="ishraqTime">--</div>
+            </div>
+            <div class="juma-time-box">
+              <div class="juma-label">चाश्त</div>
+              <div class="juma-time" id="chashtTime">--</div>
+            </div>
           </div>
         </div>
       </div>
@@ -190,6 +254,19 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        const jumaSection = document.querySelector(".juma-section-container");
+        const jumaInfoSlide = document.getElementById("jumaInfoSlide");
+        const nafilInfoSlide = document.getElementById("nafilInfoSlide");
+        let showNafilInfo = false;
+
+        window.setInterval(() => {
+          showNafilInfo = !showNafilInfo;
+          jumaInfoSlide.classList.toggle("active", !showNafilInfo);
+          nafilInfoSlide.classList.toggle("active", showNafilInfo);
+          jumaSection.classList.toggle("nafil-active", showNafilInfo);
+          nafilInfoSlide.setAttribute("aria-hidden", String(!showNafilInfo));
+        }, 10000);
+
         // 1. Dynamic Hindi Translation & Overlap Prevention Observer for Next Prayer Name
         const observer = new MutationObserver(() => {
           observer.disconnect();
