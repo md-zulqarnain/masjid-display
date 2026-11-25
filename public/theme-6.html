@@ -104,17 +104,33 @@
         <span class="juma-arabic">جمعة</span>
       </div>
       <div class="juma-times">
-        <div class="juma-time-box">
-          <div class="juma-label">अज़ान</div>
-          <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
+        <div class="juma-slide active" id="jumaInfoSlide">
+          <div class="juma-time-box">
+            <div class="juma-label">अज़ान</div>
+            <div class="juma-time" id="jumaAzanTime">1:00 PM</div>
+          </div>
+          <div class="juma-time-box">
+            <div class="juma-label">खु़त्बा</div>
+            <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
+          </div>
+          <div class="juma-time-box">
+            <div class="juma-label">जमाअत</div>
+            <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
+          </div>
         </div>
-        <div class="juma-time-box">
-          <div class="juma-label">खु़त्बा</div>
-          <div class="juma-time" id="jumaKhutbaTime">1:45 PM</div>
-        </div>
-        <div class="juma-time-box">
-          <div class="juma-label">जमाअत</div>
-          <div class="juma-time" id="jumaJamatTime">2:00 PM</div>
+        <div class="juma-slide" id="nafilInfoSlide" aria-hidden="true">
+          <div class="juma-time-box">
+            <div class="juma-label">तहज्जुद</div>
+            <div class="juma-time" id="tahajjudTime">--</div>
+          </div>
+          <div class="juma-time-box">
+            <div class="juma-label">इशराक़</div>
+            <div class="juma-time" id="ishraqTime">--</div>
+          </div>
+          <div class="juma-time-box">
+            <div class="juma-label">चाश्त</div>
+            <div class="juma-time" id="chashtTime">--</div>
+          </div>
         </div>
       </div>
     </div>
@@ -187,6 +203,24 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      const jumaSection = document.querySelector(".juma-section-container");
+      const jumaInfoSlide = document.getElementById("jumaInfoSlide");
+      const nafilInfoSlide = document.getElementById("nafilInfoSlide");
+      let showNafilInfo = false;
+
+      function scheduleNextJumaSlide() {
+        window.setTimeout(() => {
+          showNafilInfo = !showNafilInfo;
+          jumaInfoSlide.classList.toggle("active", !showNafilInfo);
+          nafilInfoSlide.classList.toggle("active", showNafilInfo);
+          jumaSection.classList.toggle("nafil-active", showNafilInfo);
+          nafilInfoSlide.setAttribute("aria-hidden", String(!showNafilInfo));
+          scheduleNextJumaSlide();
+        }, showNafilInfo ? 20000 : 10000);
+      }
+
+      scheduleNextJumaSlide();
+
       const observer = new MutationObserver(() => {
         observer.disconnect();
 
