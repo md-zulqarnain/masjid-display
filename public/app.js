@@ -271,15 +271,6 @@ function isTheme6DisplayWindow(date = new Date()) {
     return minutes >= 16 * 60 + 48 && minutes < 19 * 60 + 30;
 }
 
-function getNightStandbyWindow(now = new Date()) {
-    const ishaJamat = parseTime(prayerData.isha.jamah);
-    if (ishaJamat > now) ishaJamat.setDate(ishaJamat.getDate() - 1);
-
-    const startsAt = new Date(ishaJamat.getTime() + 60 * 60 * 1000);
-    const endsAt = new Date(startsAt.getTime() + 75 * 60 * 1000);
-    return { startsAt, endsAt, active: now >= startsAt && now < endsAt };
-}
-
 let previousTheme6WindowState = isTheme6DisplayWindow();
 
 function getScheduledHomePage(date = new Date()) {
@@ -729,14 +720,20 @@ async function loadPrayerTimesForToday() {
         // Tulu (Sunrise)
         const tuluStart = sunrise;
 
-        // Ishraq
-        const ishraqStart = addMinutesToHM(sunrise, 15);
-        // use a longer Ishraq window that ends when Chasht begins
-        const ishraqEnd = addMinutesToHM(ishraqStart, 180);
+        // Ishraq & Chasht (Duha)
+        const fromMinutes = totalMins => {
+            const hours = Math.floor(totalMins / 60) % 24;
+            const minutes = Math.round(totalMins % 60);
+            return String(hours).padStart(2, "0") + ":" + String(minutes).padStart(2, "0");
+        };
+        const ishraqStartMins = toMinutes(sunrise) + 15;
+        const chashtEndMins = toMinutes(zohar) - 15;
+        const morningMidpointMins = Math.floor((ishraqStartMins + chashtEndMins) / 2);
 
-        // Chasht (Duha)
+        const ishraqStart = fromMinutes(ishraqStartMins);
+        const ishraqEnd = fromMinutes(morningMidpointMins);
         const chashtStart = ishraqEnd;
-        const chashtEnd = addMinutesToHM(zohar, -15);
+        const chashtEnd = fromMinutes(chashtEndMins);
 
         // Tahajjud (Last 1/3 of night)
         function calculateTahajjudRange(sahriTime, maghribTime) {
@@ -952,7 +949,7 @@ async function loadSelectedTheme() {
         SELECTED_DISPLAY_THEME = selectedTheme;
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
-        if (['surah-hadith.html', 'juma.html', 'ramadan-isha.html', 'night-standby.html'].includes(currentPage)) {
+        if (['surah-hadith.html', 'juma.html', 'ramadan-isha.html'].includes(currentPage)) {
             return;
         }
 
@@ -1507,18 +1504,6 @@ function scheduleSwitcher() {
 
     const now = new Date();
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    const nightStandbyWindow = getNightStandbyWindow(now);
-    if (currentPage === 'night-standby.html') {
-        const standbyUntil = Number(new URLSearchParams(window.location.search).get('until'));
-        if (!Number.isFinite(standbyUntil) || Date.now() >= standbyUntil) {
-            window.location.replace('/index.html');
-        }
-        return;
-    }
-    if (nightStandbyWindow.active) {
-        window.location.href = `/night-standby.html?until=${nightStandbyWindow.endsAt.getTime()}`;
-        return;
-    }
 
     if (SELECTED_DISPLAY_THEME === 'index' || SELECTED_DISPLAY_THEME === 'theme-6') {
         const inTheme6Window = isTheme6DisplayWindow();
