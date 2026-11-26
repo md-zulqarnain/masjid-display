@@ -46,15 +46,12 @@ content/
   general-short.json
   months/ramadan.json
   days/friday.json
-  days/hijama.json
   occasions/laylat-al-qadr.json
 ```
 
 The month files are provided for all twelve Hijri months. Day and occasion files are created when the first entry for a topic is saved. Use hyphens in multiword names, for example `dhul-hijjah` or `eid-al-fitr`.
 
 Each entry can include a source, hadith grading, and optional short display text. Short display text is shown in the rotating display only when its schedule matches. To schedule an entry, set a Hijri month, Hijri dates, or weekdays. Month topic names such as `ramadan` automatically use their corresponding Hijri month; other schedules are explicit. Weekdays use `0` for Sunday through `6` for Saturday, so Friday is `5`. The display uses the configured Hijri date offset.
-
-For example, cupping content can be stored in `content/days/hijama.json` with `daysOfMonth` set to `[17, 19, 21]`. Verify the report, source, and grading before publishing; do not present disputed reports as certain or claim a guaranteed medical benefit.
 
 On first use, the server copies `verses.json` and `short-verses.json` into `content/general.json` and `content/general-short.json`. The original files are left in place as backups. New topic-specific short text is stored with its full entry.
 
