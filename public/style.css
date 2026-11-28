@@ -1419,3 +1419,47 @@ tbody .active-row td:nth-child(4) {
     padding: 1vh 1vw;
   }
 }
+
+#index-body .nafl-time-card,
+#index-body[class] .nafl-time-card {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+#index-body[class] .nafl-time-card.nafl-tahajjud-card {
+  background: #5d4037;
+  border-color: #5d4037;
+  box-shadow: 0 6px 20px rgba(93, 64, 55, 0.35);
+}
+
+#index-body[class] .nafl-time-card.nafl-ishraq-card {
+  background: #4527a0;
+  border-color: #4527a0;
+  box-shadow: 0 6px 20px rgba(69, 39, 160, 0.35);
+}
+
+#index-body[class] .nafl-time-card.nafl-chasht-card {
+  background: #b26a00;
+  border-color: #b26a00;
+  box-shadow: 0 6px 20px rgba(178, 106, 0, 0.35);
+}
+
+#index-body .nafl-time-card .juma-label,
+#index-body .nafl-time-card .juma-time,
+#index-body .nafl-time-card .extra-label,
+#index-body .nafl-time-card .extra-time,
+#index-body .nafl-time-card .extraPrayerLabel,
+#index-body .nafl-time-card .extraPrayerTime,
+#index-body .nafl-time-card .slide-time-label,
+#index-body .nafl-time-card .slide-time-val,
+#index-body[class] .nafl-time-card .juma-label,
+#index-body[class] .nafl-time-card .juma-time,
+#index-body[class] .nafl-time-card .extra-label,
+#index-body[class] .nafl-time-card .extra-time,
+#index-body[class] .nafl-time-card .extraPrayerLabel,
+#index-body[class] .nafl-time-card .extraPrayerTime,
+#index-body[class] .nafl-time-card .slide-time-label,
+#index-body[class] .nafl-time-card .slide-time-val {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
